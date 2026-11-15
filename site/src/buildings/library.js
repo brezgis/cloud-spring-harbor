@@ -123,7 +123,7 @@ export default function (b) {
   // glass, frame, mullions and bars in a hand-cut opening; a brownstone sill and head on the weather side (sg)
   function glaze(ax, c, sg, { u0, u1, h0, h1, arch = false, n = 1, rows = 2, trim = true }, t) {
     const R = (u1 - u0) / 2, spring = arch ? h1 - R : h1, uc = (u0 + u1) / 2, f = c + sg * t / 2;
-    plate('glass', ax, holePts(u0, u1, h0, h1, arch, 0.14), c - 0.01, c + 0.01);
+    plate('glass', ax, holePts(u0, u1, h0, h1, arch, 0.11), c - 0.01, c + 0.01);      // (into the frame by 0.03 all round, so that its edges are not in the planes of the frame's)
     plate(SASH, ax, holePts(u0, u1, h0, h1, arch), c - 0.07, c + 0.07, [holePts(u0, u1, h0, h1, arch, 0.14)]);
     for (let i = 1; i < n; i++) { const u = u0 + (u1 - u0) * i / n, top = arch ? spring + Math.sqrt(Math.max(0, (R - 0.1) ** 2 - (u - uc) ** 2)) : h1 - 0.14; along(SASH, ax, u - 0.09, u + 0.09, c - 0.07, c + 0.07, h0 + 0.14, top); }
     if (arch) along(SASH, ax, u0 + 0.14, u1 - 0.14, c - 0.06, c + 0.06, spring - 0.07, spring + 0.07);
@@ -167,8 +167,8 @@ export default function (b) {
   // of 1889): a base, stiles, a top rail and a cap, 4 ft 2 in. high, on the face at `c` of a wall along `ax`; sg is
   // the way into the room. It stands 0.2 ft off the wall at its cap.
   const wains = (ax, c, sg, u0, u1) => {
-    const bx = (p, ha, hb, a = u0, e = u1) => along(WOOD, ax, a, e, c - sg * 0.03, c + sg * p, F + ha, F + hb, b.G);
-    bx(0.07, 0, 4); bx(0.13, 0, 0.75); bx(0.11, 3.6, 4); bx(0.2, 4, 4.16);
+    const bx = (p, ha, hb, a = u0, e = u1) => along(WOOD, ax, a, e, c - sg * 0.03, c + sg * p, F + ha, F + hb, { ...b.G, skip: [ax === 'X' ? [0, 0, sg] : [-sg, 0, 0], ...(ha === 0 ? [[0, -1, 0]] : [])] });      // (no backs, nor feet on the floor: they lay in one plane, in the plaster or the floor)
+    bx(0.07, 0, 4, u0 + 0.01, u1 - 0.01); bx(0.13, 0, 0.75); bx(0.11, 3.6, 4); bx(0.2, 4, 4.16);      // (the boarding behind stops just inside the framing's ends: run out to them, its ends lay in their planes)
     const n = Math.max(1, Math.round((u1 - u0) / 2.4));
     for (let i = 0; i <= n; i++) { const u = u0 + (u1 - u0) * i / n; bx(0.11, 0.75, 3.6, Math.max(u0, u - 0.16), Math.min(u1, u + 0.16)); }
   };
@@ -400,10 +400,10 @@ export default function (b) {
     const NF = 12, FL = 2 * RI * Math.tan(Math.PI / NF / 2);
     const fbox = (i, w, ha, hb, u0 = -FL / 2, u1 = FL / 2) => {      // a piece on facet i's inside face, standing w off it, from u0 to u1 along it
       const phi = (-90 + (i + 0.5) * 180 / NF) * Math.PI / 180, rho = RI - (w - 0.03) / 2, um = (u0 + u1) / 2, cx = AX + rho * Math.cos(phi) - um * Math.sin(phi), cy = AY + rho * Math.sin(phi) + um * Math.cos(phi);
-      s.box(WOOD, cx - (w + 0.03) / 2, cx + (w + 0.03) / 2, cy - (u1 - u0) / 2, cy + (u1 - u0) / 2, ha, hb, { rot: [0, phi, 0], grain: 'long' });
+      s.box(WOOD, cx - (w + 0.03) / 2, cx + (w + 0.03) / 2, cy - (u1 - u0) / 2, cy + (u1 - u0) / 2, ha, hb, { rot: [0, phi, 0], grain: 'long', skip: hb < F + 4.2 ? [[1, 0, 0], ...(ha === F ? [[0, -1, 0]] : [])] : [] });      // (the wainscot's pieces have no backs, nor feet on the floor: they lay in one plane, in the plaster or the floor)
     };
     for (let i = 0; i < NF; i++) {
-      fbox(i, 0.07, F, F + 4); fbox(i, 0.13, F, F + 0.75); fbox(i, 0.11, F + 3.6, F + 4); fbox(i, 0.2, F + 4, F + 4.16);
+      fbox(i, 0.07, F, F + 4, -FL / 2 + 0.01, FL / 2 - 0.01); fbox(i, 0.13, F, F + 0.75); fbox(i, 0.11, F + 3.6, F + 4); fbox(i, 0.2, F + 4, F + 4.16);
       for (const [ua, ub] of [[-FL / 2, -FL / 2 + 0.16], [-0.16, 0.16], [FL / 2 - 0.16, FL / 2]]) fbox(i, 0.11, F + 0.75, F + 3.6, ua, ub);
       fbox(i, 0.2, F + 7.55, F + 7.88); fbox(i, 0.3, F + 7.88, F + 8.02);
       for (const [ua, ub] of [[-1.59, -1.29], [1.29, 1.59]]) fbox(i, 0.07, F + 8.02, F + 12.6, ua, ub); fbox(i, 0.09, F + 12.6, F + 12.98, -1.7, 1.7);      // the windows' casings (b.arcWall makes none)
@@ -533,7 +533,7 @@ export default function (b) {
   // ---- bands of brownstone: the water table; the sill and the head of the window band; the porch's cornice (above) ---------
   for (const [h0, h1, p] of [[F - 0.5, F, 0.14], [F + band.sill - 0.45, F + band.sill, 0.16], [F + band.head, ER, 0.14]]) {
     bandX(DX0 + 2.6, AX, YF, -1, h0, h1, p);
-    s.arcWall({ X: AX, Y: AY, r: AR + T / 2 + p / 2, t: p, from: -90, to: 90, n: 12, h0, h1, out: TRIM, in: TRIM });
+    s.arcWall({ X: AX, Y: AY, r: AR + T / 2 + p / 2 - 0.01, t: p + 0.02, from: -90, to: 90, n: 12, h0, h1, out: TRIM, in: TRIM });      // (its inside face a little within the wall's: in the wall's face, it lay in the plane of the windows' sills and heads)
   }
   bandX(0, WX1, YB, 1, F - 0.5, F, 0.14); bandX(DX1, AX, YB, 1, F - 0.5, F, 0.14); bandY(0, YB, 0, -1, F - 0.5, F, 0.14); bandY(RY1, YB, AX, 1, F - 0.5, F, 0.14);
   bandY(YB, BY1, DX0, -1, F - 0.5, F, 0.14); bandY(YB, BY1, DX1, 1, F - 0.5, F, 0.14); bandX(DX0, DX1, BY1, 1, F - 0.5, F, 0.14);

@@ -63,7 +63,7 @@ export default function (f) {
   K.diningTable(t, 14, 3.6, { style: 'trestle' });
   for (const x of [-4.8, -1.6, 1.6, 4.8]) { K.diningChair(t, x, -2.35, { back: 'ladder' }); K.diningChair(t, x, 2.35, { dq: 2, back: 'ladder' }); }
   // two reading lamps (the photographs of the room show lamps on its table): the room's two added lights
-  for (const x of [-3.3, 3.3]) K.tableLamp(t, x, 0, TOP, 'c#2f4a3c/0.4', { base: 'jar', shade: 'empire' });
+  for (const x of [-3.3, 3.3]) { K.tableLamp(t, x, 0, TOP, 'c#2f4a3c/0.4', { base: 'jar', shade: 'empire' }); K.lamps[K.lamps.length - 1].cone = 1; }      // (shaded: their light goes down on the table: lighting.js, roomLight)
   // the professor's end: the Republic open, three books waiting, the term's reading in two sheets, and the Meno's square worked out
   K.openBook(t, 5.9, 0.15, TOP + 0.005, { cover: 'c#4a2a22/0.7' });
   K.bookStack(t, 6.1, -1.05, TOP + 0.005, 3);
@@ -80,7 +80,8 @@ export default function (f) {
   }, { flat: true, y: -0.95, res: 440, turn: Math.PI + turn });
   sheet(4.85, 0.06, 'I. Plato', [['Euthyphro', 'the one form of the pious, 5d–6e'], ['Apology', ''], ['Crito', ''], ['Meno', 'the slave boy, 82b–85b'], ['Phaedo', 'the equal sticks, 74a–75d'], ['Symposium', 'the ladder, 210a–212a'], ['Republic VI', 'the line, 509d–511e'], ['Republic VII', 'the cave, 514a–517a']]);
   sheet(3.98, -0.05, 'II. Since', [['Rosch', '“Principles of Categorization”, 1978'], ['Mitchell', 'Analogy-Making as Perception, 1993'], ['Gärdenfors', 'Conceptual Spaces, 2000'], ['Hofstadter', '“Analogy as the Core of Cognition”, 2001'], ['Bengio, Courville & Vincent', '“Representation Learning”, 2013'], ['Chollet', '“On the Measure of Intelligence”, 2019']]);
-  // A seminar in progress (nobody is in the chairs: they have gone for the break): notebooks, cups, two laptops, two candles, bags by two chairs
+  // A seminar in progress: notebooks, cups, two laptops, two candles, bags by two chairs. (Kept clear of the places in front
+  // of the six chairs the cohort sits in, rooms/stone_stone.js, where each lays out its own book, pad or laptop.)
   const note = (x, y, col, turn = 0) => K.put(t, col, K.geom.bev(-0.29, 0.29, -0.39, 0.39, 0, 0.05, 0.012), { rz: turn, at: [x, y, TOP + 0.004] });
   const pen = (x, y, turn) => K.put(t, 'c#1d2a44/0.4', K.geom.bev(-0.21, 0.21, -0.013, 0.013, 0, 0.026, 0.006), { rz: turn, at: [x, y, TOP + 0.004] });
   K.laptop(t.sub(1.6, -0.9, 0, 2), 0, 0, TOP, { draw: (g, W, H) => {      // someone's plot of an embedding: three clusters
@@ -88,9 +89,9 @@ export default function (f) {
     for (const [cx, cy, col] of [[0.3, 0.38, '#e9909c'], [0.68, 0.45, '#a9cbe6'], [0.45, 0.72, '#b4d9a6']]) { g.fillStyle = col; for (let i = 0; i < 26; i++) { const a = rr() * 6.28, d = Math.sqrt(rr()) * 0.13; g.beginPath(); g.arc(W * (cx + d * Math.cos(a)), H * (cy + d * Math.sin(a) * 1.3), 2.2, 0, 7); g.fill(); } }
   } });
   K.mug(t, 2.55, -0.75, TOP, 'c#3d5873', true);
-  K.laptop(t, -1.6, 0.95, TOP, { open: false, turn: 0.12 }); K.mug(t, -0.75, 1.1, TOP, K.WHITE);
+  K.laptop(t, -1.6, 0.78, TOP, { open: false, turn: 0.12 }); K.mug(t, -0.75, 1.1, TOP, K.WHITE);
   note(1.75, 0.95, 'c#2f4a3c/0.7', -0.2); pen(2.3, 0.8, 0.5); K.mug(t, 0.95, 1.2, TOP, 'c#8a3b2c', true);
-  note(-4.75, -0.95, 'c#1f2a36/0.7', 0.1); K.put(t, 'c#7a2f2a/0.7', K.geom.bev(-0.27, 0.27, -0.36, 0.36, 0, 0.045, 0.012), { rz: -0.25, at: [-4.72, -0.93, TOP + 0.058] }); K.cup(t, -3.95, -1.15, TOP);
+  note(-4.75, -0.72, 'c#1f2a36/0.7', 0.1); K.put(t, 'c#7a2f2a/0.7', K.geom.bev(-0.27, 0.27, -0.36, 0.36, 0, 0.045, 0.012), { rz: -0.25, at: [-4.72, -0.7, TOP + 0.058] }); K.cup(t, -3.95, -1.15, TOP);
   note(-4.9, 0.95, 'c#59463c/0.7', 0.3); pen(-4.35, 1.05, -0.3);
   // an open notebook at the south side, written up from Tuesday
   K.put(t, 'c#1d1c1c/0.6', K.geom.bev(-0.5, 0.5, -0.37, 0.37, 0, 0.03, 0.01), { at: [-1.6, -0.95, TOP + 0.004] });
@@ -104,7 +105,7 @@ export default function (f) {
   pen(-0.9, -0.9, 1.2); K.mug(t, -2.45, -0.7, TOP, 'c#55634c');
   K.pillarCandle(t, 0.22, 0.1, TOP, 0.55, 0.12); K.pillarCandle(t, -0.22, -0.14, TOP, 0.36, 0.11);
   K.toteBag(t, -0.25, -2.7, 0, 'linen#5b6b58'); K.toteBag(t, 3.2, 2.7, 0, 'linen#b08a5c');
-  f.paper(t, 4.5, TOP + 0.012, 0.75, 0.97, (g, W, H) => {
+  f.paper(t, 4.35, TOP + 0.012, 0.75, 0.97, (g, W, H) => {
     // Meno 82b–85b: the square of side 2 has area 4; doubling the side gives 16; the square on the diagonal is the 8
     D.paper(g, W, H, '#f1ead8', 9); const hand = { f: D.F.caveat, w: 600 }, s = W * 0.17, x0 = W * 0.16, y0 = H * 0.2;
     D.T(g, 'Meno 82b–85b', W / 2, H * 0.085, H * 0.065, INK, hand);
@@ -114,7 +115,7 @@ export default function (f) {
     D.T(g, '2', x0 + s, y0 - H * 0.03, H * 0.05, INK, hand); D.T(g, '2', x0 + 3 * s, y0 - H * 0.03, H * 0.05, INK, hand);
     D.T(g, '8', x0 + 2 * s, y0 + 2 * s, H * 0.085, '#7a2f2a', hand);
     D.para(g, 'side 2: area 4\nside 4: area 16, too big\nside 3: area 9, still too big\non the diagonal: area 8', W * 0.14, y0 + 4 * s + H * 0.035, H * 0.047, INK, W * 0.8, { ...hand, lh: 1.16 });
-  }, { flat: true, y: 0.85, res: 440, turn: -0.1 });
+  }, { flat: true, y: 0.68, res: 440, turn: -0.1 });
 
   // =========================================================================================================
   //  THE BOARD: freestanding at the head of the table (every wall is a bookcase)
@@ -213,13 +214,15 @@ export default function (f) {
       });
     });
   }
-  // The record player: on a cabinet of its own beside the fire, south of the hearth
-  { const c = f.fr(iX1 - 1.45 - 0.12, 7.55, F, 1); K.sideboard(c, 3.6, { d: 1.55, h: 2.8 }); f.recordPlayer(c, -0.55, 0.8, 2.8);
+  // The record player: on a cabinet of its own in the corner by the fire, against the cases south of the hearth (in the
+  // corner, so that the leather chair beside it, rooms/stone_stone.js, can stand between it and the hearth). Its lamp
+  // and the sleeve of what is on are the curator's too.
+  { const c = f.fr(iX1 - 1.45 - 0.12, 5.25, F, 1); K.sideboard(c, 3.6, { d: 1.55, h: 2.8 }); f.recordPlayer(c, -0.25, 0.8, 2.8);
     // and where the tea is made: two cups waiting beside it, a candle in a jar
-    K.mug(c, 1.45, 0.5, 2.8, K.WHITE); K.mug(c, 1.55, 1.0, 2.8, 'c#3d5873'); K.jarCandle(c, 0.7, 1.2, 2.8); }
-  // A copper kettle on the hearthstone, south of the opening (the fire itself is not laid: see the README)
+    K.mug(c, 1.52, 0.3, 2.8, K.WHITE); K.mug(c, 1.2, 0.3, 2.8, 'c#3d5873'); K.jarCandle(c, 0.82, 0.32, 2.8); }      // (along the back: the sleeve lies in front)
+  // A copper kettle on the hearthstone, south of the opening (the fire is laid by the curator: rooms/stone_stone.js)
   {
-    const k = f.fr(iX1 - 2.0 - 1.05, CY - 1.95, F + 0.045, 1), CU = 'c#a8623a/0.32/0.85', DK = 'c#1d1c1c/0.5';
+    const k = f.fr(iX1 - 2.0 - 1.05, CY - 1.55, F + 0.045, 1), CU = 'c#a8623a/0.32/0.85', DK = 'c#1d1c1c/0.5';
     k.lathe(CU, 0, 0, [[0, 0], [0.3, 0], [0.37, 0.1], [0.37, 0.28], [0.27, 0.47], [0.13, 0.53], [0, 0.53]], { seg: 14 });
     k.cyl(CU, 0, 0, 0.53, 0.57, 0.15, 0.13, 12); k.cyl(DK, 0, 0, 0.57, 0.65, 0.035, 0.05, 8);                        // lid, knob
     k.box(CU, 0.3, 0.52, -0.045, 0.045, 0.27, 0.36); k.cyl(CU, 0.52, 0, 0.27, 0.5, 0.055, 0.035, 8);                  // spout
@@ -232,7 +235,7 @@ export default function (f) {
   f.faculty({
     id: 'isolde', field: 'Philosophy · Foundations and Mind',
     home: [25.3, 8.3, F], faces: [27.2, 10.6],      // beside her board, not in front of it
-    posts: [[25.3, 16.4], [31.0, 9.6], [19.7, 19.0], [11.5, 6.6]],
+    posts: [[25.3, 16.4], [30.6, 6.1], [19.7, 19.0], [11.5, 6.6]],      // the board, the record player, the north window, the books
     lecture: {
       stand: [25.4, 8.4, F], board: [27.2, 10.6],
       script: [

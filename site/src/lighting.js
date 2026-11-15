@@ -22,17 +22,36 @@
 // - Exposure: eyes adjust to indoors, porches and the garden, by day and night, quickly
 //   toward darker (no blow-out on stepping outside), more slowly toward brighter.
 // - A faint vignette (a CSS overlay, no GPU cost), a little stronger at night.
+//
+// Rooms that light themselves (roomLight, called from a room's furnish file). The four lights of the pool are
+// too few for a room hung with twenty lamps, and the even 'room bounce' that kept every room legible also made
+// every room the same flat amber after dark. In a room that asks for it, then, two things change while you are
+// indoors near it (the room you stand in and the nearest few others, so that a room seen through a door is lit
+// as itself, not as a plain room beside a lamplit one): its own even light is lowered (each room says how far),
+// and every lamp of it near you that has no light from the pool lights it anyway, through a few lines of shader
+// (diffuse only, no shadow, the same falloff as the pool's lamps, so that a lamp handed to the pool or back does
+// not change). Pools of light read under the pendants and on the tables, and the room between them falls to a
+// dim warm dusk; the eye opens a little to meet the room it is in (exposure), so nothing goes black. From out of
+// doors every room is as it was (its windows warm across the lawn); by day nothing changes.
+// - Daylight indoors takes the sky's colour at the hour (sky.js gives it): cool and pale at noon, gold in the
+//   low sun, blue once the sun is down.
+// - Window glass glows amber from outside after dark, wherever a lit room stands behind it.
+// ?light=old shows all of this as it was, for comparing (and for timing one against the other).
 
 import * as THREE from 'three';
 
 const lerp = THREE.MathUtils.lerp, clamp = THREE.MathUtils.clamp, smooth = THREE.MathUtils.smoothstep;
 const f = n => n.toFixed(3);
+const QS = new URLSearchParams(globalThis.location?.search ?? '');
+export const LIGHT_OLD = QS.get('light') === 'old';
 // The insides of the buildings, as boxes in world feet [x0, x1, z0, z1, y0, y1, floor, ceiling]
 // (building.js gives them: one for each room, or one for a whole storey). The floor and ceiling of
 // the box a surface lies in are what the corner shade is measured from; where they are left out,
 // the two heights given to installHouseLight stand in.
 let boxGLSL = '', overGLSL = '', FLOOR = 0.55, CEILING = 12.55;
 
+const SOFT = 16;                   // lamps lit by the shader beyond the pool's four (rooms that light themselves)
+const NREG = 4;                    // rooms that light themselves at once: the one you are in and the nearest others
 // Shared uniform values. Plain objects (not THREE.Vector*) so that three's uniform cloning
 // keeps a reference to them, and every material sees the same numbers.
 export const HL = {
@@ -40,7 +59,34 @@ export const HL = {
   k: { x: 1, y: 1, z: 1, w: 0 },   // indoors: sky diffuse scale, sky reflection scale, sky-fill cut, how far whites are held back by lamplight
   sh: { x: 0, y: 0, z: 0, w: 0 },  // indoors: corner shade on the room light, and on the lamps (set by shade.js)
   cav: new Float32Array(6 * 8),    // up to six open shelves near the eye, shaded inside: per shelf x0, z0, x1, z1 and y0, y1, open side, weight (shade.js)
+  reg: new Float32Array(NREG * 8), // rooms that light themselves, near the eye: x0, z0, x1, z1 and y0, y1, on, how far their even light is kept (roomLight)
+  ambN: { x: 0, y: 0, z: 0 },      // the even light indoors in two parts, the lamplit (which those rooms scale) and the daylit: amb = ambN + ambD
+  ambD: { x: 0, y: 0, z: 0 },
+  soft: new Float32Array(SOFT * 4),// their lamps that the pool has not lit: x, y, z, strength (the live ones first)
+  softCone: new Float32Array(SOFT),// ...for each, 2 x which of those rooms it is in, plus 1 if it is shaded (its light goes down in a cone)
+  softTint: { x: 1, y: 1, z: 1 },  // the lamps' colour (linear), as the pool's
 };
+
+// ---- rooms that light themselves ----------------------------------------------------------
+// roomLight(f.room('Museum'), { night: 0.3 }): while the eye is indoors near that room its even light after dark is
+// night times the usual, and its lamps all light it (above). Called by furnish files, before the scene is lit.
+const REGIONS = [];
+export function roomLight(room, o = {}) {
+  if (LIGHT_OLD) return;
+  const ws = (room.boxes?.length ? room.boxes : [room]).map(b => b.world).filter(Boolean);
+  if (!ws.length) return;
+  const mn = k => Math.min(...ws.map(w => w[k])), mx = k => Math.max(...ws.map(w => w[k]));
+  // (let out a little into the walls: some of the room's wall faces lie exactly on its edges, and there the test
+  // came out one way or the other pixel by pixel, a speckle of bright and dim on the end walls after dark; not as
+  // far as the face of the next room, a quarter foot past the edge, which would then be lit as this one)
+  const P = 0.2;
+  REGIONS.push({ name: room.name, x0: mn('x0') - P, x1: mx('x1') + P, z0: mn('z0') - P, z1: mx('z1') + P, y0: mn('y0') - P, y1: mx('y1') + P, night: o.night ?? 1 });
+}
+const regionAt = p => REGIONS.find(r => p.x > r.x0 && p.x < r.x1 && p.z > r.z0 && p.z < r.z1 && p.y > r.y0 && p.y < r.y1) ?? null;
+// in: how far the eye is indoors (eased, 0..1: the rooms take their own levels as it comes in); k: the level of the
+// room the eye is in (eased, for the exposure); eff: what that comes to at this hour
+const ROOM = { in: 0, k: 1, eff: 1, act: [] };
+export const LIGHT_STATE = { REGIONS, ROOM };      // (for looking and tuning from the console)
 
 let installed = false;
 export function installHouseLight(boxes = [], floor = 0.55, ceil = 12.55) {
@@ -65,6 +111,38 @@ uniform vec3 uInAmb;
 uniform vec4 uInK;
 uniform vec4 uInSh;
 uniform vec4 uInCav[12];
+uniform vec4 uInReg[${NREG * 2}];
+uniform vec3 uInAmbN, uInAmbD, uInSoftTint;
+uniform vec4 uInSoft[${SOFT}];
+uniform vec4 uInSoftCone[${SOFT / 4}];
+// which of the rooms that light themselves the point is in (-1: none)
+int hlRegion(vec3 p) {
+  for (int i = 0; i < ${NREG}; i++) {
+    vec4 A = uInReg[i * 2], B = uInReg[i * 2 + 1];
+    if (B.z < 0.5) break;
+    if (p.x > A.x && p.x < A.z && p.z > A.y && p.z < A.w && p.y > B.x && p.y < B.y) return i;
+  }
+  return -1;
+}
+// The room's lamps that have no light of their own from the pool: as a point light of the pool's (a lamp's
+// cutoff and decay, the light dropped below the shade), diffuse only. A shaded lamp (an enamel pendant, a
+// table lamp) throws its light down in a broad cone: the wall beside it and the ceiling over it get only a
+// little, from the glow of the shade, and the table under it the pool.
+// (each lamp lights only the room it is in: no light through the walls)
+vec3 hlSoftLamps(vec3 p, vec3 n, int room) {
+  float s = 0.0;
+  for (int i = 0; i < ${SOFT}; i++) {
+    vec4 L = uInSoft[i];
+    if (L.w <= 0.0) break;
+    float c = uInSoftCone[i >> 2][i & 3], r = floor(c * 0.5);
+    if (int(r) != room) continue;
+    vec3 d = L.xyz - p; float l = max(length(d), 0.05);
+    float w = clamp(1.0 - pow(l / ${f(SHAPE.lamp[0])}, 4.0), 0.0, 1.0);
+    float cone = mix(1.0, 0.1 + 0.9 * smoothstep(0.25, 0.8, d.y / l), c - 2.0 * r);
+    s += L.w * cone * w * w / max(pow(l, ${f(SHAPE.lamp[1])}), 0.01) * max(dot(n, d / l), 0.0);
+  }
+  return s * uInSoftTint;
+}
 float hlFloor = ${f(FLOOR)}, hlCeil = ${f(CEILING)};      // of the room the fragment is in (set by houseInside)
 float hlBox(vec3 p, vec3 a, vec3 b) { return (all(greaterThan(p, a)) && all(lessThan(p, b))) ? 1.0 : 0.0; }
 float houseInside(vec3 p) {
@@ -99,7 +177,10 @@ float houseShade(vec3 p, vec3 n, float inside) {
     float kd = mix(1.0, uInK.x, hlIn);
     float ao = mix(1.0, hlAO, uInSh.x);
     iblIrradiance *= kd * ao;
-    irradiance = (irradiance * kd + hlIn * uInAmb) * ao;
+    vec3 hlA = uInAmb;
+    int hlR = hlIn > 0.5 ? hlRegion(hlP) : -1;
+    if (hlR >= 0) hlA = uInAmbN * uInReg[hlR * 2 + 1].w + uInAmbD + hlSoftLamps(hlP, inverseTransformDirection(normal, viewMatrix), hlR);
+    irradiance = (irradiance * kd + hlIn * hlA) * ao;
     radiance *= mix(1.0, uInK.y, hlIn);
   }
 #endif
@@ -110,6 +191,12 @@ float houseShade(vec3 p, vec3 n, float inside) {
     S.uniforms.uInK = { value: HL.k };
     S.uniforms.uInSh = { value: HL.sh };
     S.uniforms.uInCav = { value: HL.cav };
+    S.uniforms.uInReg = { value: HL.reg };
+    S.uniforms.uInAmbN = { value: HL.ambN };
+    S.uniforms.uInAmbD = { value: HL.ambD };
+    S.uniforms.uInSoft = { value: HL.soft };
+    S.uniforms.uInSoftTint = { value: HL.softTint };
+    S.uniforms.uInSoftCone = { value: HL.softCone };
     S.fragmentShader = S.fragmentShader
       .replace('#include <common>', '#include <common>\n' + head)
       .replace('#include <lights_fragment_maps>', '#include <lights_fragment_maps>\n' + after);
@@ -150,8 +237,19 @@ export function indoorLit(m) {
 // lampOn: 0 by day, rising through the golden hour, 1 after dark.
 export function lampOn(day) { return 1 - smooth(day.light, 0.42, 0.97); }
 
-const NIGHT_AMB = Number(new URLSearchParams(globalThis.location?.search ?? '').get('amb') ?? 0.5);      // the rooms' own even light after dark (?amb= to try another)
+const NIGHT_AMB = Number(QS.get('amb') ?? 0.5);      // the rooms' own even light after dark (?amb= to try another)
 const AMB_DAY = new THREE.Color(0.95, 0.86, 0.72), AMB_NIGHT = new THREE.Color(1.0, 0.74, 0.46), amb = new THREE.Color();
+const ambDay = new THREE.Color(), ambNight = new THREE.Color(), tint = new THREE.Color(), HOUR = { L: 1, on: 0 };
+// The colour of a room's daylight: mostly the warm bounce off its own floor and walls, but a third of it the
+// colour of the sky in the windows at that hour, and in a low sun a little of the sun's own gold.
+function daylightTint(day, out) {
+  out.copy(AMB_DAY);
+  if (LIGHT_OLD || !day.skyCol) return out;
+  const sk = tint.copy(day.skyCol); sk.multiplyScalar(1 / Math.max(sk.r, sk.g, sk.b, 1e-3));
+  out.lerp(sk, 0.35);
+  if (day.sunCol && day.sunK > 0) { const su = sk.copy(day.sunCol); su.multiplyScalar(1 / Math.max(su.r, su.g, su.b, 1e-3)); out.lerp(su, 0.25 * day.sunK * (1 - day.low)); }
+  return out;
+}
 export function setHourLight(day, materials) {
   const on = lampOn(day), L = day.light;
   // indoors: how much of the sky comes in, and the room's own light
@@ -163,16 +261,44 @@ export function setHourLight(day, materials) {
   // little after dark (white about a third, mid-tones hardly at all); by day nothing changes.
   HL.k.w = 0.7 * on;
   // (shops keep their lights on: after dark they are as bright inside as by day, only warmer)
-  amb.copy(AMB_NIGHT).multiplyScalar(NIGHT_AMB).lerp(amb.clone().copy(AMB_DAY).multiplyScalar(0.56), L);
+  ambDay.copy(daylightTint(day, ambDay)).multiplyScalar(0.56); ambNight.copy(AMB_NIGHT).multiplyScalar(NIGHT_AMB);
+  amb.copy(ambNight).lerp(ambDay, L);
   HL.amb.x = amb.r; HL.amb.y = amb.g; HL.amb.z = amb.b;
+  HOUR.L = L; HOUR.on = on; setRoomAmb();
   // emissive glows: lamps and their shades
   for (const m of materials.glows ?? []) m.emissiveIntensity = m.userData.e0 * lerp(m.userData.day ?? 0.06, 1, on);
+}
+
+// The even light in its two parts (rooms that light themselves scale the first after dark; by day they are as any
+// room), and what the level of the room you are in comes to for the eye
+function setRoomAmb() {
+  HL.ambN.x = ambNight.r * (1 - HOUR.L); HL.ambN.y = ambNight.g * (1 - HOUR.L); HL.ambN.z = ambNight.b * (1 - HOUR.L);
+  HL.ambD.x = ambDay.r * HOUR.L; HL.ambD.y = ambDay.g * HOUR.L; HL.ambD.z = ambDay.b * HOUR.L;
+  ROOM.eff = lerp(1, ROOM.k, HOUR.on);
 }
 
 // ---- glowing windows and their light on the ground, after dark ------------------------------
 export function makeWindowGlow({ scene, materials, windows, rooms, groundY = 0.56 }) {
   const glass = materials.glass;
   outdoorLit(glass);
+  // After dark the glass glows amber from outside (as the house's does), but only where a room stands behind it:
+  // the shader looks four feet past the pane (the walls are up to two thick), along the line of sight, and asks
+  // whether that is indoors (the boxes of light). An attic or a stair with no box behind its window stays dark glass. One material for every
+  // pane on the island, so it is all lit rooms or none; the rooms' own lamps and light, seen through the glass,
+  // do the rest. (The pane is nearly clear, and its light is tone-mapped before it is laid over the room behind,
+  // so a glow on clear glass could never show more than a seventh of itself: where it glows the pane is made
+  // a little less clear, as old glass with a lit room behind it looks from the dark. Never from indoors, by the
+  // shader's own boxes as well as the eye's place: seen from a room at a glancing angle beside its frames, four feet
+  // past the pane can still be within the room's box, and a clouded pane there showed the night sky's reflection as
+  // a strip of bright blue down the jambs and along the sill.)
+  if (!LIGHT_OLD) {
+    glass.emissive = new THREE.Color(0xffb15e); glass.emissiveIntensity = 0;
+    const prev = glass.onBeforeCompile;
+    glass.onBeforeCompile = (sh, r) => { prev?.call(glass, sh, r);
+      sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\n\t{ vec3 wp = cameraPosition + ( vec4( - vViewPosition, 0.0 ) * viewMatrix ).xyz; float g = houseInside( wp + normalize( wp - cameraPosition ) * 4.0 ) * ( 1.0 - houseInside( cameraPosition ) ); totalEmissiveRadiance *= g; diffuseColor.a = mix( diffuseColor.a, ${f(GLASS_A)}, g * clamp( emissive.r / ${f(GLASS_GLOW)}, 0.0, 1.0 ) ); }`); };
+    const key = glass.customProgramCacheKey?.bind(glass);
+    glass.customProgramCacheKey = () => (key ? key() : '') + '|lit';
+  }
   // cards on the ground below the ground-floor windows (one draw)
   const tex = (() => {
     const c = document.createElement('canvas'); c.width = 64; c.height = 64; const g = c.getContext('2d');
@@ -192,7 +318,9 @@ export function makeWindowGlow({ scene, materials, windows, rooms, groundY = 0.5
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx);
-  const spillMat = new THREE.MeshBasicMaterial({ map: tex, color: 0xffb466, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+  // (no slope factor in the offset: from the basement, where the eye is barely above grade, a slope-scaled offset
+  // pulled these patches of window light on the ground through two feet of wall as a bright line at sill height)
+  const spillMat = new THREE.MeshBasicMaterial({ map: tex, color: 0xffb466, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -4 });
   const spill = new THREE.Mesh(geo, spillMat); spill.name = 'window light'; spill.userData.cat = 'window light'; spill.renderOrder = 1; spill.visible = false;
   scene.add(spill);
   return {
@@ -200,9 +328,12 @@ export function makeWindowGlow({ scene, materials, windows, rooms, groundY = 0.5
     update(night, outside, glowsOn) {
       const k = Math.max(smooth(night, 0.25, 0.9), 0.6 * (Number(glowsOn) || 0));      // the windows begin to glow as the lamps come on at dusk
       spillMat.opacity = 0.3 * k; spill.visible = k > 0.01;
+      if (!LIGHT_OLD) glass.emissiveIntensity = outside ? GLASS_GLOW * k : 0;
     },
   };
 }
+
+const GLASS_GLOW = Number(QS.get('glassglow') ?? 0.45), GLASS_A = Number(QS.get('glassa') ?? 0.3);      // the glow of a lit room's pane, and how far it clouds the glass
 
 // ---- the lamp pool ------------------------------------------------------------------------
 // lamps: { x, y, z, power, kind } (kind 'fill' | 'lamp' | 'candle' | 'fire'). Four point lights
@@ -219,6 +350,7 @@ export function makeLampPool({ scene, lamps, vis, size, day, camera }) {
   const pool = Array.from({ length: size }, () => { const p = new THREE.PointLight(0xffdcb0, 0, 30, 1.7); scene.add(p); return { light: p, lamp: null, level: 0 }; });
   // how strong a lamp is at this hour
   const strength = l => {
+    if (LIGHT_OLD && l.pilot) return 0;                 // (?light=old: the lamps added for the lighting pilot are not there)
     const on = lampOn(day);
     if (l.kind === 'fill') return l.power * 0.4 * smooth(day.light, 0.25, 0.9);
     if (l.kind === 'lamp') return l.power * on * 2.2;
@@ -242,7 +374,8 @@ export function makeLampPool({ scene, lamps, vis, size, day, camera }) {
     const outside = vis.state.here.includes('out'), indoorLamp = zoneOf(l) !== 'o:';
     return d / (0.4 + s) * (here(l) ? 0.55 : seen(l) ? 1 : 2.2) * (held ? 0.62 : 1)
       * (l.kind === 'fire' ? 0.5 : 1)                    // a lit fire is always worth one of the four
-      * (outside && indoorLamp ? 1.8 : 1);               // from the garden, rooms glow by themselves (lighting.js); light the garden
+      * (outside && indoorLamp ? 1.8 : 1)                // from the garden, rooms glow by themselves (lighting.js); light the garden
+      * (!outside && !indoorLamp && !LIGHT_OLD ? 2.2 : 1); // and from indoors a street lamp beyond the glass lights little of the room
   }
   let lantern = null;                                    // { pos: Vector3 } when carried
   const tmp = new THREE.Vector3();
@@ -275,7 +408,7 @@ export function makeLampPool({ scene, lamps, vis, size, day, camera }) {
       }
       const live = s.lamp && (s.lamp.kind === 'fire' || s.lamp.kind === 'candle' || s.lamp.kind === 'corona');
       const flicker = live ? 1 + 0.1 * Math.sin(t * 9.1 + s.lamp.x) + 0.07 * Math.sin(t * 23.7 + s.lamp.z) + 0.04 * Math.sin(t * 41.3) : 1;
-      s.light.intensity = s.lamp ? LAMP * strength(s.lamp) * s.level * flicker : 0;
+      s.light.intensity = s.lamp ? LAMP * strength(s.lamp) * s.level * flicker * poolShare(s.lamp) : 0;
     }
     if (lantern) {
       const s = pool[size - 1];
@@ -285,6 +418,37 @@ export function makeLampPool({ scene, lamps, vis, size, day, camera }) {
       const flick = 1 + 0.035 * Math.sin(t * 13.3) + 0.025 * Math.sin(t * 29.1);
       s.light.intensity = lantern.power * lerp(0.35, 1, day.night) * s.level * flick;
     } else if (pool[size - 1].lamp === 'lantern') { pool[size - 1].lamp = null; pool[size - 1].level = 0; pool[size - 1].light.intensity = 0; }
+    if (REGIONS.length) roomUpdate(eye, dt);
+  }
+  // Rooms that light themselves (roomLight, above): the one the eye is in and the nearest others, each at its own
+  // level, so that a room seen through a door is lit as itself. Coming indoors their levels are taken over a second
+  // or so (from out of doors every room is as it was, so its windows glow across the lawn); the eye opens to meet
+  // the room it stands in (makeExposure). Their lamps near the eye that the pool has not lit are lit in the shader.
+  // A shaded lamp of such a room gives the pool's point light (which shines all round, up the wall and onto the
+  // ceiling) only a third of its light, and the shader the rest, in its cone.
+  const inRoom = (l, r) => l.x > r.x0 && l.x < r.x1 && l.z > r.z0 && l.z < r.z1 && l.y > r.y0 && l.y < r.y1;
+  const CONE_POOL = 0.35;
+  const regOf = l => (l.__reg === undefined ? (l.__reg = REGIONS.find(r => inRoom(l, r)) ?? null) : l.__reg);
+  const poolShare = l => (l.cone && regOf(l) && ROOM.act.includes(l.__reg) ? lerp(1, CONE_POOL, ROOM.in) : 1);
+  const softC = new THREE.Color(TINT.lamp);
+  HL.softTint.x = softC.r; HL.softTint.y = softC.g; HL.softTint.z = softC.b;
+  const away = (r, p) => Math.hypot(Math.max(r.x0 - p.x, 0, p.x - r.x1), Math.max(r.z0 - p.z, 0, p.z - r.z1), 3 * Math.max(r.y0 - p.y, 0, p.y - r.y1));
+  function roomUpdate(eye, dt) {
+    const indoors = !vis.state.here.includes('out'), here = regionAt(eye);
+    ROOM.in += ((indoors ? 1 : 0) - ROOM.in) * Math.min(1, dt * 1.6);
+    ROOM.k += ((here && indoors ? here.night : 1) - ROOM.k) * Math.min(1, dt * 1.6);
+    setRoomAmb();
+    ROOM.act = ROOM.in < 0.01 ? [] : REGIONS.map(r => [r, away(r, eye)]).filter(([, d]) => d < 70).sort((a, b) => a[1] - b[1]).slice(0, NREG).map(([r]) => r);
+    HL.reg.fill(0);
+    ROOM.act.forEach((r, i) => HL.reg.set([r.x0, r.z0, r.x1, r.z1, r.y0, r.y1, 1, lerp(1, r.night, ROOM.in)], i * 8));
+    // their lamps near the eye, each lit by the shader as far as the pool has not lit it
+    const lvl = new Map(pool.map(s => [s.lamp, s.level])), w = ROOM.in;
+    const mine = ROOM.act.length ? lamps.filter(l => l.kind === 'lamp' && l.power > 0 && regOf(l) && ROOM.act.includes(l.__reg))
+      .map(l => ({ l, d: Math.hypot(l.x - eye.x, l.y - eye.y, l.z - eye.z), s: strength(l) * (1 - (lvl.get(l) ?? 0) * poolShare(l)) * w })).filter(o => o.s > 0.002 && o.d < 60)
+      .sort((a, b) => a.d - b.d).slice(0, SOFT) : [];
+    let i = 0;
+    for (const { l, s } of mine) { HL.soft.set([l.x, l.y - DROP.lamp, l.z, LAMP * s], i * 4); HL.softCone[i] = 2 * ROOM.act.indexOf(l.__reg) + (l.cone ? 1 : 0); i++; }
+    if (i < SOFT) HL.soft[i * 4 + 3] = 0;
   }
   return {
     update, strength, pool, choose,
@@ -298,6 +462,7 @@ export function makeLampPool({ scene, lamps, vis, size, day, camera }) {
 // Targets by where you are (in / half / out) and the hour; changes are made in log space, quick
 // toward darker and almost as quick toward brighter, so stepping outside never whites out and a room is
 // never left dark while the eye catches up.
+const EYE_OPEN = Number(QS.get('eyeopen') ?? 0.17);
 export function makeExposure(Q) {
   const inDay = Number(Q.get('exp') ?? 1.6);
   const T = { in: [inDay, 2.0, 2.6], half: [1.35, 1.9, 2.45], out: [0.8, 1.35, 2.2] };     // day, dusk, night
@@ -309,7 +474,9 @@ export function makeExposure(Q) {
   }
   return {
     update(renderer, where, day, dt, snap) {
-      const aim = target(where, day);
+      // in a room that has brought its own light down after dark, the eye opens a little to meet it: a sixth
+      // of the way (in log terms), so the room reads darker than its neighbours but never black
+      const aim = target(where, day) * (where === 'in' ? Math.pow(ROOM.eff, -EYE_OPEN) : 1);
       if (cur === null || snap) cur = aim;
       else { const k = aim < cur ? 3.4 : 3.6;      // (it used to take two or three seconds to brighten on coming indoors: a room stood dark while it did)
         cur = Math.exp(Math.log(cur) + (Math.log(aim) - Math.log(cur)) * Math.min(1, dt * k)); }

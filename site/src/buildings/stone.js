@@ -74,7 +74,7 @@ export default function (b) {
   // the long walls run through; the gable walls butt in between them
   b.wall({ ...wl, ax: 'X', c: T / 2, a: WX, b: EX, neg: STONE, pos: 'plaster', opens: [
     { ...FW, at: SWX - FW.w / 2, swing: 'pos' },
-    { kind: 'gdoor', at: DOOR - DW / 2, w: DW, sill: 0, head: DH, hinge: 'b', swing: 'pos', style: 'light' },      // hung at the east jamb, opening inward (plan); a glazed upper panel (south elevation)
+    { kind: 'gdoor', at: DOOR - DW / 2, w: DW, sill: 0, head: DH, hinge: 'b', swing: 'pos', style: 'light', kick: true },      // hung at the east jamb, opening inward (plan); a glazed upper panel (south elevation)
   ] });
   b.wall({ ...wl, ax: 'X', c: DEP - T / 2, a: WX, b: EX, neg: 'plaster', pos: STONE, opens: [{ ...FW, at: CX - FW.w / 2, swing: 'neg' }] });
   b.wall({ ...wl, ax: 'Y', c: WX + T / 2, a: T, b: DEP - T, neg: STONE, pos: 'plaster', opens: [{ ...FW, at: CY - FW.w / 2, swing: 'pos' }] });

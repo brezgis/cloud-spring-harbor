@@ -4,6 +4,7 @@
 // axon); the Attic Hall (a study table in the railed corner; hacks and traditions).
 
 import { pendulum } from './exhibits_snow_hall.js';
+import { roomLight } from '../lighting.js';
 
 const DEG = Math.PI / 180, PT = 0.25;      // (a partition's face stands 0.25 ft inside the room's box)
 // one geometry from several, each painted one colour (so a moving thing is one mesh and one draw call)
@@ -25,11 +26,14 @@ export function upper({ f, X, on, M }) {
   // ================================================================================================ the Upper Hall
   {
     const r = f.room('Upper Hall'), F = r.floor;
+    // the hall's even light after dark brought down a little, as the Stair Hall's below (../lighting.js, roomLight):
+    // it has one globe of its own and the exhibits' lamps, so not far, or its corners go dull
+    roomLight(r, { night: 0.75 });
     // ---- the Foucault pendulum, in the corner the stair's two guards make: railed on the other two sides, off every way through ----
     pendulum({ f, X, M }, r, 64.7, 50.3, [[[-3, 3.4], [-3, 0.2], [-3, -3]], [[-3, -3], [0.2, -3], [3.4, -3]]], [64.7, 46.6, 2]);
 
     // ---- arguments we have retired: three framed notes on the front wall, by the door of Room 205 ----
-    const w = on(r, 'front', 55.62, PT);      // (between the door of Room 205, which runs from 47 to 50.5, and the notice board)
+    const w = on(r, 'front', 55.3, PT);      // (centred between the plate by the door of Room 205, which ends at 52.05, and the notice board's frame, 58.55)
     X.heading(w, 0, 7.0, 5.4, 'ARGUMENTS WE HAVE RETIRED', 'with thanks for their service');
     const retired = [
       { head: 'The Chinese Room', lines: ['Stated: a man who knows no Chinese follows a rule book and passes out perfect Chinese answers. He understands nothing; so running a program is not understanding.', 'Answered: the man is one part of the room. Nobody said the part understands. Ask the room. And a rule book that good is not a prop: it is most of a mind.'], foot: 'J. Searle, 1980. Retired by the Foundations and Mind group, nem. con.' },
@@ -228,7 +232,7 @@ export function upper({ f, X, on, M }) {
     // ---- a Hopfield network of lamps, farther along the west wall ----
     {
       const w = on(r, 'left', 60.3), N = 6;
-      w.box(M.WOOD, -2.0, 2.0, 0.03, 0.16, 3.8, 7.8); w.box('c#23272b/0.8', -1.85, 1.85, 0.05, 0.185, 3.95, 7.65);
+      w.box(M.WOOD, -2.0, 2.0, 0.03, 0.16, 3.8, 7.8); w.box('c#23272b/0.8', -1.85, 1.85, 0.05, 0.172, 3.95, 7.65);      // (its face 0.02 behind the lamps' backs)
       X.card(w, 0, 0.18, 4.3, { title: 'A memory made of lamps', kicker: 'A Hopfield network. Press E to spoil the picture',
         brief: 'Thirty-six lamps, each wired to all the others. Disturb them and they settle back into a letter they know.',
         text: 'Each lamp looks at all the others, adds up their votes, and switches itself on or off to agree. The wiring was set once, by a simple rule, so that three patterns, the letters C, H and L, are the states in which every lamp is content.\nSpoil one of them and the lamps repair it, one at a time, with nobody in charge: a memory you address by showing it a damaged copy of what you want. John Hopfield described it in 1982, borrowing the mathematics of magnets, and shared the Nobel Prize in Physics for it in 2024. Thirty-six lamps can hold about five patterns before they start to blur.',
@@ -256,6 +260,7 @@ export function upper({ f, X, on, M }) {
   // ================================================================================================ the Attic Hall
   {
     const r = f.room('Attic Hall'), F = r.floor;
+    roomLight(r, { night: 0.5 });      // (an attic at night: dimmer than the floors below, its globe and the study table's lamp the light)
     // ---- a study table on the landing, in the corner the stair's two guards make (out of every way through): four chairs, work left out ----
     {
       f.rug(60.7, 67.9, 46.9, 53.5, F, 'tabriz');
@@ -265,7 +270,7 @@ export function upper({ f, X, on, M }) {
     }
     // ---- hacks and traditions: five framed notes on the back wall ----
     {
-      const w = on(r, 'back', 55.3, PT);      // (east of the door of Room 302, which runs from 47 to 50.5; the stair's well begins at 60)
+      const w = on(r, 'back', 55.5, PT);      // (centred between the casing of the door of Room 302, which runs from 47 to 50.5, and the newel at the stair's well, 60.1)
       X.heading(w, 0, 6.95, 7, 'HACKS & TRADITIONS', 'none of this can be proved');
       const lore = [
         { head: 'The Glider moves', lines: ['Four times since the bronze was set up in the yard it has been found, in the morning, one square along the diagonal.', 'It weighs as much as a piano. No one has claimed it. The fourth time, it was back in its first shape: period four, as it should be.'] },
@@ -279,7 +284,7 @@ export function upper({ f, X, on, M }) {
 }
 
 // Seats where researchers could later sit (plan X, Y; h is the floor): Upper Hall, a bench under the framed notes, two
-// places at (54.3, 33.45) and (56.9, 33.45), facing north; Upper Corridor, three stools at the counter at the east end, (66.3, 67.0),
+// places at (54.0, 33.45) and (56.6, 33.45), facing north; Upper Corridor, three stools at the counter at the east end, (66.3, 67.0),
 // (68.4, 67.0), (70.5, 67.0), facing north to the wall; Museum Corridor, a bench on the east wall opposite the lamps,
 // three places at (83.6, 58.5), (83.6, 60.3), (83.6, 62.1), facing west; Attic Hall, four chairs at the study table,
 // (62.9, 47.9), (65.9, 47.9) facing north and (62.9, 52.5), (65.9, 52.5) facing south.

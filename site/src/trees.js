@@ -130,7 +130,7 @@ export function makeTrees(scene, materials, colliders, places) {
     if (p.collide !== false) colliders.push({ x0: p.x - trunkR * 0.9, x1: p.x + trunkR * 0.9, z0: p.z - trunkR * 0.9, z1: p.z + trunkR * 0.9, y0: y0 - 1, y1: y0 + 12 });
   }
 
-  const leaves = [...cards.build(scene, shapes, mats, { shadow: true }), ...ring.build(scene, shapes, mats, { shadow: false })];
+  const leaves = [...cards.build(scene, shapes, mats, { shadow: true, prepass: true }), ...ring.build(scene, shapes, mats, { shadow: false })];
   for (const l of leaves) l.name = 'tree leaves';
   const add = (lists, mat) => { for (const list of lists.values()) { if (!list.length) continue; const w = new THREE.Mesh(mergeGeometries(list), mat); w.castShadow = w.receiveShadow = true; w.name = 'tree wood'; scene.add(w); } };
   add(wood.bark, materials.bark);

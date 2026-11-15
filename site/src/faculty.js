@@ -31,7 +31,7 @@ import { makeTalk } from './faculty/talk.js';
 import { useThreeBody, buildBody, lookFromSeed } from './faculty/body.js';
 import { useThreeDrinks, buildDrink, setFill } from './faculty/drinks.js';
 import { ROSTER, byId } from './faculty/roster.js';
-import { makeWorld, Polite, VR } from './faculty/manners.js';
+import { makeWorld, Polite, VR, attendVisitor, engageVisitor } from './faculty/manners.js';
 import { hireResearchers } from './faculty/researchers.js';
 
 let THREE;
@@ -39,6 +39,19 @@ const TAU = Math.PI * 2;
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const TURNS = { east: 0, north: 1, west: 2, south: 3 };
 const ASIDES = ['Come in, sit anywhere.', 'Come in. We have not got far.', '*nods you toward a seat*'];
+// Two colleagues who stop to talk (the visitor hears a line or two of it, if she is near): an opening, a reply, a parting
+const CHAT = [
+  ['Have you a minute? It is about Thursday.', 'For you, two. What about Thursday?', 'I will put it in a note. A short one.'],
+  ['Did you see what came back from the reviewers?', 'I did. I have decided to be amused by it.', 'Amused is good. Amused gets papers revised.'],
+  ['Your seminar ran over again.', 'The questions were better than the talk.', 'They usually are. That is why we have them.'],
+  ['Is the kettle on the third floor working?', 'It is working. It is not pleasant about it.', 'Neither am I, before ten.'],
+  ['I think the result holds.', 'You said that in March.', 'In March I was wrong in a different way.'],
+  ['Someone has taken my good chalk.', 'Someone has taken everyone\'s good chalk.', 'Then it is a field study.'],
+  ['Are you coming to the reading group?', 'If the reading is short.', 'It is never short. Come anyway.'],
+  ['The airship was late.', 'The airship is never late. The clouds are early.', '*laughs* I will tell her you said so.'],
+];
+// What a robot does with its hands, by the tool it carries, when it is at work where it stands
+const BENCH = { book: ['read', 'read', 'think'], notebook: ['read', 'think', null], clipboard: ['read', 'think', null], pipette: [null, 'think', null], magnifier: ['think', null, null], cup: ['sip', null, 'think'], duster: [null, 'reach', null], wrench: [null, 'reach', null] };
 
 class Teacher extends Polite {
   constructor(H, spec) {
@@ -54,6 +67,8 @@ class Teacher extends Polite {
     this.bubble = H.bubbles.make(spec.name);
     this.state = 'home'; this.queue = []; this.expr = 'neutral'; this.exprUntil = 0; this.busy = false; this.pointing = false; this.nodAt = -9;
     this.greeted = -1e9; this.wasIn = false; this.nextIdle = H.now + 20 + Math.random() * 30; this.drink = null; this.trips = 0;
+    // what it is doing with its hands (body.js animate act), turning to her (manners.js attendVisitor), and sitting
+    this.act = null; this.bend = 0; this.attn = {}; this.seat = null; this.sitTo = 0; this.sitK = 0; this.drop = 0; this.chatting = null; this.cupFor = 0;
     if (spec.lecture?.script?.length) this.setLecture(spec.lecture);
     // (a lecturer can be spoken to from anywhere in its room: the far ones must be looked straight at, as life.js has it)
     const far = this.lec && spec.room ? Math.max(10, Math.hypot(spec.room.x1 - spec.room.x0, spec.room.z1 - spec.room.z0)) : 10; this.talkReach = far + 2;
@@ -81,12 +96,15 @@ class Teacher extends Polite {
     return plan;
   }
   // a place given to it by name (home, a post, the machine, the front of the class) may be in an aisle: behind a counter, behind a desk
-  mayStandHere() { const s = this.spots, near = p => p && Math.hypot(p.x - this.x, p.z - this.z) < 1.3; return near(s.home) || near(s.machine) || s.posts.some(near) || (this.lec && (near(this.lec.stand) || near(this.lec.mark))); }
-  say(text, expr = 'happy', secs, style) { if (!text) return; this.bubble.say(text, secs, this.H.now, style); this.expr = expr; this.exprUntil = this.H.now + 3.5; if (style !== 'lecture') this.H.ctx.sound?.chirp?.(this.spec.chirp ?? [70 + (this.name.length % 5) * 2, 74 + (this.name.length % 4) * 2]); }
+  mayStandHere() { const s = this.spots, L = this.lec, near = p => p && Math.hypot(p.x - this.x, p.z - this.z) < 1.3; return near(s.home) || near(s.machine) || s.posts.some(near) || (L && (near(L.stand) || near(L.mark) || !!L.spots?.board.some(near) || !!L.spots?.pace.some(near))) || (this.seat && near({ x: this.seat.ax, z: this.seat.az })); }
+  // (the face goes with the words: a question asked looks it, an exclamation is pleased, a lecture line is thought through)
+  say(text, expr = 'happy', secs, style) { if (!text) return; this.bubble.say(text, secs, this.H.now, style);
+    if (expr === 'neutral' || expr === 'happy') { const q = /\?\s*(\*[^*]*\*)?$/.test(text), x = /!/.test(text); expr = q ? (style === 'lecture' ? 'focus' : 'surprised') : x ? 'happy' : style === 'lecture' ? ['neutral', 'focus', 'neutral', 'happy'][(text.length >> 2) % 4] : expr; }
+    this.expr = expr; this.exprUntil = this.H.now + (style === 'lecture' ? Math.min(secs ?? 4, 6) : 3.5); if (style !== 'lecture') this.H.ctx.sound?.chirp?.(this.spec.chirp ?? [70 + (this.name.length % 5) * 2, 74 + (this.name.length % 4) * 2]); }
   line(kind) { const l = this.spec.lines?.[kind]; if (l?.length) this.say(pick(l), kind === 'idle' ? 'neutral' : 'happy'); }
   topics(list) {
     return list.slice(0, 4).map(t => ({ text: t.q, act: () => {
-      this.say(Array.isArray(t.a) ? pick(t.a) : t.a, t.expr ?? (t.serve ? 'wink' : 'happy'), 6);
+      this.say(Array.isArray(t.a) ? pick(t.a) : t.a, t.expr ?? (t.serve ? 'wink' : 'happy'), 6); this.replyUntil = this.H.now + 6;      // (still talking to her while it answers)
       if (t.serve && this.spec.serve) this.queue.push(t.serve);
       t.then?.(this.H.ctx, this);
       this.asked = (this.asked ?? 0) + 1;
@@ -101,44 +119,147 @@ class Teacher extends Polite {
     return this.topics(list);
   }
 
-  // ---- the day: at home a while, a trip or two to a post or a clear spot of the room, a fuss there, home again ----
+  // ---- the day: what each does depends on what is about it. At its own place a while, at work (with whatever is
+  // in its hands); a trip to a post (a shelf, a bench, the window) to work there, reaching up, bent to it; for those
+  // that float, a while sat at a desk (typing, writing, reading, thinking, a sip) or in an easy chair with a book;
+  // now and then over to a colleague for a word. Whoever she is, it turns to her as she comes up (update, below).
   *day() {
-    const W = this.W, s = this.spots;
+    const s = this.spots;
     for (;;) {
-      yield* this.stay(8 + Math.random() * 14, 'home');
-      if (!this.roam) continue;
-      const came = this.cameIn, away = s.posts.filter(q => !this.atHomeRoom(q)), trip = away.length && Math.random() < 0.35 ? pick(away) : null;      // now and then, an excursion into the next room
-      const n = trip ? 1 + (Math.random() < 0.4) : 1 + Math.floor(Math.random() * 2.6);
-      for (let k = 0; k < n; k++) {
-        const p = trip ? (k ? pick(away.filter(q => q !== trip && Math.hypot(q.x - trip.x, q.z - trip.z) < 30)) ?? null : trip) : this.somewhere(); if (!p) break;
-        this.state = 'go'; this.trips++;
-        if (yield* this.travel(p.x, p.z, { patience: trip ? 40 : 9 })) {
-          // at work: turned to the bench, the shelf or the instrument it has come to, bent to it, hands busy; a word about it now and then
-          const post = s.posts.includes(p), yaw = this.benchYaw();
-          if (yaw !== null) { const t0 = W.now; while (W.now - t0 < 1.2) { this.m.face(yaw, W.dt * 1.4); yield; } }
-          if (post && this.inRoom && W.now > this.nextIdle - 14 && this.H.talk.robot !== this && !this.bubble.talking(W.now)) { this.line('idle'); this.nextIdle = W.now + 28 + Math.random() * 40; }
-          yield* this.fuss(post ? 5 + Math.random() * 7 : 3 + Math.random() * 4);
-          if (post && Math.random() < 0.5) yield* this.stay(1 + Math.random() * 2, 'pause');
-        } else yield* this.stay(1.5 + Math.random() * 2, 'fuss');
-        if (this.cameIn !== came) break;                                    // someone has come in: back to its own place
-      }
-      this.state = 'go';
-      if (!(yield* this.travel(s.home.x, s.home.z, { must: true, patience: 30 }))) yield* this.stay(4, 'fuss');
+      const seats = this.seatsHere(), desk = seats.filter(q => q.desk), easy = seats.filter(q => !q.desk), came = this.cameIn;
+      const pick2 = [['home', 3], ['post', this.roam && s.posts.length ? 3 : 0], ['wander', this.roam ? 1.2 : 0], ['desk', desk.length ? 4 : 0], ['easy', easy.length ? 2 : 0], ['chat', this.colleague() ? 1.2 : 0]];
+      const w = pick2.reduce((t, [, n]) => t + n, 0); let r = Math.random() * w, what = 'home'; for (const [k, n] of pick2) { r -= n; if (r <= 0) { what = k; break; } }
+      if (what === 'home') yield* this.atWork(8 + Math.random() * 14, 'home');
+      else if (what === 'desk' || what === 'easy') { const q = pick(what === 'desk' ? desk : easy); if (!(yield* this.sitAt(q, what === 'desk' ? 25 + Math.random() * 40 : 20 + Math.random() * 30, what))) yield* this.atWork(4, 'home'); }
+      else if (what === 'chat') { const o = this.colleague(); if (!o || !(yield* this.chatWith(o))) yield* this.atWork(4, 'home'); }
+      else yield* this.trip(what === 'post');
+      if (this.cameIn !== came) yield* this.atWork(3, 'home');                                  // someone has come in: a moment where it is
+      if (Math.hypot(s.home.x - this.x, s.home.z - this.z) > 1 && Math.random() < 0.6) { this.state = 'go'; if (!(yield* this.travel(s.home.x, s.home.z, { must: true, patience: 30 }))) yield* this.stay(4, 'fuss'); }
     }
   }
-  // Hold still: turned to the visitor if she is in the room, else to its own work
+  // a trip or two to a post or a clear spot of the room, and work there; (now and then an excursion into the next room)
+  *trip(posts) {
+    const W = this.W, s = this.spots, came = this.cameIn, away = s.posts.filter(q => !this.atHomeRoom(q)), trip = posts && away.length && Math.random() < 0.35 ? pick(away) : null;
+    const n = trip ? 1 + (Math.random() < 0.4) : 1 + Math.floor(Math.random() * 2.6);
+    for (let k = 0; k < n; k++) {
+      const p = trip ? (k ? pick(away.filter(q => q !== trip && Math.hypot(q.x - trip.x, q.z - trip.z) < 30)) ?? null : trip) : this.somewhere(); if (!p) break;
+      this.state = 'go'; this.trips++;
+      if (yield* this.travel(p.x, p.z, { patience: trip ? 40 : 9 })) {
+        // at work: turned to the bench, the shelf or the instrument it has come to, bent to it, hands busy (or up at a shelf, or thinking it over); a word about it now and then
+        const post = s.posts.includes(p), yaw = this.benchYaw();
+        if (yaw !== null) { const t0 = W.now; while (W.now - t0 < 1.2) { this.m.face(yaw, W.dt * 1.4); yield; } }
+        if (post && this.inRoom && W.now > this.nextIdle - 14 && this.H.talk.robot !== this && !this.bubble.talking(W.now)) { this.line('idle'); this.nextIdle = W.now + 28 + Math.random() * 40; }
+        const secs = post ? 5 + Math.random() * 7 : 3 + Math.random() * 4;
+        if (yaw !== null && Math.random() < 0.3) yield* this.doing('reach', secs * 0.5, 'focus'); 
+        yield* this.fuss(secs * (yaw !== null ? 0.7 : 1));
+        if (post && Math.random() < 0.5) yield* this.atWork(2 + Math.random() * 3, 'pause');
+      } else yield* this.stay(1.5 + Math.random() * 2, 'fuss');
+      if (this.cameIn !== came) break;                                    // someone has come in: back to its own place
+    }
+  }
+  // Where it stands, at its work: a few turns of whatever goes with what it carries (a book read, a cup sipped, a
+  // thought had), stood still between
+  *atWork(secs, state) {
+    const W = this.W, end = W.now + secs, kinds = BENCH[this.spec.look?.tool] ?? ['think', null, null];
+    while (W.now < end) {
+      const a = Math.random() < 0.55 ? pick(kinds) : null, d = Math.min(end - W.now, 3 + Math.random() * 5);
+      if (a) yield* this.doing(a, d, a === 'think' ? 'focus' : null, state); else yield* this.stay(d, state);
+    }
+  }
+  // Hold still with the hands at something (body.js animate act), for secs
+  *doing(act, secs, expr = null, state = 'fuss') {
+    const W = this.W, end = W.now + secs; this.state = state;
+    if (act === 'sip') this.cup(true);
+    try { while (W.now < end) { this.act = act; this.m.v = Math.max(0, this.m.v - W.dt * 4); if (expr && W.now > this.exprUntil - 0.3) { this.expr = expr; this.exprUntil = W.now + 0.5; } yield; } }
+    finally { this.act = null; if (act === 'sip') this.cup(false); }
+  }
+  // a cup in the hand that has none, for a sip (and away again after)
+  cup(on) { const b = this.body, tool = this.spec.look?.tool, i = tool === 'cup' ? -1 : this.spec.look?.tool2 ? -1 : 0; if (i < 0 || !!this.cupOn === !!on) return; this.cupOn = !!on; b.setTool(i, on ? 'cup' : this.spec.look?.tool2 ?? null); }
+  // Hold still: turned to its own place's way when at home (to her, when she comes up, is attendVisitor's: update)
   *stay(secs, state) {
     const W = this.W, m = this.m, end = W.now + secs; this.state = state; this.busy = state === 'fuss' || state === 'make';
     const yaw0 = m.yaw;
     try {
       while (W.now < end) {
         m.v = Math.max(0, m.v - W.dt * 4);
-        if (this.busy) m.face(yaw0, W.dt); else if (this.inRoom && this.dv < 22) m.faceTo(W.visitor.x, W.visitor.z, W.dt); else if (this.atHome()) m.face(this.homeYaw, W.dt);
+        if (this.busy) m.face(yaw0, W.dt); else if (this.atHome() && !this.attn.looking) m.face(this.homeYaw, W.dt);
         yield;
       }
     } finally { this.busy = false; }
   }
   *fuss(secs) { yield* this.stay(secs, 'fuss'); }
+
+  // ---- sitting: only those that float settle onto a seat (its ring goes out, its body comes down onto it); the
+  // others stand at their work. The robot itself (its Mover) stays on open floor beside the seat; only its body is
+  // drawn on the seat, so nothing that gets about by the plan ever finds it inside a chair.
+  // Seats in its own room, at a sitting height, near its home or a post, that it can stand beside, and nobody's
+  seatsHere() {
+    const H = this.H, b = this.body; if (!b.floats || this.spec.serve || this.fixed || !this.spec.room) return [];
+    if (!this.seatList || this.seatList.n !== H.ctx.items.seats.length) {
+      const p = this.plan, y = this.y, list = [], near = [this.spots.home, ...this.spots.posts.filter(q => this.atHomeRoom(q))];
+      for (const st of H.ctx.items.seats) {
+        const top = st.y - 2.45 - y; if (top < 0.9 || top > 2.4 || !p.inBoxes(st.x, st.z) || !this.atHomeRoom(st) || /counter|stool/i.test(st.label ?? '')) continue;
+        if (!near.some(q => Math.hypot(q.x - st.x, q.z - st.z) < 14)) continue;
+        const drop = b.under - top + 0.04; if (drop < 0.25) continue;                         // (it would have to climb: not a seat for it)
+        const c = p.nearest(st.x, st.z, this.m.need, 2.4, false, c => p.lane[c] !== 2 && p.lane[c] !== 3 && !p.inDoorway(p.cx(c), p.cz(c))); if (c < 0) continue;
+        list.push({ s: st, x: st.x, z: st.z, ax: p.cx(c), az: p.cz(c), top, drop, yaw: st.yaw + Math.PI, desk: /desk|table/i.test(st.label ?? '') });
+      }
+      this.seatList = list; list.n = H.ctx.items.seats.length;
+    }
+    return this.seatList.filter(q => !this.H.seatTaken(q.s, this));
+  }
+  *sitAt(q, secs, kind) {
+    const W = this.W, m = this.m, v = W.visitor;
+    this.state = 'go'; if (!(yield* this.travel(q.ax, q.az, { patience: 14 }))) return false;
+    if (this.H.seatTaken(q.s, this) || (this.about() && Math.hypot(v.x - q.x, v.z - q.z) < 2.2)) return false;
+    let t0 = W.now; while (W.now - t0 < 0.9) { m.face(q.yaw, W.dt * 2); yield; }
+    this.seat = q; this.H.claimSeat(q.s, this); this.state = 'sit'; this.drop = q.drop / this.body.root.scale.y;
+    try {
+      this.sitTo = 1; t0 = W.now; while (W.now - t0 < 1.1) { m.face(q.yaw, W.dt * 2); yield; }
+      const end = W.now + secs, acts = kind === 'desk' ? ['type', 'type', 'read', 'think', 'type', 'sip'] : ['read', 'read', 'read', 'think', 'sip'];
+      while (W.now < end && !this.queue.length) {
+        const a = pick(acts); yield* this.doing(a, Math.min(end - W.now, 4 + Math.random() * 7), a === 'think' ? 'focus' : null, 'sit');
+        if (Math.random() < 0.25) yield* this.stay(1.5 + Math.random() * 2, 'sit');
+      }
+      this.sitTo = 0; t0 = W.now; while (W.now - t0 < 1 && this.sitK > 0.05) yield;
+      return true;
+    } finally { this.sitTo = 0; this.seat = null; this.H.claimSeat(q.s, null); }
+  }
+  get sitting() { return this.sitK > 0.02 || this.sitTo > 0; }
+
+  // ---- a word with a colleague: over to one standing about nearby in its own rooms, a few lines each, back to work
+  colleague() {
+    const H = this.H; if (this.lec || this.spec.serve || this.fixed || H.now - (H.lastChat ?? -60) < 50) return null;
+    const ok = o => o !== this && !o.lec && !o.fixed && !o.chatting && !o.sitting && !o.making && !o.queue.length && o.taskName === 'day' && ['home', 'pause', 'fuss'].includes(o.state) && Math.abs(o.y - this.y) < 2 && Math.hypot(o.x - this.x, o.z - this.z) < 28 && this.plan.inBoxes(o.x, o.z) && H.talk.robot !== o;
+    return H.awake?.find(ok) ?? null;
+  }
+  *chatWith(o) {
+    const H = this.H, W = this.W; H.lastChat = H.now;
+    const dx = this.x - o.x, dz = this.z - o.z, d = Math.hypot(dx, dz) || 1, gap = this.r + o.r + 1.4;
+    const p = this.plan, c = p.nearest(o.x + dx / d * gap, o.z + dz / d * gap, this.m.need, 4, false, c => p.lane[c] !== 2 && p.lane[c] !== 3 && !p.inDoorway(p.cx(c), p.cz(c))); if (c < 0) return false;
+    // (the other stops what it is doing and waits, turned to the one coming over)
+    const lines = pick(CHAT);
+    o.chatting = this; this.chatting = o; o.run('chat', o.listen(this, 22 + lines.length * 3.2), true);
+    try {
+      this.state = 'go'; if (!(yield* this.travel(p.cx(c), p.cz(c), { patience: 14, until: () => o.chatting !== this }))) return false;
+      if (o.chatting !== this || Math.hypot(o.x - this.x, o.z - this.z) > gap + 2.5) return false;
+      const hear = () => this.inRoom || o.inRoom;
+      for (let k = 0; k < lines.length; k++) {
+        const who = k % 2 ? o : this, other = k % 2 ? this : o;
+        if (hear()) who.say(lines[k], k === lines.length - 1 ? 'happy' : 'neutral', 3.2); else { who.expr = 'happy'; who.exprUntil = W.now + 2.5; }
+        who.act = k % 2 ? 'gesture' : null; other.nodAt = W.now + 1.2;
+        const t0 = W.now; while (W.now - t0 < 3.2) { this.m.faceTo(o.x, o.z, W.dt * 2); this.state = 'chat'; yield; }
+        who.act = null;
+        if (o.chatting !== this) break;
+      }
+      return true;
+    } finally { this.act = null; if (o.chatting === this) o.chatting = null; this.chatting = null; }
+  }
+  *listen(o, secs) {
+    const W = this.W, end = W.now + secs; this.state = 'chat';
+    try { while (W.now < end && this.chatting === o) { this.m.v = 0; if (Math.hypot(o.x - this.x, o.z - this.z) < 9) this.m.faceTo(o.x, o.z, W.dt * 1.5); yield; } }
+    finally { this.act = null; if (this.chatting === o) this.chatting = null; }
+  }
   // which way the work is from here: toward the nearest thing standing within arm's reach (a bench, a case, a wall with a board on it)
   benchYaw() {
     const p = this.plan;
@@ -183,33 +304,66 @@ class Teacher extends Polite {
     this.homeYaw = Math.atan2(fx, fz);
   }
   lectureNow() { const L = this.lec, T = (Date.now() / 1000) % L.total; let i = L.lines.length - 1; while (i > 0 && L.lines[i].t0 > T) i--; return { i, u: (T - L.lines[i].t0) / L.lines[i].dur }; }
+  // The places at the front it teaches from, found once it has its plan: the lectern (its stand), a few spots
+  // along the board to write at (close enough to reach it), and the ends of a short walk along the front. Each is
+  // open floor, not a doorway, a stair or an aisle, reached in a straight line from the stand, and where a body
+  // would not shut her in; the board spots and the walk are places it is allowed to stand (mayStandHere).
+  lectureSpots() {
+    const L = this.lec, p = this.plan, need = this.m.need, S = L.stand, ax = L.fz, az = -L.fx, out = { board: [], pace: [] };
+    const ok = (x, z) => { const l = p.laneAt(x, z); return p.freeAt(x, z, need, false) && l !== 2 && l !== 3 && !p.inDoorway(x, z) && p.clearLine(S.x, S.z, x, z, need, false); };
+    // the board: the way from it to the class is (bx, bz); spots in front of it, along it
+    let bx = S.x - L.board.x, bz = S.z - L.board.z; const bl = Math.hypot(bx, bz); if (bl > 0.3) { bx /= bl; bz /= bl; } else { bx = L.fx; bz = L.fz; }
+    const ux = bz, uz = -bx;
+    for (const k of [-2.2, -0.9, 0.6, 1.9]) for (const d of [this.r + 0.55, this.r + 0.85, this.r + 1.25, this.r + 1.7]) { const x = L.board.x + bx * d + ux * k, z = L.board.z + bz * d + uz * k; if (ok(x, z)) { out.board.push({ x, z, k }); break; } }
+    for (const k of [-3.6, -2.2, 2.2, 3.6]) { const x = S.x + ax * k, z = S.z + az * k; if (ok(x, z)) out.pace.push({ x, z, k }); }
+    out.bx = bx; out.bz = bz; out.ux = ux; out.uz = uz; return out;
+  }
+  // What goes with each line of the script, by its number, in a round that keeps it at the board as often as not:
+  // writing, pointing at what it has written, a step along the front, a gesture to the room, the notes at the
+  // lectern, a question put to the room, now and then a sip
+  lecturePlan(i) {
+    const L = this.lec, sp = L.spots, round = ['talk', 'write', 'write', 'point', 'pace', 'gesture', 'lectern', 'write', 'ask', 'pace', 'write', 'point'], k = (i + this.name.length * 3) % round.length;
+    let act = round[k]; if (i % 13 === 7 && !(this.spec.look?.tool2 && this.spec.look?.tool !== 'cup')) act = 'sip';
+    if ((act === 'write' || act === 'point') && !sp.board.length) act = act === 'write' ? 'gesture' : 'talk';
+    if (act === 'pace' && !sp.pace.length) act = 'gesture';
+    const spot = act === 'write' || act === 'point' ? sp.board[(i * 5 + (act === 'point' ? 2 : 0)) % sp.board.length] : act === 'pace' ? sp.pace[(i * 3) % sp.pace.length] : act === 'lectern' || act === 'sip' || act === 'ask' ? L.stand : null;
+    return { act, spot };
+  }
   *lecture() {
-    const W = this.W, m = this.m, L = this.lec, v = W.visitor;
+    const W = this.W, m = this.m, L = this.lec;
+    L.spots ??= this.lectureSpots();
+    let plan = null, at = -1, away = 0;
     for (;;) {
-      // to the front (or, if she is standing there, as near as is polite, and lecture from there for a while)
-      if (Math.hypot(L.mark.x - this.x, L.mark.z - this.z) > 0.4 && W.now > L.away) {
-        this.state = 'go'; this.pointing = false;
-        if (!(yield* this.travel(L.mark.x, L.mark.z, { patience: 6, speed: this.dv < 12 ? 0.6 : 1 }))) {
-          L.mark.x = L.stand.x; L.mark.z = L.stand.z;
-          if (Math.hypot(L.stand.x - this.x, L.stand.z - this.z) > 7 || this.visitorDist() < this.keep + 1) { const pt = this.roomSpot(this.keep + 1.5, L.stand.x, L.stand.z, 12); if (pt) yield* this.travel(pt.x, pt.z, { patience: 6 }); }
-          L.away = W.now + 8;
-        }
+      const { i, u } = this.lectureNow();
+      if (i !== at) { at = i; plan = this.lecturePlan(i); }
+      // to its place for this line, unhurried (or, if she is standing there, stay where it is: it will try the next line's)
+      const spot = plan.spot;
+      if (spot && Math.hypot(spot.x - this.x, spot.z - this.z) > 0.4 && W.now > away) {
+        this.state = 'go'; this.act = null; L.mark.x = spot.x; L.mark.z = spot.z;
+        const ok = yield* this.travel(spot.x, spot.z, { patience: 5, speed: this.dv < 12 ? 0.5 : 0.8, until: () => this.lectureNow().i !== at });
+        if (!ok) { away = W.now + 6; plan.spot = null; if (this.visitorDist() < this.keep + 1) { const pt = this.roomSpot(this.keep + 1.5, L.stand.x, L.stand.z, 12); if (pt) yield* this.travel(pt.x, pt.z, { patience: 6 }); } }
+        continue;
       }
-      this.state = 'lecture';
-      const { i, u } = this.lectureNow(), act = (i * 7 + 3) % 5;                 // what goes with this line: 2 the board, 4 a step along the front, else the class
-      if (i !== L.i) {
-        L.i = i;
-        if (act === 4 && W.now > L.away) {                                     // a step or two along the front, if there is floor for it
-          const k = [2.4, -2.4, 0][Math.floor(i / 5) % 3], x = L.stand.x + L.fz * k, z = L.stand.z - L.fx * k, p = this.plan, l = p.laneAt(x, z);
-          if (p.freeAt(x, z, m.need, false) && l !== 2 && l !== 3 && p.clearLine(L.stand.x, L.stand.z, x, z, m.need, false) && !this.traps(x, z)) { L.mark.x = x; L.mark.z = z; }
-        }
-      }
-      m.v = Math.max(0, m.v - W.dt * 4);
-      const toBoard = act === 2 && u > 0.08 && u < 0.72 && Math.hypot(L.board.x - this.x, L.board.z - this.z) > 1;
-      this.pointing = toBoard && u > 0.2;
-      if (toBoard) { const bx = L.board.x - this.x, bz = L.board.z - this.z, bl = Math.hypot(bx, bz); m.face(Math.atan2(bx / bl + L.fx * 0.55, bz / bl + L.fz * 0.55), W.dt * 0.9); }      // half turned to it, not its back to the class
-      else if (this.inRoom && this.dv < 9 && (i % 3 === 1)) m.faceTo(v.x, v.z, W.dt * 0.7);                                                                                   // now and then, to her
-      else m.face(Math.atan2(L.fx, L.fz) + Math.sin(W.now * 0.23 + this.phase) * 0.35, W.dt * 0.6);                                                                         // looking over the class
+      this.state = 'lecture'; m.v = Math.max(0, m.v - W.dt * 4);
+      const classYaw = Math.atan2(L.fx, L.fz), sweep = Math.sin(W.now * 0.23 + this.phase) * 0.35;
+      const toYaw = (a, rate) => m.face(a, W.dt * rate);
+      const P = plan.act; let act = null;
+      if (P === 'write' && plan.spot) {
+        // turns to the board, writes (its back half to the room), and turns round again before the line is out
+        const sg = -Math.sign(plan.spot.k) || 1, writeYaw = Math.atan2(-L.spots.bx + L.spots.ux * 0.4 * sg, -L.spots.bz + L.spots.uz * 0.4 * sg);      // (open a little toward the middle of the room)
+        if (u > 0.07 && u < 0.8) { toYaw(writeYaw, 1.6); if (u > 0.14) act = 'write'; }
+        else toYaw(classYaw + sweep * 0.5, 1.2);
+      } else if (P === 'point' && plan.spot) {
+        // half turned to what is written, an arm up to it, then back to the class
+        const half = Math.atan2(-L.spots.bx * 0.7 + L.fx * 0.6, -L.spots.bz * 0.7 + L.fz * 0.6);
+        if (u > 0.06 && u < 0.7) { toYaw(half, 1.4); if (u > 0.12) act = 'point'; } else toYaw(classYaw + sweep, 1);
+      } else if (P === 'gesture') { toYaw(classYaw + sweep * 1.3, 0.8); if (u > 0.12 && u < 0.85) act = 'gesture'; }
+      else if (P === 'ask') { toYaw(classYaw + Math.sin(W.now * 0.5 + this.phase) * 0.55, 0.9); if (u > 0.08 && u < 0.6) act = 'ask'; }
+      else if (P === 'lectern') { toYaw(classYaw, 1); if (u < 0.45) act = 'read'; }
+      else if (P === 'sip') { toYaw(classYaw + sweep, 0.8); if (u > 0.25 && u < 0.75) act = 'sip'; }
+      else toYaw(classYaw + sweep, 0.6);                                                          // talking to the class, looking over it
+      if ((act === 'sip') !== (this.act === 'sip')) this.cup(act === 'sip');
+      this.act = act; this.pointing = false;
       yield;
     }
   }
@@ -240,26 +394,49 @@ class Teacher extends Polite {
     }
     this.wasIn = inRoom;
     // what it is doing. Spoken to, it holds still and turns to her (and still will not be stood on); a drink asked for comes before anything else.
+    // Sat down, it keeps its seat (she cannot walk into it, and it is in nobody's way there): no stepping aside, no gliding off.
+    const seated = this.sitting;
+    // Engaged with her (robokit/attend.js engageVisitor): while she talks to it and it answers, and when she comes up to
+    // it, it stops where it is, turns to her and waits, its day held where it was, until the conversation is over and
+    // she has stepped away. A lecturer at the front of a class only glances at her coming in; spoken to, it is the same
+    // as anyone. An order she has given is the one thing it goes off for, once the card is closed.
+    const level0 = v.present && Math.abs(v.y - this.y) < 3 && (inRoom || dv < 7);
+    const eng = this.eng = engageVisitor(this.eng ?? {}, this, v, dt, { talking: talking || now < (this.replyUntil ?? 0), level: level0, near: this.lec || this.fixed ? 0 : 6 });
+    const hold = this.engaged = !this.fixed && eng.on && (talking || (!eng.give && !(this.making || this.queue.length)));      // (at a stride straight at it, she is passing: it gives way)
     if (!this.fixed) {
-      if (now >= this.nextManners) { this.nextManners = now + 0.2; this.manners({ still: talking, back: this.state === 'home' || this.state === 'lecture' || this.state === 'make' }); }
-      if (this.aside.phase) this.stepAside(dt);
-      else if (talking) { m.v = 0; m.faceTo(v.x, v.z, dt); }
+      if (now >= this.nextManners && !seated) { this.nextManners = now + 0.2; this.manners({ still: hold || this.state === 'chat', back: this.state === 'home' || this.state === 'lecture' || this.state === 'make' || this.state === 'chat' }); }
+      if (this.aside.phase) { if (this.act === 'sip') this.cup(false); this.act = null; this.stepAside(dt); }
+      else if (hold) { m.v = 0; if (!seated) m.faceTo(v.x, v.z, dt * 1.6); }
       else {
         if (this.queue.length && this.taskName !== 'make') this.run('make', this.serve(this.queue.shift()), false);
         if (!this.task && now > (this.faultAt ?? -9) + 2) this.think();      // (after a fault, a breath before trying again)
         this.stepTask();
       }
-      this.glide(dt);
-    } else if (inRoom && dv < 40) m.faceTo(v.x, v.z, dt); else m.face(this.homeYaw, dt);
+      if (!seated) this.glide(dt);
+    }
+    // turning to her as she comes up (manners.js attendVisitor): the eyes at once, then the head, then (unless it is
+    // teaching, or sat at its work, or busy with something else) the body. A lecturer glances, and teaches on.
+    const level = level0;
+    const at = attendVisitor(this.attn, { x: m.x, z: m.z, yaw: m.yaw }, v, dt, { reach: this.fixed ? 40 : 10, talking, hold, level, keepWorking: (!!this.lec && !hold) || seated || this.state === 'chat' || this.state === 'make', busy: !!this.act || this.busy });
+    if (this.fixed) { if (at.yaw !== null) m.face(at.yaw, dt * 2); else m.face(this.homeYaw, dt); }
+    else if (at.yaw !== null && !talking && !this.aside.phase && m.v < 0.3 && !seated) m.face(at.yaw, dt * at.rate);
+    // sitting: the body drawn onto the seat from where the robot stands beside it, and down onto it
+    this.sitK += (this.sitTo - this.sitK) * Math.min(1, dt * 2.6); if (this.sitK < 0.002) this.sitK = 0;
+    const q = this.seat ?? this.lastSeat; if (this.seat) this.lastSeat = this.seat;
+    const k = q ? this.sitK : 0, sm = k * k * (3 - 2 * k);
     // the body
-    const t = now + this.phase, moving = m.v > 0.25, speak = this.bubble.talking(now), busy = this.busy && !this.aside.phase && !talking;
-    b.root.position.set(m.x, m.y, m.z); b.root.rotation.y = m.yaw;
-    b.animate({ t, dt, moving, speed: m.v, busy, speak, point: this.pointing && !this.aside.phase && !talking, nod: Math.max(0, 1 - Math.abs(now - this.nodAt - 0.5) / 0.5) });
-    const expr = now < this.exprUntil ? this.expr : busy ? 'focus' : inRoom && dv < 9 && this.rest === 'neutral' ? 'happy' : this.rest;
-    const look = Math.max(-1, Math.min(1, (((Math.atan2(v.x - m.x, v.z - m.z) - m.yaw + Math.PI * 3) % TAU) - Math.PI) * 1.2));
-    b.face.draw(expr, inRoom ? look : 0, ((t * 0.31) % 1) < 0.035);
-    this.item.x = m.x; this.item.z = m.z; this.item.y = m.y + b.eye;
-    H.tmp.set(m.x, m.y + b.top + 0.35, m.z); H.bubbles.place(this.bubble, H.tmp, now, b.root.visible);
+    const t = now + this.phase, moving = m.v > 0.25, speak = this.bubble.talking(now), busy = this.busy && !this.aside.phase && !talking, act = talking || this.aside.phase ? null : this.act;
+    b.root.position.set(m.x + (q ? (q.x - m.x) * sm : 0), m.y, m.z + (q ? (q.z - m.z) * sm : 0)); b.root.rotation.y = m.yaw;
+    const head = hold && seated ? Math.max(-0.6, Math.min(0.6, at.rel)) : hold ? 0 : at.head;
+    b.animate({ t, dt, moving, speed: m.v, busy, speak, point: this.pointing && !this.aside.phase && !talking, nod: Math.max(0, 1 - Math.abs(now - this.nodAt - 0.5) / 0.5), act, head, sit: k, drop: this.drop, yaw: m.yaw });
+    const expr = now < this.exprUntil ? this.expr : busy || act === 'write' || act === 'type' ? 'focus' : at.looking && this.rest === 'neutral' ? 'happy' : this.rest;
+    // the eyes: on her when it is attending to her; else on its work (down to what is in its hands, up to the board or the shelf) or wandering a little
+    const look = at.looking || talking ? (talking ? Math.max(-1, Math.min(1, (at.rel - head) * 1.2)) : at.eye) : (act === 'write' || act === 'point' || act === 'type' || act === 'read' ? 0 : Math.sin(t * 0.37) * 0.35 + Math.sin(t * 1.13) * 0.15);
+    const lookY = at.looking || talking ? 0 : act === 'read' || act === 'type' ? -1 : act === 'write' || act === 'point' || act === 'reach' ? 0.6 : act === 'ask' ? 0.3 : busy ? -0.5 : 0;
+    b.faceTick({ t, dt, expr, look, lookY, speak });
+    // sat down, it is where its body is drawn: spoken to there, and not a body in the way beside the chair (the chair keeps her off it)
+    this.ghost = seated; this.item.x = b.root.position.x; this.item.z = b.root.position.z; this.item.y = m.y + b.eye - (q ? this.drop * b.root.scale.y * sm : 0);
+    H.tmp.set(b.root.position.x, m.y + b.top + 0.35 - (q ? this.drop * b.root.scale.y * sm : 0), b.root.position.z); H.bubbles.place(this.bubble, H.tmp, now, b.root.visible);
   }
   sleep() { this.H.tmp.set(this.x, this.y, this.z); this.H.bubbles.place(this.bubble, this.H.tmp, this.W.now, false); this.wasIn = false; this.inRoom = false; }
 
@@ -306,6 +483,27 @@ export function hireFaculty(ctx, specs = [], researchers = []) {
     get now() { return W.now; }, get dt() { return W.dt; }, get visitor() { return W.visitor; }, get events() { return W.events; } };
   W.events.choices = 0;
   H.bubbles = makeBubbles(THREE, ctx.camera); H.talk = makeTalk(H, false);
+  // Seats: who is on one. A faculty member claims the seat it sits on (claimSeat); a researcher sat at one is found by
+  // where it is. Taken, a seat stops offering "sit" to the visitor (its prompt's reach is set to nothing, and given
+  // back when the seat is free), and nobody else sits on it, her included.
+  const claims = new Map(), offers = new Map();
+  let offersN = -1, sitters = new Map(), sittersAt = -9;
+  const cellKey = (x, z) => `${Math.floor(x / 2)},${Math.floor(z / 2)}`;
+  const sitterNear = (st, r = 0.95) => { const k0 = Math.floor(st.x / 2), k1 = Math.floor(st.z / 2); for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (const o of sitters.get(`${k0 + a},${k1 + b}`) ?? []) if (Math.hypot(o.x - st.x, o.z - st.z) < r && Math.abs(o.y - (st.y - 2.45)) < 2.6) return o; return null; };
+  H.claimSeat = (st, who) => { if (who) claims.set(st, who); else claims.delete(st); };
+  H.seatTaken = (st, me) => { const c = claims.get(st); if (c && c !== me) return true; const ws = ctx.walker?.seated; if (ws === st || (ws && Math.hypot(ws.x - st.x, ws.z - st.z) < 1)) return true; return !!sitterNear(st); };
+  function seatOffers(t) {
+    if (t - sittersAt < 0.5) return; sittersAt = t;
+    if (ctx.interact.length !== offersN) { offersN = ctx.interact.length; offers.clear(); for (const it of ctx.interact) if (it.seat) offers.set(it.seat, it); }
+    sitters = new Map(); const put = (x, y, z) => { const k = cellKey(x, z); if (!sitters.has(k)) sitters.set(k, []); sitters.get(k).push({ x, y, z }); };
+    for (const r of crowd.all ?? []) if (r.seated && Number.isFinite(r.x)) put(r.x, r.fy ?? r.y ?? 0, r.z);
+    const v = W.visitor; if (!v.present) return;
+    for (const [st, it] of offers) {
+      if (Math.abs(st.x - v.x) > 14 || Math.abs(st.z - v.z) > 14) continue;      // (only those she could be offered)
+      const taken = claims.has(st) || !!sitterNear(st);
+      if (taken && it.reach > 0) { it.reach0 = it.reach; it.reach = 0; } else if (!taken && it.reach === 0 && it.reach0) it.reach = it.reach0;
+    }
+  }
   // ?lineup stands the whole roster in a row at the Landing, facing you as you arrive, for looking at them side by side
   let all = specs.map(sp => { const who = byId(sp.id); if (!who) console.warn('faculty: nobody on the roster is called', sp.id); return who ? { ...who, ...sp, name: who.name, look: who.look, field: sp.field || who.field } : null; }).filter(Boolean);
   if (Q.has('lineup')) {
@@ -349,14 +547,14 @@ export function hireFaculty(ctx, specs = [], researchers = []) {
   ctx.animated.push((t, dt) => {
     W.now = t; W.dt = dt; hook();
     W.watch(ctx.walker, ctx.mode === 'walk', dt); H.room = W.visitor.present ? ctx.room ?? null : null;
-    if (t - awakeAt > 0.35) { awakeAt = t; const was = awake; awake = faculty.filter(c => !c.broken && (near(c) || c.queue.length || c.making || H.talk.robot === c)); for (const c of was) if (!awake.includes(c)) c.sleep(); if (awake.length) W.stale(); }
+    if (t - awakeAt > 0.35) { awakeAt = t; const was = awake; awake = faculty.filter(c => !c.broken && (near(c) || c.queue.length || c.making || H.talk.robot === c)); for (const c of was) if (!awake.includes(c)) c.sleep(); if (awake.length) W.stale(); H.awake = awake; }
     for (const c of awake) { try { c.update(dt); } catch (e) { c.broken = true; console.error('faculty', c.name, e.stack ?? e); } }
-    crowd.tick(t, dt);
+    crowd.tick(t, dt); seatOffers(t);
     H.talk.update(); H.bubbles.update(t);
   });
   // for tests: who is where, doing what; is anybody inside anything; what they cost
   window.__faculty = { H, W, faculty, VR, researchers: crowd, get awake() { return awake.map(c => c.spec.id); },
-    status: () => faculty.map(c => ({ id: c.spec.id, x: +c.x.toFixed(2), z: +c.z.toFixed(2), state: c.state, task: c.taskName, aside: c.aside.phase, lane: c.m.plan ? c.m.plan.laneAt(c.x, c.z) : null })),
+    status: () => faculty.map(c => ({ id: c.spec.id, x: +c.x.toFixed(2), z: +c.z.toFixed(2), state: c.state, task: c.taskName, act: c.act, sitting: c.sitting, aside: c.aside.phase, lane: c.m.plan ? c.m.plan.laneAt(c.x, c.z) : null })),
     // the nearest thing in the way of a body at (x, z) on c's floor: feet from the edge of its body (negative: inside)
     gap(c) { let best = 1e9; const y = c.y; for (const b of ctx.colliders) { if (b.off || b.staff || b.y0 >= y + c.top || b.y1 <= y + 0.2) continue; const dx = Math.max(b.x0 - c.x, 0, c.x - b.x1), dz = Math.max(b.z0 - c.z, 0, c.z - b.z1), d = Math.hypot(dx, dz) - c.r; if (d < best) best = d; } return best; },
     cost() { const out = {}; for (const c of faculty) { let calls = 0, tris = 0; c.body.root.traverse(o => { if (o.isMesh) { calls++; const g = o.geometry; tris += (g.index ? g.index.count : g.attributes.position.count) / 3; } }); out[c.spec.id] = [calls, Math.round(tris)]; } return out; } };

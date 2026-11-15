@@ -264,6 +264,8 @@ and floors when they are made, so no face moves and nothing shares a plane.
   is a mat sunk in the field (plan coordinates; its edges move to the nearest joints), with a rim.
 - **Beams.** `beams: { ax, n, d, w, mat }`: `n` beams along `ax` under the room's ceiling, evenly spaced (an even `n`
   leaves the middle, where the lamp hangs, clear), `d` deep and `w` wide; `at: [...]` gives their places instead.
+  Where the floor above has a hole (`b.floor`'s `holes`: a stairwell), they are framed round it: the beams that
+  would cross it stop at a header beside it, carried by a trimmer along each of its other sides.
 - Not finished by the table: round walls (`b.arcWall`: give its `in`/`out` yourself), walls cut by hand (`b.mesh`,
   gables, partitions under a slope), `b.floorArc`, floors built from boxes, the skirting (the wall's `base`).
 - Cost: a material is a mesh, whatever the number of rooms that use it. Tints of one photograph share a mesh and

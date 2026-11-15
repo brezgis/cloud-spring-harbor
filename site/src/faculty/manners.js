@@ -21,6 +21,28 @@
 //     W.solid(p)    push a walker's feet p out of every body: call it from the walker's own collide()
 //   new Polite(W, { radius, top, speed, plan: () => plan, rank })     then every frame, while anyone is near:
 //     a.manners() a few times a second, a.aside.phase ? a.stepAside(dt) : a.stepTask(), a.glide(dt)
+//
+//   attendVisitor(st, me, v, dt, o)  ->  st        turning to her as she comes up (any robot, Polite or not)
+//     st   its own state: pass {} the first time and the same object every frame after (it is filled in and returned)
+//     me   { x, z, yaw }: where the robot stands and the way its body faces now (radians, 0 = +z, as Mover.yaw)
+//     v    the visitor: W.visitor, or anything with { present, x, z, speed } and, optionally, fx, fz (the way she
+//          is looking; W.watch fills them in) or dx, dz (the way she is walking)
+//     dt   seconds since the last call
+//     o    { reach: 10 (feet), keepWorking: false (a lecturer: eyes and head only, the body goes on with its
+//          work), talking: false (being spoken to: full attention, at any range up to reach * 1.5), busy: false
+//          (hands full: a glance only, slower to come), level: true (false: she is on another floor) }
+//   It reads:  st.looking  true while attending to her          st.w     0..1, how much (eased in and out)
+//              st.eye      -1..1 across the face, for face.draw's look, measured from the head as st.head has turned it
+//              st.eyeBody  the same measured from the body: use it instead if nothing turns the head
+//              st.head     radians, how far to turn the head (or the whole upper body, for a robot without a neck)
+//                          from the body, within +-0.6; ease it onto whatever turns the head (bob.rotation.y)
+//              st.yaw      the body's yaw it wants (null: leave the body to its task); turn it with
+//                          Mover.face(st.yaw, dt * st.rate)
+//              st.rel      her bearing from the way the body faces (radians, -PI..PI)
+//   When she comes within reach and is looking at it, or stops near it, or walks right up, the eyes turn to her
+//   at once, the head after a moment, the body (unless keepWorking) once she has been there about a second;
+//   when she looks away or leaves, it eases back to what it was doing a moment later. As the staff of Anna's
+//   House glance over and turn to the guest (my_house staff/robots.js, linger and update).
 
 import { Agent, rngFrom } from './agent.js';
 import { makePlan, Mover, CELL } from './nav.js';
@@ -51,6 +73,7 @@ export function makeWorld(env) {
     v.speed = v.speed * 0.8 + sp * 0.2;
     if (L > 1e-4 && sp > 0.4) { v.dx = v.dx * 0.6 + (ddx / L) * 0.4; v.dz = v.dz * 0.6 + (ddz / L) * 0.4; const k = Math.hypot(v.dx, v.dz) || 1; v.dx /= k; v.dz /= k; }
     v.px = v.x; v.pz = v.z;
+    if (typeof walker.yaw === 'number') { v.fx = -Math.sin(walker.yaw); v.fz = -Math.cos(walker.yaw); }      // the way she is looking (the walker's yaw 0 looks toward -z)
   };
   // She cannot walk into a body. p: her feet (changed in place). True if she was pushed.
   W.solid = p => {
@@ -70,6 +93,10 @@ export function makeWorld(env) {
   };
   return W;
 }
+
+// ---- turning to her ----------------------------------------------------------------------------------
+// (robokit/attend.js, shared with Anna's House and Vesper Street: the function documented at the top of this file)
+export { attendVisitor, engageVisitor } from '../robokit/attend.js';
 
 export class Polite extends Agent {
   constructor(W, o = {}) {

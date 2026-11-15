@@ -16,6 +16,8 @@
 //   anteroom      (the back Dressing Room) coats, umbrellas, a notice
 // The three slates, the board wall, the clock, the north wall's posters and Cedric himself are ../snow_low.js's.
 
+import { roomLight } from '../../lighting.js';
+
 export default function (f) {
   const K = f.kit, D = f.draw, G = f.G, geom = K.geom;
   const hall = f.room('Stair Hall'), ox = hall.X1 - 73.33, oy = hall.Y0 - 14;
@@ -302,6 +304,10 @@ export default function (f) {
   const pendant = (X, Y, hc, r = 0.42) => { const p = at(X, Y, 0, 0);
     p.lathe(GLOBE, 0, 0, [[0, hc - r], [r * 0.6, hc - r * 0.8], [r * 0.95, hc - r * 0.3], [r, hc], [r * 0.9, hc + r * 0.45], [r * 0.55, hc + r * 0.83], [r * 0.3, hc + r * 0.95]], { seg: 10 });
     p.cyl(IRON, 0, 0, hc + r * 0.9, hc + r * 1.3, 0.17, 0.1, 8); p.cyl(IRON, 0, 0, hc + r * 1.3, CEIL - 0.08, 0.03, 0.03, 5); p.cyl(IRON, 0, 0, CEIL - 0.08, CEIL - 0.004, 0.2, 0.2, 8); };
+  // each globe is a real light (the lamp pool's or the shader's: ../../lighting.js, roomLight), and with them the
+  // room's own even light after dark comes down to under a third: the rake in pools under the globes, the front lit
+  roomLight(f.room('Lecture Room'), { night: 0.3 });
+  for (const [X, Y, hc] of [[16, 22, 15.1], [16, 36.2, 15.1], [16, 50.4, 15.1], [26.15, 22, 15.1], [26.15, 50.4, 15.1], [36.5, 22, 15.1], [36.5, 36.2, 15.1], [36.5, 50.4, 15.1], [6, 23.5, 11.2], [6, 48.9, 11.2]]) { const l = f.lamp(...P3(X, Y, hc - 0.1), { power: 0.5, kind: 'lamp' }); l.pilot = true; }
   for (const [X, Y, hc] of [[16, 22, 15.1], [16, 36.2, 15.1], [16, 50.4, 15.1], [26.15, 22, 15.1], [26.15, 50.4, 15.1], [36.5, 22, 15.1], [36.5, 36.2, 15.1], [36.5, 50.4, 15.1], [6, 23.5, 11.2], [6, 48.9, 11.2]]) pendant(X, Y, hc);
   // a projector on a pole, pointed at the screen: the newest thing in the room
   { const pj = at(12.6, 36.2, 0, 1); pj.cyl(IRON, 0, 0, 15.5, CEIL - 0.004, 0.06, 0.06, 6); pj.box(IRON, -0.3, 0.3, -0.3, 0.3, 15.44, 15.5); pj.bev(WHITE, -0.7, 0.7, -0.5, 0.55, 14.98, 15.44, 0.05); pj.box(INKY, -0.16, 0.16, 0.55, 0.63, 15.1, 15.36); }

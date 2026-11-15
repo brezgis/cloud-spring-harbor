@@ -44,7 +44,13 @@ function patch(mat, sway) {
 export function cardMaterials(map, { sway = 0.08, roughness = 0.85, env = 0.6, alphaTest = 0.5 } = {}) {
   const material = patch(new THREE.MeshStandardMaterial({ map, alphaTest, side: THREE.DoubleSide, roughness, metalness: 0, envMapIntensity: env }), sway);
   const depth = patch(new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map, alphaTest }), sway);
-  return { material, depth };
+  // depth only, for the pass that lays down a crown's nearest leaves before any is shaded (CardSet.build, prepass).
+  // It lies a hair behind the leaves themselves, so a leaf it has seen is never refused by its own depth.
+  const pre = patch(new THREE.MeshBasicMaterial({ map, alphaTest, side: THREE.DoubleSide, colorWrite: false, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 2 }), sway);
+  // and the leaves as shaded after it: they write no depth of their own (the pass before has), which lets the card
+  // refuse the hidden ones before shading them even though the shader may cut a fragment away
+  const shaded = patch(new THREE.MeshStandardMaterial({ map, alphaTest, side: THREE.DoubleSide, roughness, metalness: 0, envMapIntensity: env, depthWrite: false }), sway);
+  return { material, depth, pre, shaded };
 }
 
 // ---- Card shapes, all of unit size ---------------------------------------------------
@@ -91,7 +97,10 @@ export class CardSet {
     if (!this.items.has(key)) this.items.set(key, { shape, list: [] });
     this.items.get(key).list.push({ cell, m: m.clone(), c: c.clone() });
   }
-  build(scene, shapes, mats, { shadow = true } = {}) {
+  // prepass: the cards are first drawn into depth alone, by a shader that does nothing but cut them out, and then
+  // shaded; only the nearest card at each pixel passes the depth test the second time, so a dense crown is lit
+  // once per pixel rather than once per layer of leaves (it had been the most costly thing in a view of the garden).
+  build(scene, shapes, mats, { shadow = true, prepass = false } = {}) {
     const meshes = [];
     for (const { shape, list } of this.items.values()) {
       const geo = shapes[shape].clone();
@@ -103,11 +112,64 @@ export class CardSet {
       mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       mesh.computeBoundingSphere();
       mesh.castShadow = shadow; mesh.receiveShadow = true; mesh.customDepthMaterial = mats.depth;
+      nearFirst(mesh);
+      if (prepass && mats.pre) {
+        const pre = new THREE.InstancedMesh(geo, mats.pre, list.length);
+        pre.instanceMatrix = mesh.instanceMatrix;      // (one set of instances, kept in order once for both)
+        pre.boundingSphere = mesh.boundingSphere; pre.renderOrder = 1; mesh.renderOrder = 2; mesh.material = mats.shaded;
+        mesh.userData.pre = pre; mesh.userData.shaded = mats.shaded; mesh.userData.plain = mats.material;
+        pre.castShadow = pre.receiveShadow = false;
+        mesh.add(pre);
+      }
       scene.add(mesh); meshes.push(mesh);
     }
     return meshes;
   }
   get count() { let n = 0; for (const v of this.items.values()) n += v.list.length; return n; }
+}
+
+// Leaves are cut out of their cards in the fragment shader (alpha test), and a fragment that may be cut out cannot be
+// hidden before it is shaded the way a wall's can: every card behind another was being shaded in full, and the island's
+// foliage was over half the graphics card's work in a view of the garden. Two things let the depth test throw most of
+// that away first, neither of which changes the picture (cut-out cards are drawn opaque, so order cannot show):
+//  - the cards are drawn after everything else that is solid (renderOrder 1), so a crown behind a building costs nothing;
+//  - each set's cards are kept in order nearest the visitor first, re-sorted as one walks (a set at a time, when one has
+//    moved a few yards since its last sort), so in a crown the near leaves are drawn before the ones they cover.
+const sortQueue = new Set(), PRE_NEAR = 80;
+let sortFrame = -1;
+function nearFirst(mesh) {
+  mesh.renderOrder = 1;
+  const n = mesh.count, cell = mesh.geometry.attributes.aCell;
+  const st = { at: new THREE.Vector3(1e9, 0, 0), pos: new Float32Array(n * 3), order: new Uint32Array(n), d: new Float32Array(n),
+    mat: mesh.instanceMatrix.array.slice(), col: mesh.instanceColor?.array.slice(), cell: cell.array.slice() };
+  for (let i = 0; i < n; i++) { st.pos[i * 3] = st.mat[i * 16 + 12]; st.pos[i * 3 + 1] = st.mat[i * 16 + 13]; st.pos[i * 3 + 2] = st.mat[i * 16 + 14]; st.order[i] = i; }
+  mesh.onBeforeRender = (renderer, scene, camera) => {
+    // the depth pass (prepass, below) only for a set of crowns that comes within PRE_NEAR: further off a crown is too
+    // small on the screen for its layers to cost anything, and the pass would be a draw call and its triangles for nothing.
+    // (Decided here for the next frame, the pass and the leaves' own material together.)
+    const pre = mesh.userData.pre;
+    if (pre) {
+      const near = camera.position.distanceTo(mesh.boundingSphere.center) - mesh.boundingSphere.radius < PRE_NEAR;
+      if (pre.visible !== near) { pre.visible = near; mesh.material = near ? mesh.userData.shaded : mesh.userData.plain; }
+    }
+    if (camera.position.distanceToSquared(st.at) < 100) return;      // within ten feet of where it was last sorted from
+    // one set a frame (the renderer's frame counter tells frames apart), so a turn of the head never sorts them all at once
+    const f = renderer.info.render.frame;
+    if (sortFrame === f && !sortQueue.has(mesh)) { sortQueue.add(mesh); return; }
+    if (sortFrame === f) return;
+    sortFrame = f; sortQueue.delete(mesh);
+    const p = camera.position; st.at.copy(p);
+    for (let i = 0; i < n; i++) { const dx = st.pos[i * 3] - p.x, dy = st.pos[i * 3 + 1] - p.y, dz = st.pos[i * 3 + 2] - p.z; st.d[i] = dx * dx + dy * dy + dz * dz; }
+    st.order.sort((a, b) => st.d[a] - st.d[b]);
+    const M = mesh.instanceMatrix.array, C = mesh.instanceColor?.array, A = cell.array;
+    for (let j = 0; j < n; j++) {
+      const i = st.order[j];
+      for (let k = 0; k < 16; k++) M[j * 16 + k] = st.mat[i * 16 + k];
+      if (C) { C[j * 3] = st.col[i * 3]; C[j * 3 + 1] = st.col[i * 3 + 1]; C[j * 3 + 2] = st.col[i * 3 + 2]; }
+      for (let k = 0; k < 4; k++) A[j * 4 + k] = st.cell[i * 4 + k];
+    }
+    mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true; cell.needsUpdate = true;
+  };
 }
 
 // Helpers for composing instance matrices

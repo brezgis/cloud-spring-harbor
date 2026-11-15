@@ -19,6 +19,7 @@
 // the chess position, the puzzle, the automaton, the solids and the knots are what their labels say they are.
 
 import * as THREE from 'three';
+import { roomLight } from '../../lighting.js';
 
 export default function (f) {
   const K = f.kit, D = f.draw, OX = (f.site.W - 135.2) / 2, F = 5, AX = 118.9, AY = 24.65, RI = 13.75, rad = d => d * Math.PI / 180;
@@ -120,16 +121,22 @@ export default function (f) {
   }
 
   // =================================================================================================================
-  // LIGHT: an opal globe on a brass arm on every truss post, and one hung over each table. They glow after dusk (the
-  // real lights are the building's two bowls and the two pools the base file gives the tables)
+  // LIGHT: an opal globe on a brass arm on every truss post, and one hung over each table. They glow after dusk, and
+  // each is a real light (the lamp pool's or the shader's: ../../lighting.js, roomLight), as are the green reading
+  // lamps below; with them the room's own even light after dark comes down to a quarter, so that the tables are
+  // pools of lamplight under a dim warm vault, as Bates Hall is at night. (The building's two bowls and the base
+  // file's two pools over the tables are lights as before.)
   // =================================================================================================================
+  roomLight(f.room('Reading Room'), { night: 0.25 });
+  const lit = (x, y, h, power, cone = 0) => { const l = f.lamp(x + OX, y, h, { power, kind: 'lamp' }); l.pilot = true; l.cone = cone; };      // (h: where the light is plus the pool's drop, 0.45; cone: shaded, its light thrown down)
   {
     const sconce = q => {
       q.box(BR, -0.13, 0.13, 0.012, 0.06, 6.2, 6.85); q.box(BR, -0.025, 0.025, 0.04, 0.97, 6.44, 6.49); q.cyl(BR, 0, 0.95, 6.42, 6.56, 0.05, 0.1, 8);
       q.lathe(GLOW, 0, 0.95, [[0.08, 6.54], [0.19, 6.64], [0.24, 6.8], [0.2, 6.96], [0.1, 7.05], [0, 7.07]], { seg: 10 });
     };
-    for (const x of [92.17, 105.53, 118.55]) { sconce(fr(x, 11.6, F, 0)); sconce(fr(x, 37.7, F, 2)); }
+    for (const x of [92.17, 105.53, 118.55]) { sconce(fr(x, 11.6, F, 0)); sconce(fr(x, 37.7, F, 2)); lit(x, 11.6 + 0.95, F + 6.95, 0.28); lit(x, 37.7 - 0.95, F + 6.95, 0.28); }
     for (const cy of [AY - 6.75, AY + 6.75]) for (const cx of [89.75, 106.25]) {
+      lit(cx, cy, F + 10.9, 0.45);
       const q = fr(cx, cy, F, 0), pts = []; for (let i = 0; i <= 8; i++) { const t = Math.PI * i / 8; pts.push([Math.max(0, 0.44 * Math.sin(t)), 10.9 - 0.44 * Math.cos(t)]); }
       q.cyl(BR, 0, 0, 11.28, 19.3, 0.022, 0.022, 5); q.cyl(BR, 0, 0, 11.24, 11.42, 0.16, 0.08, 8); q.cyl(BR, 0, 0, 19.0, 19.3, 0.1, 0.2, 8); q.lathe(GLOW, 0, 0, pts, { seg: 12 });
     }
@@ -379,6 +386,7 @@ export default function (f) {
   {
     const BRASS = 'c#d2a54e/0.3/1', SHADE = 'e#17965a/0.42', sweep = K.geom.sweep;
     const lamp = (x, y, h, a = 0) => {
+      lit(x, y, h + 1.65, 0.42, 1);                                                                                                            // (one light for the two shades)
       const q = afr(x, y, h, a);
       q.lathe(BRASS, 0, 0, [[0, 0], [0.31, 0], [0.32, 0.03], [0.24, 0.06], [0.2, 0.1], [0.11, 0.13], [0.07, 0.2], [0.05, 0.26]], { seg: 14 });      // the stepped foot
       q.lathe(BRASS, 0, 0, [[0.05, 0.24], [0.042, 0.9], [0.065, 0.95], [0.04, 1.0], [0.034, 2.0], [0.07, 2.05], [0.045, 2.12], [0.075, 2.22], [0.03, 2.32], [0.045, 2.37], [0, 2.43]], { seg: 8 });      // the column and its finial
@@ -434,9 +442,9 @@ export default function (f) {
     const ap = deg => [AX + 7.7 * Math.cos(rad(deg)), AY + 7.7 * Math.sin(rad(deg))];
     sit(...ap(60), AX, AY, 'read', 'morpho', 18); sit(...ap(-60), AX, AY, 'write', 'systems', 19, ['The reading group meets here. I came early to look as though I had done the reading.']);
     // (nobody stands at the catalog: its desk is in the north aisle, 2.5 ft wide, and a reader there shut it to the walker)
-    up(114.6, 14.1, 114.6, 10.9, 'stand', 'mind', 21, { top: 2.3, lines: ['I came for one book. That was a while ago.'] });
+    up(114.75, 14.55, 114.6, 10.9, 'stand', 'mind', 21, { top: 2.3, lines: ['I came for one book. That was a while ago.'] });
     up(115.4, 35.2, 115.4, 38.4, 'stand', 'neural', 22, { top: 2.3 });
-    up(113.7, 29.3, 116.3, 30.8, 'talk', 'collective', 23, { lines: ['(low) No, the new number. The one with the starlings in it.'] });
+    up(114.25, 29.05, 116.3, 30.8, 'talk', 'collective', 23, { lines: ['(low) No, the new number. The one with the starlings in it.'] });
     up(116.3, 30.8, 113.7, 29.3, 'talk', 'matter', 24, { lines: ['(whispering) We are whispering. This is us whispering.'] });
   }
 

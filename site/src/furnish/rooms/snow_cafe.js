@@ -5,8 +5,7 @@
 // with forty years of accretion (Mabel's counter and back bar, the tea urn and the rack of everybody's mugs, a
 // notice board nobody has ever cleared, a long table for the reading groups, games left half played), a study room
 // behind two bookcases with the last two of the museum's cases, and over all of it the things a laboratory of
-// emergence would hang from its ceiling: the five regular solids on a mobile, and a paper flock that flies by
-// three rules and no leader.
+// emergence would hang from its ceiling: the five regular solids on a mobile.
 //
 // How it is built (so that a room this full stays cheap). Nearly everything made here is collected by material
 // in ACC and put down once at the end as ONE mesh per material: tints of painted wood (joinery, chairs, shades),
@@ -14,7 +13,7 @@
 // glow. A dozen draw calls for the room's furniture, and nothing is dropped for being small. The chairs, stools
 // and settles that are collected models (assets/models: painted_wooden_chair_01, st_stool_8_pine,
 // painted_wooden_bench) are each ONE instanced mesh (INST, placed in f.later), the chairs tinted five colours.
-// The flock is one instanced mesh; the mobile three small ones.
+// The mobile is three small meshes.
 //
 // Coordinates: the DRAWING's, as ../snow_low.js and ../../buildings/snow.js (X from the outer face of the block's
 // left wall, Y back from the face of the wing's front wall). The room is X 75.33..113 (114 in the two window bays,
@@ -30,6 +29,7 @@
 // the tables, the chalk on the boards and the facts on the labels are true. The Laboratory's own notices are lore.
 
 import * as THREE from 'three';
+import { roomLight } from '../../lighting.js';
 
 export default function (f) {
   const K = f.kit, D = f.draw, L = K.geom, OAK = K.mats.OAK, G = f.G, TAU = Math.PI * 2;
@@ -144,17 +144,22 @@ export default function (f) {
     for (let i = 0; i < n; i++) { const lx = -w / 2 + 0.5 + (i + 0.5) * sw; if (o.who?.[i]) { const [sx, sy] = fr.map(lx, 0.3); f.researcher({ at: [sx, sy, F1 + 1.5], seat: 1.5, seed: seedN++, ...o.who[i] }); } else f.seat(fr, lx, 0.3, 1.5, n > 1 ? 'sit on the sofa' : 'sit in the armchair'); }
     if (o.cushion) add(LN(o.cushion), L.bev(-0.5, 0.5, -0.12, 0.12, 0, 0.9, 0.1), ...fr.map(w / 2 - 1.05, -0.12).map((v, i) => v - (i ? oy : ox)), 1.52, a - 0.12); };
 
-  // lamps. A pendant: an enamel shade on a long cord, its bulb lit (no light of its own)
-  const pendant = (X, Y, drop = 6.7, shade = GREENP, r = 1) => { const z = CEIL - drop;
+  // lamps. Every fitting that is lit is a real light too (the lamp pool's, or the shader's: ../../lighting.js,
+  // roomLight), so that after dark the room is pools under the pendants and on the tables, not one even amber;
+  // the room's own even light is brought down to a fifth to let them read.
+  // A pendant: an enamel shade on a long cord, its bulb lit and throwing a cone down on the table under it
+  roomLight(MR, { night: 0.2 });
+  const lit = (X, Y, z, power) => { const l = f.lamp(...P3(X, Y, z), { power, kind: 'lamp' }); l.pilot = true; l.cone = 1; };      // (z: where the light is plus the pool's drop, 0.45; every one is shaded)
+  const pendant = (X, Y, drop = 6.7, shade = GREENP, r = 1) => { const z = CEIL - drop; lit(X, Y, z + 0.1, 0.55);
     box(DARK, X - 0.02, X + 0.02, Y - 0.02, Y + 0.02, z + 0.9 * r, CEIL - 0.01);
     lathe(shade, X, Y, [[1.0 * r, z], [0.94 * r, z + 0.12 * r], [0.28 * r, z + 0.58 * r], [0.12 * r, z + 0.95 * r], [0, z + 0.95 * r]], 8);
     lathe(GLOW, X, Y, [[0.1 * r, z + 0.84 * r], [0.26 * r, z + 0.52 * r], [0.98 * r, z + 0.012]], 8);
     lathe(GLOW, X, Y, [[0, z + 0.2 * r], [0.17 * r, z + 0.4 * r], [0, z + 0.62 * r]], 5); };
   // a small lamp that glows on a table; a banker's lamp; a night light in a coloured glass
-  const tableLamp = (X, Y, z = 2.5) => { lathe(PW('a8873f'), X, Y, [[0, z], [0.16, z], [0.13, z + 0.05], [0.03, z + 0.09], [0.025, z + 0.6], [0, z + 0.6]], 6); lathe(GLOW, X, Y, [[0, z + 0.54], [0.3, z + 0.54], [0.17, z + 0.98], [0, z + 0.98]], 8); };
-  const bankers = (X, Y, z = 2.5, a = 0) => piece().box(PW('a8873f'), -0.3, 0.3, -0.16, 0.16, 0, 0.06).rod(PW('a8873f'), [0, -0.08, 0.06], [0, -0.08, 0.9], 0.03, 5).box(PW('2f5a48'), -0.48, 0.48, -0.16, 0.2, 0.9, 1.06).box(GLOW, -0.42, 0.42, -0.1, 0.16, 0.872, 0.9).at(X, Y, z, a);
+  const tableLamp = (X, Y, z = 2.5) => { lit(X, Y, z + 1.05, 0.2); lathe(PW('a8873f'), X, Y, [[0, z], [0.16, z], [0.13, z + 0.05], [0.03, z + 0.09], [0.025, z + 0.6], [0, z + 0.6]], 6); lathe(GLOW, X, Y, [[0, z + 0.54], [0.3, z + 0.54], [0.17, z + 0.98], [0, z + 0.98]], 8); };
+  const bankers = (X, Y, z = 2.5, a = 0) => { lit(X, Y, z + 1.25, 0.25); piece().box(PW('a8873f'), -0.3, 0.3, -0.16, 0.16, 0, 0.06).rod(PW('a8873f'), [0, -0.08, 0.06], [0, -0.08, 0.9], 0.03, 5).box(PW('2f5a48'), -0.48, 0.48, -0.16, 0.2, 0.9, 1.06).box(GLOW, -0.42, 0.42, -0.1, 0.16, 0.872, 0.9).at(X, Y, z, a); };
   const nightLight = (X, Y, z = 2.5, c = '8a4a3a') => { lathe(MB(c), X, Y, [[0, z], [0.09, z], [0.1, z + 0.2], [0.085, z + 0.2], [0, z + 0.05]], 6); cyl(GLOW, X, Y, z + 0.05, z + 0.13, 0.06, 0.06, 6); };
-  const floorLamp = (X, Y) => { lathe(PW('a8873f'), X, Y, [[0, 0], [0.5, 0], [0.44, 0.08], [0.05, 0.14], [0.04, 4.7], [0, 4.7]], 8); lathe(GLOW, X, Y, [[0, 4.6], [0.72, 4.6], [0.42, 5.5], [0, 5.5]], 10); blk(X - 0.4, X + 0.4, Y - 0.4, Y + 0.4, 0, 5.5); };
+  const floorLamp = (X, Y) => { lit(X, Y, 4.95, 0.4); lathe(PW('a8873f'), X, Y, [[0, 0], [0.5, 0], [0.44, 0.08], [0.05, 0.14], [0.04, 4.7], [0, 4.7]], 8); lathe(GLOW, X, Y, [[0, 4.6], [0.72, 4.6], [0.42, 5.5], [0, 5.5]], 10); blk(X - 0.4, X + 0.4, Y - 0.4, Y + 0.4, 0, 5.5); };
 
   // ---- what lies on the tables (z: the top it stands on) ----
   const CUPS = ['e6e0d2', 'e6e0d2', 'e6e0d2', 'c9d6d2', '8aa39b', 'd9c7a0', '7d8fa6', 'b5654a', '3f5a54', 'c98a8a'];
@@ -337,7 +342,7 @@ export default function (f) {
         food: { 'cardamom bun': { build: bunB, bites: 3, note: 'You finish the cardamom bun. Sticky fingers.' } } },
       lines: {
         greet: ['Hello, dear. The cases are older than the coffee, but only just.', 'Come in out of the hall. What will you have?', 'Find a seat if you can. It is like this every afternoon.'],
-        idle: ['Tea at four. It is the one experiment here that always replicates.', '*polishes a cup that is already clean*', 'Somebody has been breathing on the crystal case again.', '*hums, and wipes down the counter*', '*counts the teapots: seven, and all present*', 'Two cups left at the window again. Philosophers.', '*looks up at the flock, and shakes her head fondly*', 'The reading group has had that pot since two. I shall make them another.'],
+        idle: ['Tea at four. It is the one experiment here that always replicates.', '*polishes a cup that is already clean*', 'Somebody has been breathing on the crystal case again.', '*hums, and wipes down the counter*', '*counts the teapots: seven, and all present*', 'Two cups left at the window again. Philosophers.', 'The reading group has had that pot since two. I shall make them another.'],
         bye: ['Mind how you go.', 'Bring the cup back whenever.'],
         ready: ['Your %s is on the counter, dear.', 'There: your %s, on the counter.'], served: ['Take it to a window table; the light is best there.', 'Bring the empty back whenever you like.'],
         topics: [
@@ -349,8 +354,7 @@ export default function (f) {
             next: [{ q: 'Earl Grey, please.', a: 'In a proper cup. One moment.', serve: 'Earl Grey' }, { q: 'Mint tea, please.', a: 'On your own head be it. One moment.', serve: 'mint tea', expr: 'wink' }, { q: 'Cocoa, please.', a: 'One moment. Do not rush it.', serve: 'cocoa' }] },
           { q: 'Why “the Museum Café”?', a: 'Because this was the museum. The room held a natural history collection: birds, insects, minerals, pressed plants by the thousand. The Laboratory kept two of the cases, past the bookcases, and I dust them on Fridays.',
             next: [{ q: 'What is in them?', a: 'Crystals in one, shells and a brain coral in the other. Order that nobody ordered, they tell me. Each case has its card with the proper names; I can tell you which shelf catches the crumbs.' }] },
-          { q: 'What is flying about up there?', a: 'The Collective Behavior group’s starlings. Paper, a hundred and forty of them. Each one only minds its nearest neighbors, and yet look at it. I asked who was in charge, and they were delighted with me.', expr: 'happy',
-            next: [{ q: 'And the shapes over the long table?', a: 'The five regular solids. There are only five, which Foundations and Mind find very moving. I find them very hard to dust.', expr: 'wink' }] },
+          { q: 'What hangs over the long table?', a: 'The five regular solids. There are only five, which Foundations and Mind find very moving. I find them very hard to dust.', expr: 'wink' },
           { q: 'Where should I sit?', a: 'A window table for the light. The bench under the front windows if you like your back to a wall. The long table, if you do not mind being drawn into an argument. Past the bookcases is the study room: lamps, easy chairs and books to borrow.' },
           { q: 'Who comes in?', a: 'All of them, sooner or later. Cedric takes his black and lectures it. Euclid orders the same thing every day and calls it a proof. Nettle has the table by the second window and has had it since her first year. The Networks reading group meets here on Fridays at four, and by five every napkin has a graph drawn on it.', expr: 'wink',
             next: [{ q: 'And the seed cake?', a: 'Caraway. My own. Help yourself from under the glass, and the buns too; the Laboratory pays.' }] },
@@ -657,7 +661,6 @@ export default function (f) {
   }
   { // two papers taped to the columns, facing the doors
     const taped = (Y, z, w, tall, draw) => { const fr = at(CX - 0.365, Y, F1, 1); fr.box(PW('e9e2cf'), -w / 2 - 0.02, w / 2 + 0.02, 0, 0.02, z - tall / 2 - 0.02, z + tall / 2 + 0.02); f.sign(fr, 0, z, w, tall, draw, { y: 0.032, res: 260 }); };
-    taped(19.5, 5.3, 0.62, 0.8, (g, W, H) => { D.paper(g, W, H, '#f6f1e2', 9); D.T(g, 'PLEASE', W / 2, H * 0.16, H * 0.11, INK, { f: D.F.fraunces, w: 600, ls: 2 }); D.T(g, 'DO NOT FEED', W / 2, H * 0.36, H * 0.13, '#8a2f25', { f: D.F.fraunces, w: 600, max: W * 0.9 }); D.T(g, 'THE FLOCK', W / 2, H * 0.53, H * 0.13, '#8a2f25', { f: D.F.fraunces, w: 600, max: W * 0.9 }); D.T(g, 'It is paper.', W / 2, H * 0.72, H * 0.085, INK, { it: true }); D.T(g, 'It will try.', W / 2, H * 0.84, H * 0.085, INK, { it: true }); });
     taped(37.5, 5.3, 0.7, 0.62, (g, W, H) => { D.paper(g, W, H, '#e4ecd9', 9); D.T(g, 'STUDY ROOM', W / 2, H * 0.24, H * 0.15, INK, { f: D.F.fraunces, w: 600, ls: 1, max: W * 0.9 }); D.T(g, '← past the bookcases', W / 2, H * 0.52, H * 0.12, INK, { it: true, max: W * 0.9 }); D.T(g, '(arguments stay this side)', W / 2, H * 0.78, H * 0.085, '#8a2f25', { f: D.F.caveat, w: 600, max: W * 0.92 }); });
   }
 
@@ -797,13 +800,11 @@ export default function (f) {
   f.rug(83.2 + ox, 87.2 + ox, 6.4 + oy, 20.6 + oy, F1, 'runner'); f.rug(83.4 + ox, 87 + ox, 37.2 + oy, 53.4 + oy, F1, 'runner'); f.rug(76 + ox, 81.5 + ox, 24.9 + oy, 30.1 + oy, F1, 'mat');
 
   // =================================================================================================================
-  // OVERHEAD: two rows of enamel pendants down the room; the five regular solids; the flock
+  // OVERHEAD: two rows of enamel pendants down the room; the five regular solids
   // =================================================================================================================
   for (const X of [84.6, 103.8]) for (const [i, Y] of [6.5, 15.7, 24.9, 34.1, 43.3, 52.5, 61.7, 70.9, 80.1, 89.3].entries()) { if (X < 90 && i < 2) continue; pendant(X, Y, 6.7, i < 6 ? GREENP : PW('7a2f2a')); }
   f.label(R0, CX, 28.5, 9.6, { label: 'look up at the mobile', reach: 15, size: 3.5, title: 'The five regular solids', kicker: 'A mobile, over the long table',
     text: 'Tetrahedron, cube, octahedron, dodecahedron, icosahedron: the only solids whose faces are all the same regular polygon, meeting the same way at every corner. The last book of Euclid’s Elements builds them and shows there can be no sixth.\nPlato, in the Timaeus, gave four of them to the elements (fire the tetrahedron, earth the cube, air the octahedron, water the icosahedron) and the fifth to the heavens; they are painted here accordingly. It is not chemistry. It is the first attempt we know of to explain the stuff of the world by the forms of mathematics, and the Laboratory has not given up on the idea.' });
-  f.label(R0, 101, 40, 12, { label: 'look up at the flock', reach: 20, size: 6, title: 'The murmuration', kicker: 'One hundred and forty paper starlings; Collective Behavior group',
-    text: 'Each bird attends only to the birds nearest it, and does three things: keeps from bumping into them, turns the way they are heading, and stays close. Craig Reynolds wrote the three rules down in 1987, to make flocks for animated films. Nothing in them mentions a flock, and nobody leads this one.\nReal starlings, it was found over Rome in 2008, each keep track of their nearest six or seven neighbors, however far off those are.\nMabel has asked that it not be fed.' });
 
   f.later(async ctx => {
     const T3 = ctx.THREE, W0 = f.world(ox, oy, F1), wX = f.world(ox + 1, oy, F1), wY = f.world(ox, oy + 1, F1), ex = [wX.x - W0.x, wX.z - W0.z], ey = [wY.x - W0.x, wY.z - W0.z];
@@ -827,29 +828,6 @@ export default function (f) {
       const a2 = arm(4.2, 4.4, 1.5, [new T3.OctahedronGeometry(0.9), 0x9fc4d8, 2.0], [new T3.IcosahedronGeometry(0.88), 0x3f7a8a, 0.9]);
       top.traverse(n => { if (n.isMesh) n.castShadow = true; }); keep(top);
       ctx.animated.push(t => { if (!top.visible) return; top.rotation.y = t * 0.045; a1.rotation.y = -t * 0.11; a2.rotation.y = t * 0.08 + 1; });
-    }
-
-    // ---- the flock: boids in a box under the ceiling (X 86..110, Y 5..52, 10.4..14.3 ft up), kept clear of the mobile ----
-    { const N = 140, B0 = [86.5, 5.5, 10.4], B1 = [110, 51.5, 14.2], MOB = [CX, 28.5, 7.4];
-      const g = new T3.BufferGeometry(); g.setAttribute('position', new T3.Float32BufferAttribute([0, 0, 0.34, -0.34, 0.06, -0.14, 0, 0, -0.04, 0, 0, 0.34, 0, 0, -0.04, 0.34, 0.06, -0.14], 3)); g.computeVertexNormals();
-      const im = new T3.InstancedMesh(g, new T3.MeshStandardMaterial({ color: 0x2b2826, roughness: 0.9, side: T3.DoubleSide }), N); im.frustumCulled = false; im.userData.cat = 'flock';
-      const p = new Float32Array(N * 3), v = new Float32Array(N * 3), acc = new Float32Array(N * 3); let sd = 77; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
-      for (let i = 0; i < N; i++) { p[i * 3] = 96 + r() * 10; p[i * 3 + 1] = 12 + r() * 12; p[i * 3 + 2] = 11.5 + r() * 2; v[i * 3] = 3 + r(); v[i * 3 + 1] = 3 * (r() - 0.3); v[i * 3 + 2] = r() - 0.5; }
-      let clock = 0;
-      const step = dt => { clock += dt; const tx = 98 + 9 * Math.sin(clock * 0.13), ty = 28 + 19 * Math.sin(clock * 0.094 + 1), tz = 12.3 + 1.2 * Math.sin(clock * 0.21);      // what they loosely make for: a point that wanders
-        for (let i = 0; i < N; i++) { const ix = i * 3, x = p[ix], y = p[ix + 1], z = p[ix + 2]; let cx = 0, cy = 0, cz = 0, ax = 0, ay = 0, az = 0, sx = 0, sy = 0, sz = 0, n = 0;
-          for (let j = 0; j < N; j++) { if (j === i) continue; const jx = j * 3, dx = p[jx] - x, dy = p[jx + 1] - y, dz = p[jx + 2] - z, d2 = dx * dx + dy * dy + dz * dz; if (d2 > 30) continue; n++; cx += dx; cy += dy; cz += dz; ax += v[jx]; ay += v[jx + 1]; az += v[jx + 2]; if (d2 < 2.6) { const k = 1 / (d2 + 0.05); sx -= dx * k; sy -= dy * k; sz -= dz * k; } }
-          let fx = (tx - x) * 0.05, fy = (ty - y) * 0.05, fz = (tz - z) * 0.12;
-          if (n) { fx += cx / n * 0.22 + (ax / n - v[ix]) * 0.9 + sx * 2.4; fy += cy / n * 0.22 + (ay / n - v[ix + 1]) * 0.9 + sy * 2.4; fz += cz / n * 0.22 + (az / n - v[ix + 2]) * 0.9 + sz * 2.4; }
-          const mx = x - MOB[0], my = y - MOB[1], md = Math.hypot(mx, my); if (md < MOB[2]) { fx += mx / (md + 0.1) * (MOB[2] - md) * 5; fy += my / (md + 0.1) * (MOB[2] - md) * 5; }
-          if (x < B0[0]) fx += (B0[0] - x) * 4; else if (x > B1[0]) fx -= (x - B1[0]) * 4; if (y < B0[1]) fy += (B0[1] - y) * 4; else if (y > B1[1]) fy -= (y - B1[1]) * 4; if (z < B0[2]) fz += (B0[2] - z) * 8; else if (z > B1[2]) fz -= (z - B1[2]) * 8;
-          acc[ix] = fx; acc[ix + 1] = fy; acc[ix + 2] = fz; }
-        for (let i = 0; i < N * 3; i += 3) { v[i] += acc[i] * dt; v[i + 1] += acc[i + 1] * dt; v[i + 2] += acc[i + 2] * dt * 0.6; const s = Math.hypot(v[i], v[i + 1], v[i + 2]) || 1, k = Math.min(7.5, Math.max(4, s)) / s; v[i] *= k; v[i + 1] *= k; v[i + 2] *= k * 0.985; p[i] += v[i] * dt; p[i + 1] += v[i + 1] * dt; p[i + 2] += v[i + 2] * dt; } };
-      for (let i = 0; i < 400; i++) step(1 / 30);
-      const d = new T3.Object3D(), a = new T3.Vector3(), b = new T3.Vector3();
-      const draw = () => { for (let i = 0; i < N; i++) { const ix = i * 3; toW(p[ix], p[ix + 1], p[ix + 2], a); toW(p[ix] + v[ix], p[ix + 1] + v[ix + 1], p[ix + 2] + v[ix + 2], b); d.position.copy(a); d.lookAt(b); d.updateMatrix(); im.setMatrixAt(i, d.matrix); } im.instanceMatrix.needsUpdate = true; };
-      draw(); keep(im);
-      ctx.animated.push((t, dt) => { if (!im.visible) return; step(Math.min(0.05, dt || 0.016)); draw(); });
     }
 
     // ---- the collected chairs, stools and settles: each model ONE instanced mesh (its meshes joined, when they share a material) ----
@@ -897,7 +875,7 @@ export default function (f) {
         { q: 'How long have you had this table?', a: 'Since my first year. Second window, the chair that does not wobble. Mabel puts a cup down at ten and takes three away at six. It is the most reliable collaboration I have.', expr: 'happy' },
         { q: 'You look tired.', a: 'I am a mug of something hot that has been left to go cold several times. Tired is the design.', expr: 'wink',
           next: [{ q: 'When do you finish?', a: 'The run finishes at four. The chapter finishes when my advisor says the word “fine”. The thesis finishes, in the limit.' }] },
-        { q: 'What should I look at in here?', a: 'Up. The flock is the Collective Behavior group’s, and it is the only thing in the building that has never asked me how the writing is going. Then the pool on the notice board. I have a seed cake riding on “still open”.' },
+        { q: 'What should I look at in here?', a: 'Up, at the mobile: the five regular solids, and the only thing in the building that has never asked me how the writing is going. Then the pool on the notice board. I have a seed cake riding on “still open”.' },
       ],
     } });
 

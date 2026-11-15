@@ -15,10 +15,12 @@ const FT = 3.28084;
 const DECAL = { polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 };
 
 // ---- Drawn surfaces -------------------------------------------------------------------
+// Anisotropic filtering, for the quality tier (bringToLife sets it): what keeps a label or a floor sharp when seen at a slant
+let ANISO = 8;
 function canvas(w, h, draw) {
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   draw(c.getContext('2d'), w, h);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO;
   return t;
 }
 // A drawn surface's shape and turn. Plain signs are rectangles; e.round makes a disc (w across) whose
@@ -131,6 +133,8 @@ function prepareModel(src, outdoor) {
       // Refracting glass (a vase, a lens, a bottle) makes the renderer draw the whole scene a second time, into
       // a full-size texture, in every frame in which one such piece is in view. Plain clear glass instead.
       if (m.transmission > 0) { m.transmission = 0; m.thickness = 0; m.transparent = true; m.opacity = 0.32; m.depthWrite = false; }
+      // (the models' own pictures came with no anisotropic filtering at all, so a tabletop or a book cover seen at a slant blurred)
+      for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'emissiveMap', 'aoMap']) if (m[k]) m[k].anisotropy = ANISO;
       tuned.set(mat, m); }
     return tuned.get(mat);
   };
@@ -166,6 +170,8 @@ function prepareModel(src, outdoor) {
 // ---------------------------------------------------------------------------------------
 export function bringToLife({ scene, outdoors = scene, vis = null, quality = {}, renderer, camera, items, garden, colliders, materials, doors = [], onChange }) {
   const { models, extras, books, candles, seats, lamps, steam } = items;
+  const Q_ = new URLSearchParams(location.search);
+  ANISO = Math.min(quality.aniso ?? 8, renderer.capabilities.getMaxAnisotropy());
   const animated = [], interact = [];
   // Things drawn only when their zone can be seen (visibility.js); test: an extra condition
   const tracked = [];
@@ -257,6 +263,80 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
   // finish and drawn as one mesh each, instead of a texture and a draw call apiece.
   let chalk = null;
   const sheets = new Map(), art = new Map();
+
+  // ---- Keeping the graphics card's memory in hand ----------------------------------------------
+  // Every room's lettering, rugs and pictures together come to about a gigabyte and a half of textures, far more than
+  // any one view needs and more than a laptop's share of memory can hold without the browser starting to shuffle. So:
+  //  - each sheet is drawn from one of three copies by how far off it is: in full when near, at half size (a quarter of
+  //    the memory) from across a room or a hall, at a quarter (a sixteenth) from the garden. The screen shows fewer pixels
+  //    to the foot the further off a thing is, and each copy still holds more than it does there (these are the full
+  //    sheet's own mipmaps, made once on a canvas), so the change cannot be seen.
+  //  - a copy goes to the card only when it is wanted, and the full one a little before (within PREFETCH, a sheet a frame);
+  //  - once the copies on the card pass a budget, those longest unused (and not near by) are let go of. Their canvases
+  //    are kept, so one that is wanted again is back on the card in the same frame.
+  // (?sheetmb=N sets the budget, in MB.)
+  const props = renderer.properties, CULL_OFF = Q_.get('cull') === '0';
+  const SHEET_BUDGET = (Number(Q_.get('sheetmb')) || ({ high: 150, medium: 130, low: 90 }[quality.name] ?? 130)) * 1048576;
+  const FULL_AT = Q_.get('texcap') === '0' ? Infinity : 18, HALF_AT = 50, PREFETCH = 30;     // feet from the sheet (the box round all its signs); ?texcap=0 keeps every sheet whole, for comparing
+  const managed = [];
+  let cullFrame = 0;
+  const bytesOf = t => t.image.width * t.image.height * 4 * (4 / 3);
+  function manage(mesh, tex) {
+    // (born not yet wanted: version 0 keeps the renderer, and warm.js, from sending it before it is asked for here)
+    tex.version = 0;
+    mesh.geometry.computeBoundingBox();
+    const s = { mesh, levels: [{ t: tex, last: -1 }, null, null], box: mesh.geometry.boundingBox, level: 0, d: 0 };
+    mesh.userData.textures = [tex];                    // (for perf.js, which counts what is on the card)
+    managed.push(s);
+  }
+  function copyOf(s, n) {
+    if (s.levels[n]) return s.levels[n];
+    const src = s.levels[0].t.image, c = document.createElement('canvas'), k = n === 1 ? 2 : 4;
+    c.width = Math.max(4, Math.round(src.width / k)); c.height = Math.max(4, Math.round(src.height / k));
+    const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(src, 0, 0, c.width, c.height);
+    const t = new THREE.CanvasTexture(c), f = s.levels[0].t; t.colorSpace = f.colorSpace; t.anisotropy = f.anisotropy;
+    s.mesh.userData.textures.push(t);
+    return (s.levels[n] = { t, last: -1 });
+  }
+  // (a sheet redrawn later, photos.js: its smaller copies are made again from the new canvas)
+  function redrawn(tex) {
+    const s = managed.find(m => m.levels[0].t === tex); if (!s) return;
+    for (const l of s.levels.slice(1)) if (l) { const c = l.t.image, g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height); g.drawImage(tex.image, 0, 0, c.width, c.height); l.t.needsUpdate = true; }
+  }
+  const onCard = t => !!props.get(t).__webglTexture;
+  function sheetsShown(all) {
+    cullFrame++;
+    if (all && !CULL_OFF) return;                      // (the first frame shows everything to compile it; that is not wanting it)
+    const p = camera.position, live = [];
+    let total = 0, best = null;
+    for (const s of managed) {
+      s.d = s.box.distanceToPoint(p) + Math.max(0, Math.abs(p.y - (s.box.min.y + s.box.max.y) / 2) - 6) * 2;      // another floor counts as further
+      // (a couple of feet either way at each line, so a sheet does not flick between copies as one stands on it)
+      const up = s.level, d = s.d;
+      s.level = d < FULL_AT - (up > 0 ? 2 : -2) ? 0 : d < HALF_AT - (up > 1 ? 3 : -3) ? 1 : 2;
+      if (s.mesh.visible) {
+        const l = copyOf(s, s.level), m = s.mesh.material;
+        l.last = cullFrame; if (l.t.version === 0) l.t.needsUpdate = true;
+        if (m.map !== l.t) { m.map = l.t; if (m.emissiveMap) m.emissiveMap = l.t; }
+      }
+      for (const l of s.levels) if (l && (l.last === cullFrame || onCard(l.t))) { total += bytesOf(l.t); live.push([l, s]); }
+      const f = s.levels[0];
+      if (f.last !== cullFrame && !onCard(f.t) && s.d < PREFETCH && (!best || s.d < best.d)) best = s;
+    }
+    // (room is made for the sheet to be made ready next, too: with the cache full, nothing would ever be sent ahead, and
+    // each room's sheet would go to the card on the frame it came into view, which is the stall warm.js is there to prevent)
+    const room = SHEET_BUDGET - (best ? bytesOf(best.levels[0].t) : 0);
+    if (total > room) {
+      live.sort((a, b) => a[0].last - b[0].last || b[1].d - a[1].d);
+      for (const [l, s] of live) {
+        if (total <= room) break;
+        if (l.last === cullFrame || (l === s.levels[0] && s.d < PREFETCH)) continue;
+        l.t.dispose(); total -= bytesOf(l.t);
+      }
+    }
+    // one full sheet a frame made ready ahead of being near enough to need it (the nearest), while there is room
+    if (best) { const t = best.levels[0].t; if (total + bytesOf(t) <= SHEET_BUDGET) { if (t.version === 0) t.needsUpdate = true; renderer.initTexture(t); } }
+  }
   // A lit screen: black glass that shows its picture by its own light. The eye opens up after dark
   // (lighting.js, exposure), which would bleach a white page, so the glow is held level on screen.
   const screenMats = [];
@@ -295,7 +375,7 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
       mesh = new THREE.Mesh(new THREE.PlaneGeometry(e.w, e.d), new THREE.MeshStandardMaterial({ map, color: 0xb0aaa0, roughness: 1, envMapIntensity: 0.08 }));
       mesh.rotation.x = -Math.PI / 2; mesh.receiveShadow = true;
     } else {
-      map = e.canvas ? canvas(e.canvas === 'chalk' ? 1300 : 900, e.canvas === 'chalk' ? 766 : e.canvas === 'imac' ? 680 : 540, DRAW[e.canvas]) : texLoader.load(`assets/art/${e.file}.jpg`, t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; });
+      map = e.canvas ? canvas(e.canvas === 'chalk' ? 1300 : 900, e.canvas === 'chalk' ? 766 : e.canvas === 'imac' ? 680 : 540, DRAW[e.canvas]) : texLoader.load(`assets/art/${e.file}.jpg`, t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; });
       if (!e.canvas) map.colorSpace = THREE.SRGBColorSpace;
       const mat = new THREE.MeshStandardMaterial({ map, roughness: e.canvas === 'chalk' ? 0.95 : 0.6, envMapIntensity: 0.15 });
       e.map = map;      // kept so that a screen can be redrawn (hands.js)
@@ -312,6 +392,16 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
     }
   }
 
+  // The 3 px round picture c, placed at (x, y) on the sheet, filled with its outermost pixels: sides, then corners.
+  // (Each strip is taken from the picture's own canvas: copying from the sheet onto itself makes the browser copy the
+  // whole sheet each time, which made a big room's sheet take seconds.)
+  function bleed(g, c, x, y) {
+    const w = c.width, h = c.height, M = 3;
+    g.drawImage(c, 0, 0, w, 1, x, y - M, w, M); g.drawImage(c, 0, h - 1, w, 1, x, y + h, w, M);
+    g.drawImage(c, 0, 0, 1, h, x - M, y, M, h); g.drawImage(c, w - 1, 0, 1, h, x + w, y, M, h);
+    g.drawImage(c, 0, 0, 1, 1, x - M, y - M, M, M); g.drawImage(c, w - 1, 0, 1, 1, x + w, y - M, M, M);
+    g.drawImage(c, 0, h - 1, 1, 1, x - M, y + h, M, M); g.drawImage(c, w - 1, h - 1, 1, 1, x + w, y + h, M, M);
+  }
   // Shelf packing, tallest first, 3 px of margin; returns the sheets' meshes' geometry and texture
   function packSheet(list) {
     list.sort((a, b) => b.c.height - a.c.height);
@@ -321,10 +411,10 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
     for (const it of list) { const w = it.c.width + 6, h = it.c.height + 6; if (x + w > SW) { x = 0; y += rowH; rowH = 0; } it.px = x + 3; it.py = y + 3; x += w; rowH = Math.max(rowH, h); }
     const SH = Math.ceil((y + rowH) / 4) * 4;
     const tex = canvas(SW, SH, g => {
-      for (const it of list) {               // each picture with its edge pixels smeared into the margin, so mipmaps do not bleed
-        for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-1, -1], [1, 1], [-1, 1], [1, -1]]) g.drawImage(it.c, it.px + dx, it.py + dy);
-        g.drawImage(it.c, it.px, it.py);
-      }
+      for (const it of list) g.drawImage(it.c, it.px, it.py);
+      // each picture's edge pixels drawn out into its margin, so mipmaps do not bleed (as thin strips: it had been the
+      // whole picture drawn eight times over, offset)
+      for (const it of list) bleed(g, it.c, it.px, it.py);
     });
     const geos = list.map(({ e, c, px, py, w, h, rug }) => {
       const geo = rug ? new THREE.PlaneGeometry(w, h) : signGeo({ ...e, w, h }), uv = geo.attributes.uv, cw = c.width, ch = c.height;
@@ -342,16 +432,27 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
   // are made at once; the rest follow over the next moments, so nothing is ever seen arriving.
   const sheetQueue = [...sheets].map(([key, list]) => ({ key, list, x: list[0].e.x, y: list[0].e.y, z: list[0].e.z }));
   const sheetDist = q => Math.hypot(q.x - camera.position.x, q.z - camera.position.z) + Math.abs(q.y - camera.position.y) * 2;
+  const slowSheets = [];      // (the slowest few to make, for perf.js)
   function nextSheet(within = Infinity) {
     if (!sheetQueue.length) return false;
     let bi = 0, bd = Infinity; for (let i = 0; i < sheetQueue.length; i++) { const d = sheetDist(sheetQueue[i]); if (d < bd) { bd = d; bi = i; } }
     if (bd > within) return false;
-    const [q] = sheetQueue.splice(bi, 1); buildSheet(q.key, q.list); if (!sheetQueue.length) onChange?.(); return true;
+    const [q] = sheetQueue.splice(bi, 1), t0 = performance.now(); buildSheet(q.key, q.list); slowSheets.push([Math.round(performance.now() - t0), q.key, q.list.length]); slowSheets.sort((a, b) => b[0] - a[0]).splice(8); if (!sheetQueue.length) onChange?.(); return true;
   }
   // (what is near is made at once, a sheet a frame; what is far off waits for frames with time to spare, so the
   // street does not stutter through its first seconds making labels nobody can see yet)
-  let sheetTick = 0;
-  animated.push((t, dt) => { sheetTick++; if (!nextSheet(70) && dt < 0.03 && sheetTick % 3 === 0) nextSheet(); });
+  // (It used to be one far sheet every third quick frame, which left the lettering of the far rooms still being made ten
+  // seconds after arrival. Now a quick frame spends up to 8 ms of its slack on them, and a slow one still makes one in ten
+  // frames, so a machine that is never quick is not left with blank signs in the windows across the green.)
+  let sheetTick = 0, sheetMs = 0;
+  animated.push((t, dt) => {
+    sheetTick++;
+    const t0 = performance.now();
+    if (nextSheet(70)) { sheetMs += performance.now() - t0; return; }
+    if (dt < 0.03) { while (performance.now() - t0 < 8 && nextSheet()); }
+    else if (sheetTick % 10 === 0) nextSheet();
+    sheetMs += performance.now() - t0;
+  });
   function buildSheet(key, list) {
     for (const it of list) if (!it.c) {
       if (it.rug) it.c = rugTexture(it.e.rug, it.e.w, it.e.d).image;
@@ -363,7 +464,8 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
     // lit signs (menus, neon, screens) share a sheet too: one glow for the sheet, the mean of what its signs asked for
     if (kind === 'lit') lit(mat, tex, list.reduce((a, it) => a + (it.e.glow || 0.8), 0) / list.length);
     const mesh = new THREE.Mesh(geo, mat); mesh.receiveShadow = true;      // or the sun and moon reach it through the roof (pale labels shone at night)
-    mesh.userData.cat = kind === 'rug' ? 'rugs' : 'extras'; scene.add(mesh); track(mesh, zone);
+    mesh.userData.cat = kind === 'rug' ? 'rugs' : 'extras'; mesh.userData.sheet = key; mesh.userData.items = list.map(it => ({ px: it.px, py: it.py, w: it.c.width, h: it.c.height }));      // (where each sign lies on the sheet: perf.js checks none is drawn blank)
+    scene.add(mesh); track(mesh, zone); manage(mesh, tex);
     for (const it of list) if (it.rug) it.c.width = it.c.height = 0;      // the rugs' own canvases are no longer needed
     // A label whose picture arrives later (the family photographs, photos.js) is drawn again when it has
     const late = list.filter(it => !it.rug && it.e?.draw?.late);
@@ -371,19 +473,55 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
       const sg = tex.image.getContext('2d');
       for (const it of late) {
         const g = it.c.getContext('2d'); g.clearRect(0, 0, it.c.width, it.c.height); it.e.draw(g, it.c.width, it.c.height);
-        for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [0, 0]]) sg.drawImage(it.c, it.px + dx, it.py + dy);
+        sg.clearRect(it.px, it.py, it.c.width, it.c.height); sg.drawImage(it.c, it.px, it.py); bleed(sg, it.c, it.px, it.py);
       }
-      tex.needsUpdate = true; onChange?.();
+      if (tex.version > 0 && props.get(tex).__webglTexture) tex.needsUpdate = true;      // (one not on the card takes the new canvas when it goes)
+      redrawn(tex);
+      onChange?.();
     }).catch(() => {});
   }
   { let n = 0; const t0 = performance.now(); while (performance.now() - t0 < 120 && nextSheet(140)) n++; }      // what is near the door you arrive at, straight away
   // Paintings: one sheet per room (no taller than the GPU allows), made when its pictures have loaded
   // On the lighter tiers the pictures are held a little smaller (they are a quarter of all texture memory at full size)
-  const artScale = quality.tex === 'half' ? 0.55 : quality.tex === 'detail' ? 0.72 : 1;
-  const artSize = img => { if (artScale === 1) return img; const c = document.createElement('canvas'); c.width = Math.round(img.width * artScale); c.height = Math.round(img.height * artScale); const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(img, 0, 0, c.width, c.height); return c; };
-  const imgLoader = new THREE.ImageLoader(lazy), maxTex = Math.min(8192, renderer.capabilities.maxTextureSize);
+  // A picture is also held no finer than ART_PPF pixels a foot, which a laptop's screen shows one for one from about two
+  // feet away; nearer than that is nose to the glass. (The pictures are 1200 pixels across, so only the small ones are
+  // touched: a one-foot print was carrying 1200 pixels a foot.)
+  const artScale = quality.tex === 'half' ? 0.55 : quality.tex === 'detail' ? 0.72 : 1, ART_PPF = Q_.get('texcap') === '0' ? Infinity : 560;
+  const artSize = (img, e) => {
+    const ppf = Math.max(img.width / Math.max(e.w, 0.01), img.height / Math.max(e.h, 0.01));
+    const k = Math.min(artScale, Math.max(ART_PPF / ppf, 512 / Math.max(img.width, img.height)));
+    if (k >= 0.999) return img;
+    const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(img, 0, 0, c.width, c.height); return c;
+  };
+  // The pictures are fetched six at a time, the one hanging nearest the visitor first (they had all been asked for at
+  // once, 15 MB, which on a real connection kept the near room's furniture waiting behind the far rooms' prints); each
+  // file once, however many rooms hang it; and decoded off the main thread (an ImageBitmap) where the browser can.
+  const maxTex = Math.min(8192, renderer.capabilities.maxTextureSize);
+  const picLoader = typeof createImageBitmap === 'function' ? new THREE.ImageBitmapLoader(lazy) : new THREE.ImageLoader(lazy);
+  const pictures = new Map(), picQueue = [];
+  let picLoading = 0;
+  function picture(e) {
+    let p = pictures.get(e.file);
+    if (!p) { let job; p = new Promise(ok => { job = { file: e.file, at: [], ok }; }); picQueue.push(job); pictures.set(e.file, p); p.job = job; }
+    if (p.job) p.job.at.push(e);
+    return p;
+  }
+  // A picture hanging further off than PIC_NEAR is not fetched until the visitor comes that near: from there it would
+  // be a handful of pixels through a window, and most visits never cross the whole island.
+  const PIC_NEAR = 220;
+  function pumpPictures() {
+    const c = camera.position;
+    while (picLoading < 6 && picQueue.length) {
+      let bi = 0, bd = Infinity;
+      for (let i = 0; i < picQueue.length; i++) for (const e of picQueue[i].at) { const d = Math.hypot(e.x - c.x, e.z - c.z) + Math.abs(e.y - c.y) * 3; if (d < bd) { bd = d; bi = i; } }
+      if (bd > PIC_NEAR) return;
+      const [job] = picQueue.splice(bi, 1); picLoading++;
+      const done = img => { picLoading--; pictures.get(job.file).job = null; job.ok(img); pumpPictures(); };
+      picLoader.load(`assets/art/${job.file}.jpg`, done, undefined, () => done(null));
+    }
+  }
   for (const [zone, list] of art) {
-    Promise.all(list.map(e => new Promise(ok => imgLoader.load(`assets/art/${e.file}.jpg`, img => ok({ e, c: artSize(img), w: e.w, h: e.h }), undefined, () => ok(null))))).then(items => {
+    Promise.all(list.map(e => picture(e).then(img => img && { e, c: artSize(img, e), w: e.w, h: e.h }))).then(items => {
       items = items.filter(Boolean);
       const groups = [[]]; let h = 0;
       for (const it of items.sort((a, b) => b.c.height - a.c.height)) { if (h + it.c.height > maxTex * 0.9 && groups.at(-1).length) { groups.push([]); h = 0; } groups.at(-1).push(it); h += it.c.height / 2; }
@@ -391,10 +529,13 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
         if (!g.length) continue;
         const { geo, tex } = packSheet(g);
         const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: tex, color: 0xd6d1c8, roughness: 0.95, envMapIntensity: 0.15, ...DECAL }));      // matt, and a little under white, so pale drawings do not glare in afternoon light
-        mesh.receiveShadow = true; mesh.userData.cat = 'extras'; scene.add(mesh); track(mesh, zone);
+        mesh.receiveShadow = true; mesh.userData.cat = 'extras'; mesh.userData.sheet = zone + '|art'; scene.add(mesh); track(mesh, zone); manage(mesh, tex);
       }
     });
   }
+  // (begun on the next turn, by which time main.js has put the camera where the visitor arrives)
+  setTimeout(pumpPictures, 0);
+  { let clock = 0; animated.push((t, dt) => { if ((clock += dt) > 0.5 && picQueue.length) { clock = 0; pumpPictures(); } }); }
 
   // ---- Collected furniture -------------------------------------------------------------------
   // Each piece belongs to a zone (visibility.js) and is drawn only when its room can be
@@ -420,12 +561,13 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
     const p = camera.position;
     for (const t of tracked) {
       let on = all || shows(t.zone);
-      if (on && !all && typeof t.zone === 'string' && t.zone.endsWith(':small')) { t.box ??= new THREE.Box3().setFromObject(t.o); on = t.box.distanceToPoint(p) < SMALL_NEAR; }
+      if (on && !all && typeof t.zone === 'string' && t.zone.endsWith(':small')) { t.box ??= new THREE.Box3().setFromObject(t.o); on = t.box.distanceToPoint(p) < SMALL_NEAR(); }
       t.o.visible = on && (!t.test || t.test());
     }
+    sheetsShown(all);
     placeHandles();
   }
-  const SMALL_NEAR = 34 * (quality.reach ?? 1);                 // clutter further off than this is not drawn
+  const SMALL_NEAR = () => 34 * (quality.reach ?? 1);           // clutter further off than this is not drawn (main.js lowers reach for a while if frames run slow)
 
   const loader = new GLTFLoader(lazy), cache = new Map(), ready = new Map();
   const load = id => { if (!cache.has(id)) cache.set(id, new Promise((ok, bad) => loader.load(`assets/models/${id}/${id}.gltf`, g => ok(g.scene), undefined, bad))); return cache.get(id); };
@@ -658,7 +800,7 @@ void main() {
     animated.push(t => {
       let n = 0; const p = camera.position;
       for (const { s, zone } of cups) {
-        if (vis && !(shows(zone) && Math.hypot(s.x - p.x, s.y - p.y, s.z - p.z) < SMALL_NEAR)) continue;
+        if (vis && !(shows(zone) && Math.hypot(s.x - p.x, s.y - p.y, s.z - p.z) < SMALL_NEAR())) continue;
         for (let i = 0; i < 4; i++) {
           const u = (t * 0.32 + i / 4) % 1;
           aPos.setXYZ(n, s.x + 0.05 * Math.sin(t * 1.3 + i * 2), s.y + u * 0.95, s.z + 0.05 * Math.cos(t * 1.1 + i)); aScale.setX(n, 0.16 + u * 0.3); aAlpha.setX(n, 0.42 * Math.sin(Math.PI * u)); n++;
@@ -749,7 +891,7 @@ void main() {
   }
   function chalkSave() { try { localStorage.setItem('chalkboard2', chalk.canvas.toDataURL('image/jpeg', 0.7)); } catch { /* too big or private */ } }
 
-  return { attend: w => doors.attend(w), update: (t, dt = 0.016) => { for (const f of animated) f(t, dt); }, cull: cullModels, track, zoneAt, pending: () => left + (sheetQueue.length ? 1 : 0), target, interact, animated, get chalk() { return chalk; }, chalkStroke, chalkWipe, chalkSave,
+  return { attend: w => doors.attend(w), update: (t, dt = 0.016) => { for (const f of animated) f(t, dt); }, cull: cullModels, track, zoneAt, pending: () => left + (sheetQueue.length ? 1 : 0) + picLoading, arriving: () => left, get waits() { return { models: left, active, sheets: sheetQueue.length, sheetMs: Math.round(sheetMs), slowSheets, pictures: picLoading, picturesWaiting: picQueue.length }; }, target, interact, animated, get chalk() { return chalk; }, chalkStroke, chalkWipe, chalkSave,
     // A fresh copy of a collected model, scaled to feet, for things that move (staff, pets)
     loadModel: async id => { const o = (await load(id)).clone(true); o.scale.setScalar(FT); o.traverse(n => { if (n.isMesh) n.castShadow = n.receiveShadow = true; }); return o; } };
 }

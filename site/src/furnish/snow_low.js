@@ -24,24 +24,17 @@ export default function (f) {
   const MATH = { f: 'Georgia, "Times New Roman", "DejaVu Serif", serif', it: true, w: 400 };       // formulae: a face that has the Greek
   const NUM = { f: D.F.fraunces };                                                             // room numbers that read at a glance
 
-  // a plain oak bench against a wall (fr: on the wall, at the bench's middle), sittable
-  const wallBench = (fr, w, label = 'sit on the bench') => {
-    fr.box(OAK, -w / 2, w / 2, 0.12, 1.35, 1.4, 1.5, G); fr.box(OAK, -w / 2, w / 2, 0.08, 0.16, 1.9, 2.9, G);
-    for (const x of [-w / 2 + 0.2, w / 2 - 0.32]) { fr.box(OAK, x, x + 0.12, 0.16, 1.3, 0, 1.4, G); fr.box(OAK, x, x + 0.12, 0.08, 0.16, 0, 1.9, G); }
-    fr.block(-w / 2, w / 2, 0, 1.35, 0, 1.6);
-    for (let x = -w / 2 + 1.2; x < w / 2 - 0.6; x += 2) f.seat(fr.sub(x, 0.75, 0, 0), 0, 0, 1.5, label);
-  };
+  // an oak bench against a wall (fr: on the wall, at the bench's middle), sittable: the kit's, with shaped ends and a slatted back
+  const wallBench = (fr, w, label = 'sit on the bench') => K.wallBench(fr, w, { label });
   // a page or two of somebody's notes, lying on a surface (fr faces the reader)
   const notes = (fr, x, y, z, title, lines, turn = 0) => f.paper(fr, x, z, 0.62, 0.8, { kind: 'notice', hand: true, title, lines, colour: '#f1ecdd', seed: 11 }, { flat: true, y, turn });
   const bottle = (fr, x, y, z, col = 'c#5f8a8f/0.25') => { fr.cyl(col, x, y, z, z + 0.52, 0.11, 0.11, 8); fr.cyl(col, x, y, z + 0.52, z + 0.62, 0.11, 0.05, 8); fr.cyl(DARK, x, y, z + 0.62, z + 0.7, 0.05, 0.05, 6); };
 
   // ---- plain pieces used in several rooms ----
   const glow = (fr, x, y, z) => { fr.cyl(BRASS, x, y, z, z + 0.05, 0.16, 0.14, 8); fr.cyl(BRASS, x, y, z + 0.05, z + 0.62, 0.025, 0.025, 6); fr.cyl('e#ffcf8a/1.3', x, y, z + 0.56, z + 0.98, 0.3, 0.17, 10); };      // a table lamp that glows (no light of its own)
-  const chair = (fr, x, y, dq, sit = true) => { const c = fr.sub(x, y, 0, dq);
-    c.box(OAK, -0.7, 0.7, -0.7, 0.7, 1.42, 1.52, G); for (const sx of [-0.62, 0.5]) { c.box(OAK, sx, sx + 0.12, 0.5, 0.62, 0, 1.42, G); c.box(OAK, sx, sx + 0.12, -0.7, -0.58, 0, 3.05, G); }
-    for (const z of [2.1, 2.7]) c.box(OAK, -0.5, 0.5, -0.68, -0.6, z, z + 0.26, G);
-    c.block(-0.7, 0.7, -0.7, 0.7, 0, 1.6); if (sit) f.seat(c, 0, 0, 1.5, 'sit at the table'); };
-  const tbl = (fr, w = 2.4, d = 2.4) => { fr.box(OAK, -w / 2, w / 2, -d / 2, d / 2, 2.4, 2.5, G); for (const sx of [-1, 1]) for (const sy of [-1, 1]) fr.box(OAK, sx * (w / 2 - 0.22) - 0.07, sx * (w / 2 - 0.22) + 0.07, sy * (d / 2 - 0.22) - 0.07, sy * (d / 2 - 0.22) + 0.07, 0, 2.4, G); fr.block(-w / 2, w / 2, -d / 2, d / 2, 0, 2.5); };
+  // a Windsor chair (turned legs, a saddle seat, a spindle back) and a plain oak table on its own frame: the kit's
+  const chair = (fr, x, y, dq, sit = true) => K.chair(fr, x, y, { kind: 'windsor', dq, sit, label: 'sit at the table' });
+  const tbl = (fr, w = 2.4, d = 2.4) => K.table(fr, w, d, 2.5, OAK, 0.16);
   // a wall clock that keeps the real hour: an oak case d ft square on a wall frame, its middle at (x, Z)
   const wallClock = (fr, x, Z, d = 2) => { const a = d / 2;
     fr.box(OAK, x - a - 0.15, x + a + 0.15, 0.03, 0.2, Z - a - 0.15, Z + a + 0.15, G);
@@ -420,7 +413,7 @@ export default function (f) {
       f.plate(mo, 0, 12.4, 'FORSAN ET HAEC OLIM MEMINISSE IUVABIT', { style: 'engraved', w: 7, tall: 0.8 });
       f.label(mo, 0, 0.3, 11, { label: 'read the motto', reach: 22, size: 3, title: 'Forsan et haec olim meminisse iuvabit', kicker: 'The motto of Cloud Spring Harbor Laboratory', text: '“Perhaps one day it will be a pleasure to remember even this.”\nAeneas says it to his crew, shipwrecked and hungry on a strange shore.', foot: 'Virgil, Aeneid, Book I, line 203.' }); }
     // the directory, by the front door
-    const LD = at(56.67, 19.2, F1, 3);
+    const LD = at(56.67, 19.04, F1, 3);      // (centred between the front wall and the lecture room door's casing)
     f.sign(LD, 0, 5.5, 3.5, 4.7, (g, W, H) => {
       D.board(g, W, H, '#27382f', '#d9cfae', { inset: H * 0.022, lw: Math.max(2, H * 0.004) }); const ink = '#e9dfc4', gold = '#d6b565';
       D.T(g, 'SNOW HALL', W / 2, H * 0.075, H * 0.062, ink, { ls: H * 0.008 }); D.T(g, 'Cloud Spring Harbor Laboratory · Directory', W / 2, H * 0.13, H * 0.03, gold, { it: true, max: W * 0.86 });
@@ -435,12 +428,12 @@ export default function (f) {
       }
       D.T(g, 'Abstraction (PHIL 310) meets in the Stone Library', W / 2, H * 0.955, lh * 0.5, gold, { it: true, max: W * 0.86 });
     }, { res: 160, board: 'c#27382f/0.6', lip: 0.05 });
-    // Snow Hall's own drawings, on the wall opposite
+    // Snow Hall's own drawings, on the wall opposite (centred between the front wall and the café door's casing: 15.5 to 25.57 in the plan)
     const R = at(73.33, 19.2, F1, 1);
     const FOOT = 'University Archives, Kenneth Spencer Research Library, University of Kansas: Architectural drawings of Snow Hall (ku-uarecords:860).';
-    f.framed(R, 3.05, 5.0, 3.1, 2.1, 'snow_front_elevation', { title: 'Snow Hall', kicker: 'Front elevation of the Natural History Building',
+    f.framed(R, -0.16, 5.0, 3.1, 2.1, 'snow_front_elevation', { title: 'Snow Hall', kicker: 'Front elevation of the Natural History Building',
       text: 'This building follows Old Snow Hall, the natural history building of the University of Kansas at Lawrence, designed by Haskell & Wood and opened in 1886. It was named for Francis Huntington Snow, the university’s professor of natural history, whose collections filled its museum. It was taken down in 1934.\nThis is the architects’ own blueprint, drawn at a quarter of an inch to the foot. The arch on the right is the porch you came in by.', foot: FOOT });
-    f.framed(R, 3.05, 7.95, 2.8, 2.12, 'snow_long_section', { title: 'Snow Hall', kicker: 'Longitudinal section',
+    f.framed(R, -0.16, 7.95, 2.8, 2.12, 'snow_long_section', { title: 'Snow Hall', kicker: 'Longitudinal section',
       text: 'The same architects’ section, cut through the lecture room, this stair hall and the museum wing. The lecture room’s raked floor, the dressing room behind it and the janitor’s room underneath are where the drawing puts them; so is the stair beside you.', foot: FOOT });
     f.plate(at(73.33, 27.5, F1, 1), 0, 10.4, 'THE MUSEUM CAFÉ', { style: 'painted', w: 4.6, tall: 0.8 });      // over the museum's doors
     // brass plates by the corridor's doors
@@ -510,8 +503,10 @@ export default function (f) {
     }, { frame: OAK });
     const d = at(47.6, 72.6, F1, 1);                                           // the teacher's desk, near the door end of the board
     K.desk(d, 5, 2.4); K.diningChair(d, 0, 3.4, { dq: 2 }); K.openBook(d, -1.2, 1.2, 2.5);
-    for (const X of [52, 56.2, 60.4, 64.6]) for (const Y of [74.5, 81.9]) schoolDesk(at(X, Y, F1, 1), 5);
-    notes(at(52.7, 83.1, F1 + 2.56, 3), 0, 0, 0.004, 'PHYS 220', ['Tc = 2.27 J/k (square)', 'beta = 1/8 EXACT', 'why does 1-D not order??'], -0.1);
+    // The eight double desks are the curator's now (rooms/snow_r102.js builds them, with iron standards and slatted
+    // seats). What the old ones drew from rnd is still drawn here, the same number of times, so that every room after
+    // this one in the file keeps the belongings it had.
+    for (let k = 0; k < 8; k++) { for (let i = 0; i < 2; i++) if (rnd() < 0.45) { const r = rnd(); rnd(); if (r >= 0.8) { rnd(); rnd(); } else if (r >= 0.55) rnd(); const q = rnd(); if (q >= 0.4 && q < 0.6) rnd(); } if (rnd() < 0.35) rnd(); if (rnd() < 0.3) rnd(); }
     // the teacher's desk in use
     Bl.laptop(d, 1.1, 1.25, 2.5); Bl.cup(d, 2.0, 1.6, 2.5); d.box(PAGE, -0.6, 0.1, 0.3, 1.0, 2.5, 2.58); d.box(INKY, -2.1, -1.75, 0.5, 0.62, 2.5, 2.6);
     // the walls: clock, cork board, three charts, the way out, coats; a screen rolled up over the board; bins; a cupboard of glass
@@ -522,7 +517,7 @@ export default function (f) {
     f.paper(FW, 45.9, 5.5, 1.3, 2, { kind: 'notice', title: 'PROBLEM SETS', lines: ['1  Counting states: done', '2  The Ising chain: due Thursday', '3  Mean field theory', '4  Metropolis, by hand', '5  Block spins'], foot: 'PHYS 220', px: 22 }, PIN);
     f.paper(FW, 47.45, 5.7, 1.1, 1.4, { kind: 'notice', hand: true, title: 'The dice', lines: ['Problem 4 needs a die. They are in the tin. The tin is to come back with all six.'], foot: 'Sorrel' }, PIN);
     f.paper(FW, 51.3, 5.9, 3.6, 3, P_phase, { res: 130 }); f.paper(FW, 55.5, 5.9, 2.4, 3, P_exp, { res: 140 });
-    lightSwitch(FW, 62.35, 4.4); exitPlan(FW, 63.4, 5.3); hang(at(73.33, 82.7, F1, 1), 0, 5.6, 'p_mendeleev_1869');
+    lightSwitch(FW, 62.35, 4.4); exitPlan(FW, 63.4, 5.3); hang(at(73.33, 73.5, F1, 1), 0, 7.5, 'p_mendeleev_1869');      // (over the cupboard of glass: the wall beyond it is the curator's bench)
     f.paper(FW, 68.2, 7.1, 4.4, 2.6, P_mb, { res: 120 }); coatRail(FW, 68.2, 5.1, 5); hungCoat(FW, 66.6, 5.1, Ln('3d5873')); hungCoat(FW, 69.8, 5.1, Ln('8a4a3a'));
     const RW = at(73.33, 0, F1, 1);                                            // the museum wall; x along it is Y
     bins(RW, 69.1);
@@ -596,8 +591,8 @@ export default function (f) {
     f.paper(FW, 13.5, 5.9, 3, 3, P_chom, { res: 130 }); f.paper(FW, 10, 5.9, 3, 3, P_cplx, { res: 130 }); f.paper(FW, 6.1, 5.9, 3.6, 3.2, P_ascii, { res: 130 });
     lightSwitch(FW, 26.35, 4.4); exitPlan(FW, 27.4, 5.3);
     const BW = at(0, 85, F1, 2), bX = X => -X;                                 // the back wall
-    hang(BW, bX(17.85), 5.7, 'p_jacquard_loom'); hang(BW, bX(10.32), 5.7, 'p_pascal_machine_arithmetique', { k: 0.9 });
-    coatRail(BW, bX(26.6), 5.1, 3.4); hungCoat(BW, bX(26), 5.1, Ln('27382f')); bins(BW, bX(29.9));
+    hang(BW, bX(17.85), 5.7, 'p_jacquard_loom'); hang(BW, bX(9.55), 6.35, 'p_pascal_machine_arithmetique', { k: 0.9 });      // (Pascal in line with Leibniz and Hollerith: rooms/snow_r103.js)
+    bins(FW, 3.45);                                                            // (the back wall's corner by the board is the machine's bench now: rooms/snow_r103.js)
     // a cupboard with an old terminal on it, and a tray of punched cards
     BW.box(OAK, bX(9.4), bX(3.2), 0.08, 1.6, 0.02, 3, G); BW.box(OAK, bX(9.5), bX(3.1), 0.08, 1.7, 3, 3.1, G); BW.block(bX(9.5), bX(3.1), 0, 1.7, 0, 3.1);
     BW.box('c#cfc5ad/0.6', bX(8.3), bX(6.7), 0.2, 1.5, 3.1, 4.4); BW.box('c#cfc5ad/0.6', bX(8.4), bX(6.6), 1.0, 1.65, 3.1, 3.3); BW.box(DARK, bX(8.3) + 0.12, bX(6.7) - 0.12, 1.5, 1.52, 3.45, 4.3);
@@ -618,6 +613,8 @@ export default function (f) {
           { q: 'And the tape?', a: 'A Turing machine: a tape of cells, a head that reads one, and a finite table. The table says what to write, which way to step and which state comes next. The one on the board flips each bit and halts at the first blank.',
             next: [{ q: 'That seems too simple to matter.', a: 'Every program anyone has run can be carried out by such a table, given time. That is the Church–Turing thesis. It is not a theorem, since “what can be computed” is not a formal notion, but no counterexample has turned up since 1936.' }] },
           { q: 'Is anything else undecidable?', a: 'Nearly every question about what a program does. Does it ever print 7? Do these two programs compute the same function? Rice’s theorem: any property of a program’s behavior that some programs have and others lack is undecidable.' },
+          { q: 'What is the machine on the bench doing?', a: 'Being as busy as four states allow. Started on a blank tape it writes thirteen 1s in 107 steps, and halts. No four-state machine that halts runs longer; Allen Brady proved that in 1983. Then it waits, wipes its tape and does it again, which is more than most proofs do.',
+            next: [{ q: 'And with five states?', a: 'Forty-seven million, one hundred and seventy-six thousand, eight hundred and seventy steps. That was settled only in 2024, by a few dozen people and a proof checker. With six, nobody knows: whether some six-state machines ever stop turns out to be a question about numbers of the same kind as Collatz’s, which nobody has answered.' }] },
         ],
       } });
   }
@@ -626,19 +623,19 @@ export default function (f) {
   {
     const d = at(37.6, 86.3, F1, 2);                                           // the desk's back edge is on the window wall
     K.desk(d, 5, 2.4); K.diningChair(d, 0, 3.4, { dq: 2, arms: true });
-    K.tableLamp(d, -1.9, 0.75, 2.5, 'c#6c7a60/0.4'); K.openBook(d, 0.2, 1.4, 2.5);
+    K.tableLamp(d, -1.9, 0.75, 2.5, 'c#6c7a60/0.4'); K.lamps[K.lamps.length - 1].cone = 1; K.openBook(d, 0.2, 1.4, 2.5);      // (shaded: its light goes down on the desk)
     d.cyl('c#dfe9ea/0.05', 1.7, 0.8, 2.5, 2.95, 0.22, 0.22, 3);                // a prism, standing on its end
     f.label(d, 1.7, 0.8, 2.8, { label: 'look at the prism', title: 'A prism', kicker: 'On Sorrel’s desk', text: 'Glass slows blue light more than red, so a prism bends blue further, and white light comes out spread into its colors. Newton sent one of those colors through a second prism and found that it stayed that color: the glass sorts light; it does not stain it.\nSorrel keeps this one where the afternoon sun finds it.' });
-    K.bookcase(at(31.75, 78, F1, 3), 6.5, 6.8, { fill: 0.85, wood: OAK });
+    K.bookcase(at(31.85, 78, F1, 3), 6.5, 6.8, { fill: 0.85, wood: OAK, subject: 'science' });      // (a tenth off the wall: its back lay in the face of the dado's cap)
     f.rug(33.6 + ox, 40.2 + ox, 73.6 + oy, 81.4 + oy, F1, 'kilim');
     Bl.books(d, -0.9, 0.9, 2.5); Bl.cup(d, 1.0, 1.6, 2.5); d.box(PAGE, -0.5, 0.2, 0.3, 1.0, 2.5, 2.6); chair(at(34.4, 80.6, F1, 0), 0, 0, 0);
     const OW = at(41.5, 0, F1, 1);                                             // the wall to Room 102; x along it is Y
     for (let i = 0; i < 2; i++) { OW.box('c#6f736c/0.5', 70.2 + i * 1.7, 71.8 + i * 1.7, 0.08, 1.7, 0.02, 4.4); for (const z of [0.6, 1.7, 2.8, 3.9]) OW.box(BRASS, 70.8 + i * 1.7, 71.2 + i * 1.7, 1.7, 1.74, z, z + 0.06); }
     OW.block(70.2, 73.6, 0, 1.7, 0, 4.4); Bl.books(OW.sub(71, 0.9, 4.4, 0), 0, 0, 0); K.pottedPlant(OW.sub(72.7, 0.9, 4.4, 0), 0, 0, 0, 'trailing', { size: 0.7, block: false });
-    cork(OW, 77.2, 5.5, 2.8, 2.2);
-    f.paper(OW, 76.6, 5.5, 1.2, 1.7, { kind: 'notice', hand: true, title: 'Thursday', lines: ['Bell jar and the jars up to 102 before nine, please.', 'They worked last time. Do whatever you did.'], foot: 'S. (for Jasper)' }, PIN);
-    f.paper(OW, 77.9, 5.6, 1.1, 1.4, { kind: 'notice', title: 'OFFICE HOURS', lines: ['Tuesday and Thursday', '10 to 11'], px: 24 }, PIN);
-    coatRail(OW, 81.6, 5.1, 2.6); hungCoat(OW, 81.6, 5.1, Ln('6c7a60'));
+    cork(OW, 71.9, 6.7, 2.8, 2.0);                                             // (over the cabinet: the wall beyond is her chalkboard, rooms/snow_r102.js)
+    f.paper(OW, 71.3, 6.7, 1.2, 1.7, { kind: 'notice', hand: true, title: 'Thursday', lines: ['Bell jar and the jars up to 102 before nine, please.', 'They worked last time. Do whatever you did.'], foot: 'S. (for Jasper)' }, PIN);
+    f.paper(OW, 72.6, 6.8, 1.1, 1.4, { kind: 'notice', title: 'OFFICE HOURS', lines: ['Tuesday and Thursday', '10 to 11'], px: 24 }, PIN);
+    coatRail(OW, 83.7, 5.1, 2.6); hungCoat(OW, 83.7, 5.1, Ln('6c7a60'));
     wallClock(at(0, 67.5, F1, 0), 40, 7.9, 1.2); hang(at(0, 67.5, F1, 0), 40, 5.3, 'p_optics_allegory'); f.paper(at(31.75, 70.6, F1, 3), 0, 5.6, 2.2, 3, P_hyd, { res: 140 });
     d.cyl('c#3a4038/0.6', -3.1, 0.7, 0, 1.3, 0.4, 0.48, 8);
   }
@@ -649,7 +646,7 @@ export default function (f) {
   // =================================================================================================================
 
   // =================================================================================================================
-  // THE BASEMENT: every room in use. Rowan's room and his supplies, lost property, Jasper's workshop, the chart room, the preparation room.
+  // THE BASEMENT: every room in use. Rowan's room and his supplies, lost property, Jasper's apparatus room; the machine shop and the server room are in rooms/.
   // =================================================================================================================
   const crate = (X, Y, h, s = 2.4, tall = 2) => { const c = at(X, Y, h, 0), a = s / 2;
     c.box(OAK, -a, a, -a, a, 0.02, tall, G); for (const z of [0.25, tall - 0.4]) { c.box(OAK, -a - 0.05, a + 0.05, -a - 0.05, a + 0.05, z, z + 0.22, G); } c.block(-a, a, -a, a, 0, tall); };
@@ -671,7 +668,7 @@ export default function (f) {
       for (const s of [0, 1.3]) { W.box(OAK, wY(33 + s) - 0.06, wY(33 + s) + 0.06, 0.1, 0.22, 0, 6.2, G); } for (let z = 0.8; z < 6; z += 0.9) W.box(OAK, wY(34.3), wY(33), 0.12, 0.2, z, z + 0.08, G);      // a ladder against the wall
       E.box(OAK, 15, 19.4, 0.08, 1.5, 0.02, 6.2, G); E.box(Ln('5a4632'), 17.18, 17.22, 1.5, 1.53, 0.3, 6); for (const x of [16.9, 17.5]) E.box(BRASS, x - 0.03, x + 0.03, 1.5, 1.56, 3, 3.3); E.block(15, 19.4, 0, 1.5, 0, 6.2);      // his cupboard
       coatRail(E, 21.6, 5.2, 2.6); hungCoat(E, 21.2, 5.2, Ln('2f4a40')); wallBench(at(55.17, 32.6, BF, 1), 5); Bl.bag(at(54.4, 33.4, BF + 1.5, 1), 0, 0, 0); bins(E, 36.8);
-      wallClock(E, 29.6, 5.2, 1.2);
+      wallClock(E, 32.6, 5.0, 1.2);                                            // (over the bench: by the door the open leaf covered it)
       for (const [X, Y, h, sz] of [[42, 41.5, BF, 2.2], [42, 44, BF, 2.2], [42, 41.5, BF + 2, 1.8], [44.4, 49.4, BF, 2.2], [41.8, 49.4, BF, 2.4]]) crate(X, Y, h, sz);
       for (let i = 0; i < 3; i++) at(44.6, 41.4, BF + i * 0.22, 0).lathe(Ln('8d9396'), 0, 0, [[0, 0], [0.42, 0], [0.55, 0.9], [0.5, 0.9], [0.4, 0.06], [0, 0.06]], { seg: 10 });
     }
@@ -776,67 +773,8 @@ export default function (f) {
         ],
       } });
   }
-  // ---- Basement Room 3: the chart room and machine shop. A plan table, racks of rolled charts, the wall charts that are down for mending ----
-  {
-    const E = at(51.25, 0, BF, 1), W = at(31.75, 0, BF, 3), wY = Y => -Y, roll = (fr, x, y, z, len) => fr.box(PAGE, x - len / 2, x + len / 2, y - 0.09, y + 0.09, z, z + 0.18);
-    rack(E, 77, 6.4, [1.2, 3, 4.8], 1.5); for (const [z, n] of [[1.3, 5], [3.1, 6], [4.9, 4]]) for (let i = 0; i < n; i++) roll(E, 77 + (i % 2 ? 0.4 : -0.5), 0.3 + i * 0.2, z + (i > 3 ? 0.18 : 0), 4.6 - (i % 3) * 0.6);
-    rack(W, wY(77), 6.4, [1.2, 3, 4.8], 1.5); for (const [z, n] of [[1.3, 6], [3.1, 4], [4.9, 5]]) for (let i = 0; i < n; i++) roll(W, wY(77) + (i % 2 ? -0.3 : 0.5), 0.3 + i * 0.2, z + (i > 3 ? 0.18 : 0), 4.8 - (i % 3) * 0.5);
-    const t = at(41.5, 77.5, BF, 0); tbl(t, 7.5, 4); glow(t, -3, -1.4, 2.5); f.paper(t, 0.3, 2.506, 2.3, 3.1, P_hyd, { flat: true, y: 0.1, turn: Math.PI / 2, res: 120 }); roll(t, -1.6, 1.5, 2.5, 3.4); roll(t, 1.4, -1.6, 2.5, 3); Bl.cup(t, 3.2, 1.3, 2.5);
-    t.box(INKY, 2.6, 3.4, -0.6, -0.5, 2.5, 2.54); t.cyl(Ln('8a8f94'), 3.1, 0.4, 2.5, 2.75, 0.14, 0.14, 8);      // a rule, a pot of paste
-    chair(t, -2, 2.75, 2); chair(t, 2, -2.75, 0);
-    const bin = at(34, 84.6, BF, 0); bin.box(OAK, -0.8, 0.8, -0.8, 0.8, 0.02, 2.4, G); for (const [x, y, hh] of [[-0.4, -0.4, 5.4], [0.3, -0.3, 4.8], [0, 0.35, 5.8], [0.45, 0.4, 4.4], [-0.4, 0.3, 5], [0.1, -0.05, 6]]) bin.cyl(PAGE, x, y, 0.3, hh, 0.13, 0.13, 6); bin.block(-0.8, 0.8, -0.8, 0.8, 0, 3);
-    crate(48.8, 84.4, BF, 2.2, 1.8); crate(46.2, 84.6, BF, 2, 1.6);
-    { const STEEL = 'c#8a8f94/0.3/0.9', GRN = 'c#3a4a40/0.5';
-      const la = at(40.8, 85.6, BF, 2); la.box(GRN, -2.2, 2.2, -0.6, 0.6, 0, 2.6); la.box(STEEL, -2.1, 2.1, -0.35, 0.35, 2.6, 2.85); la.box(GRN, 1.1, 2.1, -0.55, 0.55, 2.85, 4.0); la.box(STEEL, 0.6, 1.1, -0.3, 0.3, 3.1, 3.7); la.box(GRN, -2, -1.4, -0.4, 0.4, 2.85, 3.6); la.box(STEEL, -0.5, 0.1, -0.45, 0.6, 2.85, 3.3); la.block(-2.2, 2.2, -0.6, 0.6, 0, 4);      // a lathe
-      const dp = at(33.2, 70.2, BF, 3); dp.box(GRN, -0.7, 0.7, -0.8, 0.8, 0, 0.3); dp.cyl(STEEL, 0, -0.4, 0.3, 5.6, 0.14, 0.14, 8); dp.box(GRN, -0.45, 0.45, -0.7, 0.9, 4.8, 5.7); dp.box(STEEL, -0.5, 0.5, -0.2, 0.8, 3, 3.12); dp.cyl(STEEL, 0, 0.45, 4.2, 4.8, 0.05, 0.05, 6); dp.block(-0.7, 0.7, -0.8, 0.9, 0, 5.7);      // a drill press
-      const tr = at(47.6, 70.4, BF, 0); tr.box(OAK, -1.6, 1.6, -1, 1, 2.3, 2.4, G); tr.box(OAK, -1.5, 1.5, -0.9, 0.9, 0.7, 0.78, G); for (const sx of [-1.45, 1.33]) for (const sy of [-0.9, 0.78]) tr.box(OAK, sx, sx + 0.12, sy, sy + 0.12, 0, 2.3, G); tr.block(-1.6, 1.6, -1, 1, 0, 2.4);
-      tr.box(Ln('5a4632'), -1.1, 1.1, -0.8, 0.8, 2.4, 2.5); tr.lathe(Ln('c9b48a'), 0, 0, [[0.75, 2.5], [0.5, 2.72], [0.25, 2.95], [0.06, 3.1], [0, 3.12]], { seg: 12 });
-      f.label(tr, 0, 0, 3, { label: 'look at the sandpile', title: 'Friday’s sandpile', kicker: 'EMC 101, Problem Set 4', text: 'Add sand a grain at a time and the pile steepens until it can hold no more; after that each grain may do nothing, or start a slide of any size. Small slides are common and big ones rare, in a fixed proportion: a power law. Bak, Tang and Wiesenfeld called it self-organized criticality, in 1987.\nPlease do not level it.' });
-      f.plate(at(0, 86.5, BF, 2), -40.8, 4.2, 'MACHINE SHOP', { style: 'painted', sub: 'goggles on; ask Jasper first', w: 2.4, tall: 0.5 }); }
-    f.plate(at(0, 67.5, BF, 0), 46, 5.4, 'CHARTS AND MAPS', { style: 'painted', sub: 'return them rolled, not folded', w: 3, tall: 0.6 }); wallClock(at(0, 67.5, BF, 0), 36, 6, 1.2);
-  }
-  // ---- Basement Room 4: the server room, for the Machine Intelligence group and everyone's simulations. The rostrum's steps are left clear ----
-  {
-    const RACK = 'c#2a2d31/0.5', STEEL = 'c#8a8f94/0.3/0.9', E = at(31.25, 0, BF, 1), Fw = at(0, 59.65, BF, 0), Bk = at(0, 85, BF, 2), bX = X => -X, dots = [];
-    bx('c#3a3d42/0.9', 10.4, 27.6, 68, 84, BF + 0.02, BF + 0.07);                // matting under the racks
-    for (const Y of [70.5, 76, 81.5]) {
-      for (let i = 0; i < 5; i++) { const X = 13 + i * 2.1;
-        bx(RACK, X - 1, X + 1, Y - 1.5, Y + 1.5, BF + 0.07, BF + 6.6); bx('c#17191c/0.6', X - 0.85, X + 0.85, Y - 1.53, Y - 1.5, BF + 0.5, BF + 6.3);
-        for (let k = 0; k < 9; k++) { bx(STEEL, X - 0.8, X + 0.8, Y - 1.56, Y - 1.53, BF + 0.8 + k * 0.6, BF + 0.84 + k * 0.6); dots.push([X - 0.6 + (k % 3) * 0.25, Y - 1.57, BF + 1.05 + k * 0.6]); if (k % 2) dots.push([X + 0.5, Y - 1.57, BF + 1.05 + k * 0.6]); } }
-      blk(12, 22.4, Y - 1.5, Y + 1.5, BF, BF + 6.6);
-      bx(STEEL, 11, 28, Y - 0.5, Y + 0.5, BF + 7.5, BF + 7.6); for (const X of [12, 20, 27.5]) bx(STEEL, X - 0.03, X + 0.03, Y - 0.03, Y + 0.03, BF + 7.6, BF + 9);      // a cable tray over each row
-      for (const X of [13, 15.1, 17.2, 19.3, 21.4]) bx('c#2f4a66/0.6', X - 0.12, X + 0.12, Y - 0.3, Y + 0.3, BF + 6.6, BF + 7.5);                                  // and the cables going up to it
-    }
-    bx(STEEL, 27.5, 28.5, 69.9, 82.1, BF + 7.5, BF + 7.6);                       // the tray that joins them
-    // the lamps on the racks: one small mesh, a dozen of them changing every half second
-    const wp = dots.map(([X, Y, h]) => f.world(X + ox, Y + oy, h));
-    f.later(ctx => { const T3 = ctx.THREE, m = new T3.InstancedMesh(new T3.BoxGeometry(0.07, 0.07, 0.07), new T3.MeshBasicMaterial(), wp.length), M4 = new T3.Matrix4(), cols = [0x40ff70, 0x40ff70, 0x40ff70, 0xffb030, 0x16301c].map(c => new T3.Color(c));
-      wp.forEach((p, i) => { m.setMatrixAt(i, M4.makeTranslation(p.x, p.y, p.z)); m.setColorAt(i, cols[i % 4]); }); m.instanceMatrix.needsUpdate = true; m.frustumCulled = false; ctx.scene.add(m); ctx.track?.(m, ctx.zoneAt(wp[0].x, wp[0].y, wp[0].z));
-      let last = 0; ctx.animated.push(t => { if (t - last < 0.5 || !m.visible) return; last = t; for (let k = 0; k < 12; k++) m.setColorAt(Math.floor(Math.random() * wp.length), cols[Math.floor(Math.random() * 5)]); m.instanceColor.needsUpdate = true; }); });
-    f.paper(at(22.42, 70.5, BF, 3), 0, 4.6, 1.2, 1.5, { kind: 'notice', hand: true, title: 'DO NOT UNPLUG', lines: ['Thesis in progress.', 'Six days in. Four to go.', 'Yes, this means you.'], colour: '#f2d16b' });
-    // the cooling unit, by the west windows
-    bx('c#b9bcb4/0.6', 3, 6.6, 74, 80, BF + 0.02, BF + 6.2); bx('c#3a3d42/0.7', 6.6, 6.64, 74.5, 79.5, BF + 3.4, BF + 5.8); bx(STEEL, 4.2, 5.4, 76.4, 77.6, BF + 6.2, BF + 8.9); blk(3, 6.7, 74, 80, BF, BF + 6.2);
-    // the console: a desk, a monitor with the queue on it, a folding chair
-    const cs = at(31.25, 72.6, BF, 1); cs.box(OAK, -2.6, 2.6, 0.08, 2.2, 2.4, 2.5, G); for (const x of [-2.5, 2.38]) cs.box(OAK, x, x + 0.12, 0.1, 2.1, 0, 2.4, G); cs.block(-2.6, 2.6, 0, 2.2, 0, 2.5);
-    cs.box(RACK, -1, 1, 0.5, 0.62, 2.9, 4.2); cs.box(RACK, -0.3, 0.3, 0.4, 0.8, 2.5, 2.56); cs.box(RACK, -0.06, 0.06, 0.5, 0.6, 2.56, 2.9); cs.box(RACK, -0.7, 0.7, 1.2, 1.7, 2.5, 2.55);
-    f.sign(cs, 0, 3.55, 1.84, 1.14, (g, W, H) => { D.fill(g, W, H, '#0f1a12'); const mono = { a: 'left', f: '"Courier New", monospace', w: 700 }, rows = ['JOB   NAME            USER     NODE      TIME', '4127  vit-small       tobias   glider    2-03:11', '4131  ising-L512      sorrel   ising       19:02', '4133  sandpile-25     cedric   lorenz       0:41', '4136  thesis-ch4      (d.r.)   hopfield  6-11:40', '4138  slime-maze      greta    physarum  queued', '4139  halts?          euclid   turing    unknown'];
-      rows.forEach((s, i) => D.T(g, s, W * 0.04, H * (0.1 + i * 0.125), H * 0.075, i ? '#7fe08a' : '#d9c46a', mono)); }, { y: 0.63, res: 190, rough: 0.3 });
-    chair(cs, 0.2, 3.3, 2); Bl.cup(cs, 1.8, 1.2, 2.5); Bl.notebook(cs, -1.7, 1.3, 2.5);
-    f.plate(E, 72.6, 6.3, 'SERVER ROOM', { style: 'painted', sub: 'Machine Intelligence, and everybody’s simulations', w: 3.4, tall: 0.6 });
-    E.cyl('c#b0201a/0.4', 66.6, 0.35, 0.05, 1.7, 0.24, 0.24, 8); E.cyl(DARK, 66.6, 0.35, 1.7, 2, 0.08, 0.08, 6);      // a fire extinguisher by the door
-    wallBench(at(31.25, 79.6, BF, 1), 5); Bl.bag(at(30.5, 80.4, BF + 1.5, 1), 0, 0, 0); wallClock(E, 68.6, 6.2, 1.2);
-    // the cluster's nodes, on the wall by the steps
-    f.chalkboard(Fw, 19.5, 5, 7, 3.4, c => {
-      c.text('The cluster', 4, 7, 5, { col: c.col.yellow });
-      c.lines(['glider      head node', 'blinker     storage', 'ising       64 cores', 'lorenz      64 cores'], 4, 14.5, 3.4, { lead: 5.2 });
-      c.lines(['turing      will your job halt?', 'hopfield    remembers things', 'physarum    slow; finds a way'], 42, 14.5, 3.4, { lead: 5.2 });
-      c.text('Back up before Friday.  T.', 42, 35.5, 3.2, { col: c.col.pink });
-    }, { frame: OAK });
-    // spares, on the back wall
-    rack(Bk, bX(26.5), 6, [1, 2.7, 4.4]);
-    for (const [X, z] of [[24.4, 1.1], [25.6, 1.1], [27.4, 2.8], [28.6, 2.8], [24.6, 4.5]]) Bk.box(Ln('c9c5ba'), bX(X) - 0.45, bX(X) + 0.45, 0.3, 1.2, z, z + 0.6);
-    for (const [X, z] of [[27.2, 1.1], [28.4, 1.1], [25, 2.8], [26.4, 4.5], [28, 4.5]]) Bk.cyl(pk(['c#2f4a66/0.6', 'c#3a3d42/0.6', 'c#b0603a/0.5']), bX(X), 0.75, z, z + 0.3, 0.32, 0.32, 10);
-  }
+  // ---- Basement Room 3, the machine shop (and Friday's sandpile): furnished in rooms/snow_workshop.js, the room's curator's file ----
+  // ---- Basement Room 4, the server room: furnished in rooms/snow_servers.js, the room's curator's file ----
   // ---- Basement Room 7: supplies ----
   {
     const Sw = at(0, 51.5, BF, 0);                                             // its south wall; x along it is X

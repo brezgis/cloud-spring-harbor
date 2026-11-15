@@ -374,6 +374,10 @@ export default function (b) {
     box(WOOD, SX - 0.12, SX + 0.1, SY0 - 0.12, F === F1 ? 52.35 - 14.7 / 16 - 0.08 : 52.4, F - 1.06, F - 0.05, G); box(WOOD, SX + 0.1, BX1, SY0 - 0.12, SY0 + 0.1, F - 1.06, F - 0.05, G);
     if (F > F1) { box(WOOD, SIDEH[0], BX1, P1 - TP / 2 - 0.05, P1 - TP / 2 + 0.03, F - 1.06, F - 0.05, G); box(WOOD, SIDEH[0] - 0.1, CL - 0.25, SIDE[2] - 0.15, SIDE[2] + 0.155, F - 1.06, F - 0.05, G); }
   }
+  // the head of the flight down to the basement: a riser board with a nosing over the first floor's cut edge, which
+  // the top step stops short of (the black of the hall's tiled floor and the whitewash under it showed there, a dark
+  // bar across the top of the flight)
+  { const ye = 52.35 - 14.7 / 16 - 0.08; box(WOOD, SX, BX1, ye - 0.07, ye, F1 - 0.64, F1 + 0.01, G); box(WOOD, SX, BX1, ye - 0.11, ye - 0.07, F1 - 0.07, F1 + 0.01, G); }
   // the first floor's guard beside the flight down to the basement (the flight to the second floor rises over it), to a newel at the head of that flight
   level('Y', CL, SY0 + 0.04, SY1 - 0.23, F1, [[-LH / (SY1 - SY0), 1, F1 - LH / (SY1 - SY0) * SY0 - 0.78]]); post(CL, SY1, 0.46, 0.46, F1 - 0.03, F1 + 3.4);
   // the attic: a newel at the corner of the well, and a guard across its head
@@ -447,7 +451,7 @@ export default function (b) {
       slab(TRIM, ax, f + out * 0.1, f, ring, 12);                                                              // the arch's ring, and a sill
       ubox(TRIM, ax, q.c - q.w / 2 - 0.3, q.c + q.w / 2 + 0.3, f, f + out * 0.3, q.sill - 0.4, q.sill);
       const fr = archPath(new THREE.Shape(), q); fr.holes.push(archPath(new THREE.Path(), q, -0.16)); slab('sash', ax, m - 0.07, m + 0.07, fr, 12);
-      slab('glass', ax, m - 0.01, m + 0.01, archPath(new THREE.Shape(), q, -0.16), 12);
+      slab('glass', ax, m - 0.01, m + 0.01, archPath(new THREE.Shape(), q, -0.13), 12);      // (into the frame by 0.03 all round)
       const n = q.w > 6 ? 3 : 1;                                                                               // mullions, a transom at the springing
       for (let i = 1; i < n; i++) { const u = q.c - q.w / 2 + (q.w * i) / n, top = q.spring + Math.sqrt(Math.max(0, (q.w / 2) ** 2 - (u - q.c) ** 2)) - 0.1; ubox('sash', ax, u - 0.09, u + 0.09, m - 0.07, m + 0.07, q.sill, top, G); }
       ubox('sash', ax, q.c - q.w / 2 + 0.1, q.c + q.w / 2 - 0.1, m - 0.06, m + 0.06, q.spring - 0.07, q.spring + 0.07, G);
@@ -597,6 +601,14 @@ export default function (b) {
   // further out: the floor in each bay lay outside every box, and showed as a pale strip along the wall)
   for (const [d, cl] of [[0.7, 39.0], [1.7, 40.6], [6, 44.8], [10.6, C3]]) interior(BX1 + d, MX1 - d, d, MY1 - d, F3, cl);
   for (const [dy, dx, cl] of [[0.7, 0.7, 39.0], [1.7, 1.7, 40.1], [8, 5, 43.3], [14, 8.5, 46.6], [18.6, 11, C3]]) interior(dx, BX1 + 10.6, BY0 + dy, BY1 - dy, F3, cl);
+  // the stair well: where the floors are cut away over the stair, its walls run on unbroken through the depth of the
+  // floor above, but each storey's box of light ends at its ceiling and the next begins at its floor, so the corner
+  // shade (lighting.js, houseShade) found a ceiling and a floor there that are not: a dark band across the well's
+  // walls at the height of each upper floor. Boxes over the holes, through the depth of each floor, measured from
+  // the storey below's floor to the storey above's ceiling (a foot under the ceiling and two over the floor, where
+  // the storeys' own shade has faded; half a foot into the walls; last, so that they are the ones that count)
+  for (const [H, lo, hi, fl, cl] of [[WELL, C1, F2, F1, C2], [SIDEH, C1, F2, F1, C2], [WELL, C2, F3, F2, C3], [SIDEH, C2, F3, F2, C3]])
+    b.interior(H[0] - 0.5 + XO, H[1] + 0.5 + XO, H[2] - 0.5 + YO, H[3] + 0.5 + YO, lo - 1, hi + 2, { floor: fl, ceil: cl });
 
   // one plain lamp to a room (two in the great ones), and a daylight fill
   const lampAt = (X, Y, fl, cl, drop) => {      // a plain globe on a rod (the kit's schoolhouse lamp is 700 triangles: too many for fifty rooms)

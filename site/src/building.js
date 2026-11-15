@@ -51,7 +51,7 @@ export function makeSite(B, site, lists) {
   // ON anything: when the walls are built (finish, below) each plastered face is made of the finishes of the room it
   // looks into (its leaf is cut into a dado, a field and a frieze, with a dado rail and a picture rail standing
   // proud), and each floor's boards and the ceiling under it are cut to the rooms over and under them.
-  const planRooms = [], slabs = [];      // every room, in plan coordinates; the tops and undersides of floors, kept until the rooms are known
+  const planRooms = [], slabs = [], wellsOver = [];      // every room, in plan coordinates; the tops and undersides of floors, kept until the rooms are known; the holes in floors and how low each floor's underside is (layBeams)
   let FIN = null;
   const finishes = t => { if (new URLSearchParams(globalThis.location?.search ?? '').get('finishes') === '0') return false; FIN = { ...(FIN ?? {}), ...t }; return true; };      // (?finishes=0: every room as the building file's own materials have it, for comparing)
   // The finished rooms a wall's face looks into: the face lies at `face` across a wall along `ax`, looking toward sg.
@@ -158,12 +158,27 @@ export function makeSite(B, site, lists) {
   }
   // Beams under a room's ceiling: beams: { ax, n | at: [...], d, w, mat }: along `ax`, n of them evenly (or at the
   // plan coordinates `at` across), d deep and w wide, their ends in the walls and their tops in the ceiling.
+  // Where the floor over the room has a hole in it (a stairwell), the beams are framed round it as a carpenter frames
+  // a well: the beams that would cross it stop at a header just outside it, and the header is carried by a trimmer
+  // along each side, a beam like the others but placed at the hole's edge. (They ran straight across the well before,
+  // a bar at head height over the flight, and the treads came up through them.)
   function layBeams() {
     if (FIN) for (const r of planRooms) {
       const bm = FIN[r.name]?.beams; if (!bm) continue;
-      const isX = bm.ax === 'X', [v0, v1] = isX ? [r.Y0, r.Y1] : [r.X0, r.X1], d = bm.d ?? 0.8, w = bm.w ?? 0.6, m = bm.mat ?? 'fir';
-      for (const v of (bm.at ?? Array.from({ length: bm.n ?? 2 }, (_, i) => v0 + (v1 - v0) * (i + 0.5) / (bm.n ?? 2))).filter(v => v > v0 + w && v < v1 - w))
-        isX ? L.pbox(m, r.X0 - 0.1, r.X1 + 0.1, v - w / 2, v + w / 2, r.ceil - d, r.ceil + 0.06, G) : L.pbox(m, v - w / 2, v + w / 2, r.Y0 - 0.1, r.Y1 + 0.1, r.ceil - d, r.ceil + 0.06, G);
+      const isX = bm.ax === 'X', [v0, v1] = isX ? [r.Y0, r.Y1] : [r.X0, r.X1], [u0, u1] = isX ? [r.X0 - 0.1, r.X1 + 0.1] : [r.Y0 - 0.1, r.Y1 + 0.1], d = bm.d ?? 0.8, w = bm.w ?? 0.6, m = bm.mat ?? 'fir';
+      const beam = (a, e, va, vb) => { if (e - a > 0.05) isX ? L.pbox(m, a, e, va, vb, r.ceil - d, r.ceil + 0.06, G) : L.pbox(m, va, vb, a, e, r.ceil - d, r.ceil + 0.06, G); };
+      // the wells over this room, along and across the beams: [ua, ub, va, vb]
+      const wells = wellsOver.filter(q => Math.abs(q.under - r.ceil) < 0.3 && q.X1 > r.X0 && q.X0 < r.X1 && q.Y1 > r.Y0 && q.Y0 < r.Y1).map(q => (isX ? [q.X0, q.X1, q.Y0, q.Y1] : [q.Y0, q.Y1, q.X0, q.X1]));
+      const trim = wells.flatMap(([, , va, vb]) => [va - w / 2, vb + w / 2]).filter(v => v > v0 + w && v < v1 - w);
+      for (const v of (bm.at ?? Array.from({ length: bm.n ?? 2 }, (_, i) => v0 + (v1 - v0) * (i + 0.5) / (bm.n ?? 2))).filter(v => v > v0 + w && v < v1 - w && !trim.some(t => Math.abs(t - v) < w * 1.5))) {
+        let cuts = [[u0, u1]];
+        for (const [ua, ub, va, vb] of wells) if (v + w / 2 > va && v - w / 2 < vb) cuts = cuts.flatMap(([a, e]) => [[a, Math.min(e, ua - w + 0.02)], [Math.max(a, ub + w - 0.02), e]]);
+        for (const [a, e] of cuts) beam(a, e, v - w / 2, v + w / 2);
+      }
+      for (const t of trim) beam(u0, u1, t - w / 2, t + w / 2);
+      // the headers, a little deeper than the beams (so that no two undersides lie in one plane), between the trimmers
+      for (const [ua, ub, va, vb] of wells) for (const [a, e] of [[ua - w, ua], [ub, ub + w]]) if (a > u0 + 0.2 && e < u1 - 0.2)
+        isX ? L.pbox(m, a, e, va - w, vb + w, r.ceil - d - 0.04, r.ceil + 0.03, G) : L.pbox(m, va - w, vb + w, a, e, r.ceil - d - 0.04, r.ceil + 0.03, G);
     }
   }
 
@@ -209,7 +224,7 @@ export function makeSite(B, site, lists) {
       }
       flush();
     }
-    for (const q of holes) portal(q[0], q[1], q[2], q[3], h - thick - 0.2, h + 0.2, 'h', 'stair');
+    for (const q of holes) { portal(q[0], q[1], q[2], q[3], h - thick - 0.2, h + 0.2, 'h', 'stair'); wellsOver.push({ X0: q[0], X1: q[1], Y0: q[2], Y1: q[3], under: h - thick }); }
     grow(X0, X1, Y0, Y1);
   }
   // ---- round ends ----------------------------------------------------------------------------------
@@ -357,12 +372,17 @@ export function makeSite(B, site, lists) {
   function buildWall(s) {
     const t = s.t, fl = s.fl ?? s.h0, isX = s.ax === 'X', c = s.c;
     const W = (u0, u1, h0, h1, w0, w1, mat, o) => { if (u1 - u0 < 0.004 || h1 - h0 < 0.004) return; isX ? L.pbox(mat, u0, u1, c + Math.min(w0, w1), c + Math.max(w0, w1), h0, h1, o) : L.pbox(mat, c + Math.min(w0, w1), c + Math.max(w0, w1), u0, u1, h0, h1, o); };
+    const BACK = sg => ({ ...G, skip: [isX ? [0, 0, sg] : [-sg, 0, 0]] });      // joinery on the face of the wall on side sg: no back, which lay in the plaster's plane
     // a flat piece cut to an outline in the wall's own plane ([[u, h], ...]), from w0 to w1 across the wall
     const slab = (mat, pts, w0, w1) => {
       const g = new THREE.ExtrudeGeometry(new THREE.Shape(pts.map(([u, h]) => new THREE.Vector2(u, h))), { depth: Math.abs(w1 - w0), bevelEnabled: false, curveSegments: 1 });
       if (isX) g.translate(0, 0, -(c + Math.max(w0, w1))); else { g.rotateY(Math.PI / 2); g.translate(c + Math.min(w0, w1), 0, 0); }
       L.add(mat, g);
     };
+    // Does the next storey's wall stand on this one's top, over the whole of u0..u1 and w0..w1 (across: absolute)? Not
+    // where it has an opening down to its foot with nothing in it (a window to the floor, or no threshold).
+    const capped = (u0, u1, w0, w1) => walls.some(o => o !== s && o.ax === s.ax && Math.abs(o.h0 - s.h1) < 0.01 && o.a <= u0 + 0.01 && o.b >= u1 - 0.01 && o.c - o.t / 2 <= w0 + 0.01 && o.c + o.t / 2 >= w1 - 0.01
+      && !(o.opens ?? []).some(p => p.at < u1 && p.at + p.w > u0 && (o.fl ?? o.h0) + (p.sill ?? 0) < o.h0 + 0.01 && (p.kind === 'win' || p.threshold === false)));
     const blockU = (u0, u1, h0, h1, half = t / 2) => (isX ? L.block(u0, u1, c - half, c + half, h0, h1) : L.block(c - half, c + half, u0, u1, h0, h1));
     const mn = s.neg ?? null, mp = s.pos ?? null, one = mn === mp || !mn || !mp;
     const outSg = s.outside === 'neg' ? -1 : s.outside === 'pos' ? 1 : (mn && mp && INTERIOR.test(mn) !== INTERIOR.test(mp)) ? (INTERIOR.test(mn) ? 1 : -1) : 0;      // which face is the weather's (0: neither)
@@ -389,8 +409,10 @@ export function makeSite(B, site, lists) {
       for (const sd of [-1, 1]) {
         const outer = one || sd === so, a = outer ? u0 : Math.max(u0, inner[0]), e = outer ? u1 : Math.min(u1, inner[1]);
         for (const [ua, ub, ha, hb, m] of leafRects(sd, a, e, h0, h1)) {      // (without the face between the leaves, or those between one band and the next)
-          const skip = [isX ? [0, 0, sd] : [-sd, 0, 0]]; if (ha > h0 + 0.004 || ha < s.h0 + 0.004) skip.push([0, -1, 0]);      // (nor the foot of the wall, which stands on something) if (hb < h1 - 0.004) skip.push([0, 1, 0]);
-          const w0 = c + Math.min(0, sd * t / 2), w1 = c + Math.max(0, sd * t / 2); isX ? partBox(m, ua, ub, w0, w1, ha, hb, skip) : partBox(m, w0, w1, ua, ub, ha, hb, skip);
+          const w0 = c + Math.min(0, sd * t / 2), w1 = c + Math.max(0, sd * t / 2);
+          const skip = [isX ? [0, 0, sd] : [-sd, 0, 0]]; if (ha > h0 + 0.004 || ha < s.h0 + 0.004) skip.push([0, -1, 0]);      // (nor the foot of the wall, which stands on something,
+          if (hb < h1 - 0.004 || (hb > s.h1 - 0.004 && capped(ua, ub, w0, w1))) skip.push([0, 1, 0]);                       // nor the top of a band with another on it, or of a wall with the next storey's standing on it)
+          isX ? partBox(m, ua, ub, w0, w1, ha, hb, skip) : partBox(m, w0, w1, ua, ub, ha, hb, skip);
         }
         if (!outer) { W(u0, Math.min(u1, inner[0]), h0, h1, 0, sd * t / 2, mo); W(Math.max(u0, inner[1]), u1, h0, h1, 0, sd * t / 2, mo); }
       }
@@ -419,6 +441,15 @@ export function makeSite(B, site, lists) {
     const piece = (u0, u1, h0, h1) => {
       if (u1 - u0 < 0.01 || h1 - h0 < 0.01) return;
       if (fin) return finished(u0, u1, h0, h1);
+      if (h1 > s.h1 - 0.004 && capped(u0, u1, c - t / 2, c + t / 2)) {      // (the storey above stands on it: its top is not drawn, it lay in the plane of the floor that runs in under that wall)
+        const cut = (a, e, w0, w1, m) => { if (e - a > 0.004) isX ? partBox(m, a, e, c + Math.min(w0, w1), c + Math.max(w0, w1), h0, h1, [[0, 1, 0]]) : partBox(m, c + Math.min(w0, w1), c + Math.max(w0, w1), a, e, h0, h1, [[0, 1, 0]]); };
+        blockU(u0, u1, h0, h1);
+        if (one) return cut(u0, u1, -t / 2, t / 2, mn ?? mp);
+        const mo = outSg > 0 ? mp : mn, mi = outSg > 0 ? mn : mp, so = outSg || -1;
+        cut(u0, u1, 0, so * t / 2, mo); cut(Math.max(u0, inner[0]), Math.min(u1, inner[1]), -so * t / 2, 0, mi);
+        cut(u0, Math.min(u1, inner[0]), -so * t / 2, 0, mo); cut(Math.max(u0, inner[1]), u1, -so * t / 2, 0, mo);
+        return;
+      }
       if (one) return W(u0, u1, h0, h1, -t / 2, t / 2, mn ?? mp, { collide: true });
       const mo = outSg > 0 ? mp : mn, mi = outSg > 0 ? mn : mp, so = outSg || -1;      // (two inside faces: neg counts as "outer", nothing is cut)
       W(u0, u1, h0, h1, 0, so * t / 2, mo, { collide: true });
@@ -450,7 +481,16 @@ export function makeSite(B, site, lists) {
     if (s.base !== false) for (const [sg, m] of [[-1, mn], [1, mp]]) {
       if (!m || !/^plaster/.test(m)) continue;
       const f = sg * t / 2;
-      for (const [r0, r1] of runs) { const a = one || sg === outSg ? r0 : Math.max(r0, inner[0]), b = one || sg === outSg ? r1 : Math.min(r1, inner[1]); W(a, b, fl, fl + 0.6, f, f + sg * 0.055, s.base ?? wood, G); }
+      // (it stops just inside the plinth blocks of a doorcase: run on to the opening, its end lay in the plane of the plinth's face in the reveal)
+      const plinth = sg !== outSg ? opens.filter(o => o.kind !== 'win' && o.trim !== false && Math.abs(o.sill ?? 0) < 0.01) : [], P0 = new Set(plinth.map(o => o.at)), P1 = new Set(plinth.map(o => o.at + o.w));
+      // (and where its run ends inside a wall that crosses this one, at that wall's face: carried on to this wall's end it
+      // came out through the far face of the other, a sliver of skirting in its plaster, or stood in its skirting)
+      const wv = c + f + sg * 0.03, hm = fl + 0.3, across = walls.filter(o => o !== s && o.ax !== s.ax && o.a < wv && o.b > wv && o.h0 < hm && o.h1 > hm);
+      for (const [r0, r1] of runs) {
+        let a = one || sg === outSg ? r0 : Math.max(r0, inner[0]), b = one || sg === outSg ? r1 : Math.min(r1, inner[1]); if (P1.has(r0)) a = Math.max(a, r0 + 0.365); if (P0.has(r1)) b = Math.min(b, r1 - 0.365);
+        for (const o of across) { const lo = o.c - o.t / 2, hi = o.c + o.t / 2; if (b > lo + 0.001 && b < hi + 0.01 && a < lo) b = lo; if (a < hi - 0.001 && a > lo - 0.01 && b > hi) a = hi; }
+        if (b - a > 0.004) W(a, b, fl, fl + 0.6, f, f + sg * 0.055, s.base ?? wood, BACK(sg));
+      }
     }
 
     // a finished room's dado rail and picture rail on this wall: each stops inside the casings of whatever opening
@@ -467,7 +507,7 @@ export function makeSite(B, site, lists) {
           if (rise > 0 && H + lo > spring) { const hw = o.w / 2, R = (hw * hw + rise * rise) / (2 * rise), dy = H + lo - (spring + rise - R), half = Math.sqrt(Math.max(0, (R + 0.2) ** 2 - dy * dy)); c0 = (u0 + u1) / 2 - half; c1 = (u0 + u1) / 2 + half; }
           spans = spans.flatMap(([a, e]) => [[a, Math.min(e, c0)], [Math.max(a, c1), e]]).filter(([a, e]) => e - a > 0.02);
         }
-        for (const [a, e] of spans) if (e - a > 0.02) W(a, e, H + lo, H + hi, f, f + sd * d, m, G);
+        for (const [a, e] of spans) if (e - a > 0.02) W(a, e, H + lo, H + hi, f, f + sd * d, m, BACK(sd));
       }
     }
 
@@ -483,7 +523,7 @@ export function makeSite(B, site, lists) {
     // nor higher than 0.68 above it.
     function doorcase(o, sg, f, u0, u1, hs, hh, rise, spring) {
       const kind = o.case ?? s.doorcase ?? 'cornice', room = s.h1 - hh, flat = !(rise > 0) && room > 0.45 && kind !== 'jambs', blocks = flat && kind === 'blocks';
-      const P = (a, b, h0, h1, d) => W(Math.min(a, b), Math.max(a, b), h0, h1, f, f + sg * d, wood, G);
+      const P = (a, b, h0, h1, d) => W(Math.min(a, b), Math.max(a, b), h0, h1, f, f + sg * d, wood, BACK(sg));
       const ring = (m, off0, off1, w0, w1) => slab(m, [...archPts(u0, u1, spring, rise, off1), ...archPts(u0, u1, spring, rise, off0).reverse()], w0, w1);
       const foot = Math.abs(hs - fl) < 0.01 ? hs + 0.74 : hs;      // (an opening with a sill has no plinths)
       const [tb, tf, tk] = flat && !blocks ? [hh, hh + 0.05, hh + 0.29] : [spring, spring, spring];      // how far up each member of a jamb goes: under a turned head they run on to meet it
@@ -518,8 +558,8 @@ export function makeSite(B, site, lists) {
           if (o.kind === 'win' && hs > s.h0 + 0.3) W(u0 - 0.3, u1 + 0.3, hs - 0.38, hs + 0.02, f, f + sg * 0.3, tm);
           if (rise > 0) ring(tm, 0, 0.85, f, f + sg * 0.09); else if (s.h1 > hh + 0.9) W(u0 - 0.45, u1 + 0.45, hh - 0.02, hh + 0.95, f, f + sg * 0.09, tm);
         } else if (o.kind === 'win') {
-          for (const [a, b] of [[u0 - 0.36, u0], [u1, u1 + 0.36]]) W(a, b, hs, spring, f, f + sg * 0.07, wood, G);
-          if (rise > 0) ring(wood, 0, 0.36, f, f + sg * 0.07); else if (s.h1 > hh + 0.45) W(u0 - 0.5, u1 + 0.5, hh, hh + 0.42, f, f + sg * 0.09, wood, G);
+          for (const [a, b] of [[u0 - 0.36, u0], [u1, u1 + 0.36]]) W(a, b, hs, spring, f, f + sg * 0.07, wood, BACK(sg));
+          if (rise > 0) ring(wood, 0, 0.36, f, f + sg * 0.07); else if (s.h1 > hh + 0.45) W(u0 - 0.5, u1 + 0.5, hh, hh + 0.42, f, f + sg * 0.09, wood, BACK(sg));
           W(u0 - 0.44, u1 + 0.44, hs - 0.12, hs + 0.02, f, f + sg * 0.24, wood, G);
         } else doorcase(o, sg, f, u0, u1, hs, hh, rise, spring);
       }
@@ -549,8 +589,10 @@ export function makeSite(B, site, lists) {
           for (let q = 1; q < cols; q++) W(a + ((b - a) * q) / cols - 0.025, a + ((b - a) * q) / cols + 0.025, hs + r, top, -0.035, 0.035, sashM, G);
           for (let q = 1; q < rows; q++) W(a, b, hs + r + ((top - hs - r) * q) / rows - 0.03, hs + r + ((top - hs - r) * q) / rows + 0.03, -0.04, 0.04, sashM, G);
         }
-        if (rise > 0) slab('glass', [[u0 + r, hs + r], [u1 - r, hs + r], [u1 - r, spring], ...archPts(u0, u1, spring, rise, -r).reverse().slice(1, -1), [u0 + r, spring]], -0.01, 0.01);
-        else W(u0 + r, u1 - r, hs + r, hh - r, -0.01, 0.01, 'glass');
+        // (the glass runs 0.03 into the frame all round: cut to the frame's inside, its edges lay in the planes of the frame's faces)
+        const gi = r - 0.03;
+        if (rise > 0) slab('glass', [[u0 + gi, hs + gi], [u1 - gi, hs + gi], [u1 - gi, spring], ...archPts(u0, u1, spring, rise, -gi).reverse().slice(1, -1), [u0 + gi, spring]], -0.01, 0.01);
+        else W(u0 + gi, u1 - gi, hs + gi, hh - gi, -0.01, 0.01, 'glass');
         return;
       }
 
@@ -575,7 +617,7 @@ export function makeSite(B, site, lists) {
         if (cross) for (const h of [g0_ + 0.26, g1 - 0.26]) for (const [p, q] of [[a, a + m - 0.026], [a + m + 0.026, b - m - 0.026], [b - m + 0.026, b]]) W(p, q, h - 0.026, h + 0.026, -0.04, 0.04, wood, G);
       }
       if (rise > 0) {
-        ring(wood, -J, 0, -0.16, 0.16); slab('glass', [[u0 + J, spring - 0.03], [u1 - J, spring - 0.03], ...archPts(u0, u1, spring, rise, -J).reverse().slice(1, -1)], -0.01, 0.01);      // (its foot let into the head of the frame)
+        ring(wood, -J, 0, -0.16, 0.16); slab('glass', [[u0 + J - 0.03, spring - 0.03], [u1 - J + 0.03, spring - 0.03], ...archPts(u0, u1, spring, rise, -J + 0.03).reverse().slice(1, -1)], -0.01, 0.01);      // (its foot let into the head of the frame, its edges into the frame)
         const hw = (u1 - u0) / 2, R = (hw * hw + rise * rise) / (2 * rise), under = u => spring + rise - R + Math.sqrt(Math.max(0, (R - J) ** 2 - (u - (u0 + u1) / 2) ** 2));      // the underside of the frame's ring
         const hb = o.headBars ?? (o.kind === 'gdoor' && leaves === 2 ? 2 : 0), list = Array.isArray(hb) ? hb : Array.from({ length: Math.max(0, hb - 1) }, (_, i) => (i + 1) / hb);
         bars(u0 + J, u1 - J, spring, u => Math.min(under(u - 0.026), under(u + 0.026)) + 0.03, list);
@@ -606,7 +648,7 @@ export function makeSite(B, site, lists) {
   // margin }] puts a flat-headed window in facet i (heights above fl). Arched heads here are built by hand.
   function arcWall(s) {
     const { X, Y, r, h0, h1 } = s, t = s.t ?? 1.5, n = s.n ?? 12, fl = s.fl ?? h0, a0 = (s.from * Math.PI) / 180, da = ((s.to - s.from) * Math.PI) / 180 / n, flip = da < 0 ? -1 : 1;
-    const len = 2 * (r + t / 2) * Math.tan(Math.abs(da) / 2) + 0.004, trim = s.trim ?? 'limestone_smooth', sashM = s.sash ?? 'sash';
+    const tn = Math.tan(Math.abs(da) / 2), len = 2 * (r + t / 2) * tn + 0.004, trim = s.trim ?? 'limestone_smooth', sashM = s.sash ?? 'sash';
     arcs.push({ X, Y, r, t, h0, h1, lo: Math.min(s.from, s.to) * Math.PI / 180, hi: Math.max(s.from, s.to) * Math.PI / 180 });
     for (let i = 0; i < n; i++) {
       const phi = a0 + (i + 0.5) * da, cx = X + r * Math.cos(phi), cy = Y + r * Math.sin(phi), o = (s.opens ?? []).find(q => q.i === i);
@@ -616,6 +658,10 @@ export function makeSite(B, site, lists) {
         const g = new THREE.BoxGeometry(u1 - u0, b - a, w1 - w0).toNonIndexed(), p = g.attributes.position, nn = g.attributes.normal, uv = g.attributes.uv;
         g.translate((u0 + u1) / 2, (a + b) / 2, (w0 + w1) / 2);
         for (let q = 0; q < p.count; q++) { const side = Math.abs(nn.getX(q)) > 0.5, topF = Math.abs(nn.getY(q)) > 0.5; uv.setXY(q, side ? p.getZ(q) : p.getX(q) + i * len * flip, topF ? p.getZ(q) : p.getY(q)); }
+        // A piece that reaches a joint with the next facet is mitred there: its end turned to the line through the
+        // centre, so that the two meet without overlapping. (Square ends, cut to the length of the outer face, overlapped
+        // in a wedge at every joint, and the overlapping tops and soffits lay in one plane.)
+        for (let q = 0; q < p.count; q++) { const x = p.getX(q); if (Math.abs(Math.abs(x) - h) < 1e-5) p.setX(q, Math.sign(x) * ((r + p.getZ(q)) * tn + 0.002)); }
         g.rotateY(phi + Math.PI / 2); g.translate(cx, 0, -cy); L.add(mat, g);
       };
       const leaf = (u0, u1, a, b) => { F(s.out, u0, u1, a, b, 0, t / 2); F(s.in ?? s.out, u0, u1, a, b, -t / 2, 0); };
@@ -626,7 +672,7 @@ export function makeSite(B, site, lists) {
         leaf(-h, -h + m, h0, h1); leaf(h - m, h, h0, h1); leaf(-h + m, h - m, h0, hs); leaf(-h + m, h - m, hh, h1);
         F(trim, -h + m - 0.25, h - m + 0.25, hs - 0.36, hs + 0.02, t / 2, t / 2 + 0.28); F(trim, -h + m - 0.3, h - m + 0.3, hh - 0.02, Math.min(h1, hh + 0.9), t / 2, t / 2 + 0.09);
         F(sashM, -h + m, -h + m + e, hs, hh, -0.07, 0.07); F(sashM, h - m - e, h - m, hs, hh, -0.07, 0.07); F(sashM, -h + m + e, h - m - e, hs, hs + e, -0.07, 0.07); F(sashM, -h + m + e, h - m - e, hh - e, hh, -0.07, 0.07);
-        F(sashM, -h + m + e, h - m - e, (hs + hh) / 2 - 0.03, (hs + hh) / 2 + 0.03, -0.04, 0.04); F('glass', -h + m + e, h - m - e, hs + e, hh - e, -0.01, 0.01);
+        F(sashM, -h + m + e, h - m - e, (hs + hh) / 2 - 0.03, (hs + hh) / 2 + 0.03, -0.04, 0.04); F('glass', -h + m + e - 0.03, h - m - e + 0.03, hs + e - 0.03, hh - e + 0.03, -0.01, 0.01);      // (the glass into the frame all round)
         const nx = Math.cos(phi), ny = Math.sin(phi), across = Math.abs(nx) > Math.abs(ny) ? 'X' : 'Y', hw = (len / 2 - m) * (across === 'X' ? Math.abs(nx) : Math.abs(ny)) + 0.2;
         across === 'X' ? portal(cx - t / 2, cx + t / 2, cy - hw, cy + hw, hs, hh, 'X', 'win') : portal(cx - hw, cx + hw, cy - t / 2, cy + t / 2, hs, hh, 'Y', 'win');
         if (hs < 12 && s.out && !INTERIOR.test(s.out)) { const [x, z] = P(cx + nx * t / 2, cy + ny * t / 2), [wx, wz] = Dir(nx, ny); lists.windows.push({ x, z, nx: wx, nz: wz, w: len - 2 * m, y: g0 }); }

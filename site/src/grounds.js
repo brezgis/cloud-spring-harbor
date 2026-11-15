@@ -631,11 +631,35 @@ export function layGrounds(B, items) {
     }
     F.build(scene);
     for (const f of setups) f(ctx);
-    for (const s of signs) {      // the painted boards
-      const c = document.createElement('canvas'); c.width = s.cw ?? 512; c.height = s.ch ?? Math.round(c.width * s.h / s.w); s.draw(c.getContext('2d'), c.width, c.height);
-      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(s.w, s.h), new THREE.MeshStandardMaterial({ map: t, roughness: 0.75, metalness: 0, ...(s.cut ? { alphaTest: 0.5, side: THREE.DoubleSide } : {}) }));
-      m.name = 'board'; m.matrixAutoUpdate = false; m.matrix.copy(s.m); m.receiveShadow = true; scene.add(m);
+    // The painted boards: each drawn at its own size, then all packed into one sheet (those cut to a shape into a second),
+    // and built as one mesh: they had been a texture and a draw call apiece, ten of them in a view of the Landing.
+    for (const cut of [false, true]) {
+      const list = signs.filter(s => !!s.cut === cut).map(s => {
+        const c = document.createElement('canvas'); c.width = s.cw ?? 512; c.height = s.ch ?? Math.round(c.width * s.h / s.w); s.draw(c.getContext('2d'), c.width, c.height);
+        return { s, c };
+      });
+      if (!list.length) continue;
+      list.sort((a, b) => b.c.height - a.c.height);
+      const M = 4, SW = Math.max(1024, ...list.map(it => it.c.width + 2 * M)); let x = 0, y = 0, rowH = 0;
+      for (const it of list) { const w = it.c.width + 2 * M; if (x + w > SW) { x = 0; y += rowH; rowH = 0; } it.x = x + M; it.y = y + M; x += w; rowH = Math.max(rowH, it.c.height + 2 * M); }
+      const sheet = document.createElement('canvas'); sheet.width = SW; sheet.height = Math.ceil((y + rowH) / 4) * 4; const g = sheet.getContext('2d');
+      for (const it of list) {
+        const { c, x: px, y: py } = it, w = c.width, h = c.height;
+        g.drawImage(c, px, py);
+        if (!cut) {      // (edge pixels drawn out into the margin, so the smaller mipmaps do not take in a neighbour)
+          g.drawImage(c, 0, 0, w, 1, px, py - M, w, M); g.drawImage(c, 0, h - 1, w, 1, px, py + h, w, M);
+          g.drawImage(c, 0, 0, 1, h, px - M, py, M, h); g.drawImage(c, w - 1, 0, 1, h, px + w, py, M, h);
+          for (const [sx, sy, dx, dy] of [[0, 0, px - M, py - M], [w - 1, 0, px + w, py - M], [0, h - 1, px - M, py + h], [w - 1, h - 1, px + w, py + h]]) g.drawImage(c, sx, sy, 1, 1, dx, dy, M, M);
+        }
+      }
+      const parts = list.map(({ s, c, x: px, y: py }) => {
+        const q = new THREE.PlaneGeometry(s.w, s.h), uv = q.attributes.uv;
+        for (let k = 0; k < uv.count; k++) uv.setXY(k, (px + uv.getX(k) * c.width) / sheet.width, 1 - (py + (1 - uv.getY(k)) * c.height) / sheet.height);
+        q.applyMatrix4(s.m); return q;
+      });
+      const t = new THREE.CanvasTexture(sheet); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+      const m = new THREE.Mesh(mergeGeometries(parts), new THREE.MeshStandardMaterial({ map: t, roughness: 0.75, metalness: 0, ...(cut ? { alphaTest: 0.5, side: THREE.DoubleSide } : {}) }));
+      m.name = 'board'; m.receiveShadow = true; scene.add(m);
     }
     if (plates.length) {      // the plates on their stakes: one sheet, one mesh
       const CW = 800, CH = 264, c = document.createElement('canvas'); c.width = CW; c.height = CH * plates.length; const g = c.getContext('2d'), parts = [];

@@ -17,6 +17,10 @@ Read `../buildings/README.md` first for the coordinates and the materials, and y
 
 ## House rules (Anna's)
 
+For this place her later word overrides the restraint below: the lab should be **full and lived-in** ("nothing
+should be so sparse", "it should have soul"). Read the first three rules as how to arrange plenty, not as a
+reason to leave a room thin; the rest stand as written.
+
 - **One idea per room.** A lecture room is its board and its benches. An office is a desk by a window.
 - **Few, large, calm things.** One long table before six small ones.
 - **Leave bare wall.** A wall with one thing on it is finished.
@@ -81,11 +85,12 @@ inside the room's box.
 | for | builder | notes |
 |---|---|---|
 | a desk | `K.desk(fr, w, d, { gallery })` | top at 2.5; the frame is its back edge, the sitter's side is +y |
-| a chair | `K.diningChair(fr, x, y, { dq, back: 'ladder' or 'spindle', arms, wood })` | seat 1.55, sittable; faces the frame's front |
+| a chair | `K.chair(fr, x, y, { kind, dq, turn, wood })` (`kind`: bentwood, windsor, captain, office ...: `kit/chairs.js`), or `K.diningChair(fr, x, y, { dq, back: 'ladder' or 'spindle', arms, wood })` | seat 1.55, sittable; faces the frame's front |
+| a stool | `K.stool(fr, x, y, { h, back })` | a lab or counter stool (h 2.05) or a low one (1.5); sittable |
 | a long table | `K.diningTable(fr, w, d, { style: 'trestle' or 'legs', wood })` | top 2.5, centred on the frame |
 | any table | `K.table(fr, w, d, tall, mat, leg, { shelf, overhang })`, `K.sideTable(fr, x, y, { kind, h })` | |
 | an easy chair, a sofa | `K.armchair(fr, fabric, pillow)`, `K.sofa(fr, w, fabric, pillows, { throw: false })` | 3k and 5k triangles: a reading room, a common room |
-| a bench | none ready-made: boards (`fr.bev`) and `f.seat` | `K.hallTree(fr, w)` is a hall bench with hooks and coats |
+| a bench | `K.wallBench(fr, w, { d, h, back, cushion })` on a wall frame; or boards (`fr.bev`) and `f.seat` | `K.hallTree(fr, w)` is a hall bench with hooks and coats |
 | bookcases | `K.bookcase(fr, w, tall, { d, pitch, fill, wood, subject })` on a wall frame | every book is a real one (assets/books.json) that can be taken down; `fill` 0 to 1; `subject`: see Books below |
 | books | `K.bookRow(fr, x0, x1, back, z, clear, fill, { subject })`, `K.bookStack(fr, x, y, z, n, { subject })`, `K.openBook(fr, x, y, z)` | on shelves you built yourself |
 | a library's shelves | `K.shelf(fr, x0, x1, back, z, clear, { front, subject, run, fill, open })`, `K.shelfRun(name, { subject, fit, fill })`, `K.shelfLabel(...)` | whole walls and ranges of books, in catalogue order: see Books below |
@@ -254,9 +259,15 @@ apple" at a place where the thing stands (you place the thing itself); `drink: {
 
 ## Ordinary researchers
 
-Besides the named staff, the place is peopled by plain working robots of six makes, who do not walk about: they
+Besides the named staff, the place is peopled by plain working robots of six makes: a cohort of eighteen
+(`faculty/researcher_cohort.js`), the same all day and night, who move between their rooms every few minutes and get
+up on errands within a room. **An `f.researcher` call marks a SPOT, not a robot:** a place one of the cohort may come
+to work, used when one is in the room and otherwise an empty chair with the work left on the table. At a spot they
 sit with a cup, read, type, write, listen to a lecture, stand at a bench, or stand talking in pairs. None has
-legs: they float (the wide one rolls on little wheels when it is on the floor).
+legs: they float (the wide one rolls on little wheels when it is on the floor). Who
+comes to a spot is the cohort's business: on a spot, `make`, `size` and the look of `seed` no longer choose a robot
+(each member of the cohort brings its own; the makes and touches below are what the cohort is made of), and `seed`
+only varies the work left on the table; `pose`, `facing`, `seat`, `top`, `lines` and `role` still hold.
 
     f.researcher({ at: [X, Y, h],           // seated: the MIDDLE OF THE SEAT, h the top of the seat. Standing: where it stands, h the floor
                    facing: [X, Y],          // a point it faces (its table, the lecturer, the other one), or plan degrees (0 is +X, 90 is +Y)
@@ -593,6 +604,6 @@ fireplace, but life.js's fire is laid for the house's hearth and would need turn
 
 ## What does not exist
 
-So that you do not look for it: benches, lecterns, school desks, lab benches, card catalogues, globes, clocks
+So that you do not look for it: lecterns, school desks, lab benches, card catalogues, globes, clocks
 and coat pegs as ready-made pieces (build them from frames and boxes, plainly); curved furniture other than
 `fr.lathe` and `fr.cyl`; more than one record player; students.

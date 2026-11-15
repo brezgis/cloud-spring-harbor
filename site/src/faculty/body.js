@@ -26,20 +26,25 @@
 // lookFromSeed(n) makes a plausible new look from a number.
 
 import { useThree as use0, paint, makeFace, xform as T, merge, mesh, sph, cyl } from './models.js';
+import { latheGeometry as lathe, cornerR } from '../robokit/shell.js';
+import { makeFaceLife, talkMouth } from '../robokit/face.js';
 let THREE;
 const TAU = Math.PI * 2;
 export function useThreeBody(T3) { THREE = T3; use0(T3); }
 const CREAM = '#efe4cf', BRASS = '#c9a45c', DARK = '#2a2622', WOOD = '#6b4a2e';
 
 // ---- the kit ---------------------------------------------------------------------------------------------
-// A solid of revolution from a profile [[r, y], ...] (bottom to top), round or with a few flat sides (then r is
-// the half-width across the flats, a flat faces the front, and it is shaded flat); stretched sx across, sz deep.
-function lathe(pts, sides = 24, sx = 1, sz = 1, turn = 0) {
-  const poly = sides <= 8, k = poly ? 1 / Math.cos(Math.PI / sides) : 1;
-  let g = new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(Math.max(r * k, 1e-4), y)), sides);
-  g.rotateY(poly ? Math.PI / sides + turn : turn); g.scale(sx, 1, sz);
-  if (poly) { g = g.toNonIndexed(); g.computeVertexNormals(); }
-  return g;
+// The turned solid (a profile [[r, y], ...], round or with a few flat sides; four sides make a rounded square) and
+// the corner radius of a rounded-square section are robokit's now: robokit/shell.js latheGeometry and cornerR.
+
+// A slab w by h, d deep, about its middle, with corners of radius r in its face and its edges bevelled (a
+// rounded tile: a face's frame, a book's cover, a panel)
+function slab(w, h, d, r = Math.min(w, h) * 0.22, p = [0, 0, 0], rot = [0, 0, 0], bevel = Math.min(0.02, d * 0.3)) {
+  const x = w / 2 - bevel, y = h / 2 - bevel; r = Math.max(0.005, Math.min(r - bevel, x, y) );
+  const sh = new THREE.Shape(); sh.moveTo(-x + r, -y); sh.lineTo(x - r, -y); sh.quadraticCurveTo(x, -y, x, -y + r); sh.lineTo(x, y - r); sh.quadraticCurveTo(x, y, x - r, y); sh.lineTo(-x + r, y); sh.quadraticCurveTo(-x, y, -x, y - r); sh.lineTo(-x, -y + r); sh.quadraticCurveTo(-x, -y, -x + r, -y);
+  const g = new THREE.ExtrudeGeometry(sh, { depth: Math.max(0.001, d - bevel * 2), bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 2, curveSegments: 4 });
+  g.translate(0, 0, -(d - bevel * 2) / 2); g.clearGroups();
+  return T(g, { p, r: rot });
 }
 // a rod from a to b, r0 thick at a and r1 at b
 function rod(a, b, r0, r1 = r0, seg = 6) {
@@ -95,6 +100,8 @@ export const TOOLS = {
   trug: () => [paint(T(new THREE.SphereGeometry(0.3, 12, 5, 0, TAU, Math.PI / 2, Math.PI / 2), { p: [0, -0.3, 0.1], s: [0.72, 0.5, 1.25] }), '#a8845a'), paint(T(new THREE.TorusGeometry(0.2, 0.015, 5, 12, Math.PI), { p: [0, -0.3, 0.1], s: [1, 1.5, 1] }), '#8a6a44'), paint(ball(0.07, [0.05, -0.33, 0.2], [1, 0.5, 1], 6, 4), '#d8758e'), paint(ball(0.07, [-0.06, -0.33, 0], [1, 0.5, 1], 6, 4), '#e0b14a'), paint(ball(0.08, [0.02, -0.34, -0.12], [1, 0.4, 1.4], 6, 4), '#6f8f3e')],
   logbook: () => [paint(box(0.4, 0.5, 0.09, [0, 0.16, 0.12], [0.5, 0, 0]), '#1f2a44'), paint(box(0.37, 0.47, 0.095, [0.014, 0.16, 0.12], [0.5, 0, 0]), '#f4eee2'), paint(box(0.06, 0.5, 0.1, [-0.18, 0.16, 0.12], [0.5, 0, 0]), BRASS), paint(T(cyl(0.012, 0.012, 0.3, 5), { p: [0.16, 0.3, 0.22], r: [0.5, 0, 0.5] }), '#d9a520')],
   spyglass: () => [paint(T(cyl(0.05, 0.06, 0.3, 10), { p: [0, 0.08, 0.2], r: [1.0, 0, 0] }), BRASS), paint(T(cyl(0.04, 0.045, 0.3, 10), { p: [0, 0.23, 0.43], r: [1.0, 0, 0] }), '#3a2a20'), paint(T(cyl(0.065, 0.05, 0.12, 10), { p: [0, 0.34, 0.6], r: [1.0, 0, 0] }), BRASS)],
+  // a lantern carried by its ring: a brass frame, four warm panes (it is the one light she works by at night)
+  lantern: () => [paint(T(new THREE.TorusGeometry(0.06, 0.012, 5, 10), { p: [0, 0.05, 0.12] }), BRASS), paint(T(cyl(0.11, 0.13, 0.04, 8), { p: [0, -0.04, 0.12] }), BRASS), paint(T(cyl(0.085, 0.085, 0.2, 8), { p: [0, -0.16, 0.12] }), '#ffd88a'), paint(T(cyl(0.12, 0.13, 0.04, 8), { p: [0, -0.28, 0.12] }), BRASS), ...[0, 1, 2, 3].map(i => paint(rod([Math.sin(i * Math.PI / 2 + 0.78) * 0.1, -0.27, 0.12 + Math.cos(i * Math.PI / 2 + 0.78) * 0.1], [Math.sin(i * Math.PI / 2 + 0.78) * 0.1, -0.05, 0.12 + Math.cos(i * Math.PI / 2 + 0.78) * 0.1], 0.012, 0.012, 4), BRASS))],
   thermos: () => [paint(T(cyl(0.075, 0.075, 0.42, 12), { p: [0, 0.16, 0.1] }), '#3f5a48'), paint(T(cyl(0.08, 0.08, 0.1, 12), { p: [0, 0.42, 0.1] }), '#b9bcc0'), paint(T(cyl(0.077, 0.077, 0.03, 12), { p: [0, 0.1, 0.1] }), '#b9bcc0')],
   top: () => [paint(lathe([[0, -0.2], [0.14, 0.02], [0.15, 0.08], [0.04, 0.2], [0.03, 0.3], [0, 0.3]], 12), p => (p.y > 0.03 && p.y < 0.09 ? CREAM : '#b8452e')).translate(0, 0.16, 0.1)],
 };
@@ -120,6 +127,13 @@ function makeKit(L) {
     return K.S; };
   K.rad = y => { const p = K.S.pts; let r = 0; for (let i = 1; i < p.length; i++) { const [r0, y0] = p[i - 1], [r1, y1] = p[i], lo = Math.min(y0, y1), hi = Math.max(y0, y1); if (y >= lo - 1e-6 && y <= hi + 1e-6) r = Math.max(r, hi - lo < 1e-6 ? Math.max(r0, r1) : r0 + (r1 - r0) * (y - y0) / (y1 - y0)); } return r; };
   K.side = y => K.rad(y) * K.S.sx; K.front = y => K.rad(y) * K.S.sz;
+  // how far forward the shell's surface is at (x, y), or 0 off it: a rounded square, a round body, or (six sides and
+  // more) near enough the circle through its flats
+  K.surfZ = (x, y) => { const S = K.S; if (!S || y < S.y0 - 1e-3 || y > S.y1 + 1e-3) return 0; const r = K.rad(y); if (r < 1e-3) return 0;
+    if (S.sides === 4) { const a = r * S.sx, b = r * S.sz, c = cornerR(a, b), ax = Math.abs(x); return ax <= a - c ? b : ax >= a ? 0 : b - c + Math.sqrt(Math.max(0, c * c - (ax - a + c) ** 2)); }
+    const xr = x / S.sx; return Math.abs(xr) >= r ? 0 : S.sz * Math.sqrt(r * r - xr * xr); };
+  // the half-width of a four-sided shell's flat front at y (inside its rounded corners)
+  K.flat = y => { const S = K.S, a = K.side(y), b = K.front(y); return S.sides === 4 ? a - cornerR(a, b) : a; };
   // a strip of the shell's own surface, `off` proud of it: a band, a rim, a seam
   K.band = (ya, yb, off, colour) => { const ys = [ya, ...K.S.pts.map(p => p[1]).filter(y => y > ya + 0.01 && y < yb - 0.01).sort((a, b) => a - b), yb]; K.put(lathe(ys.map(y => [K.rad(y) + off, y]), K.S.sides, K.S.sx, K.S.sz), colour); };
   // a patch of the shell's front, w wide and h tall about yc, `off` proud of it (a screen, a shirt front, an apron)
@@ -138,10 +152,11 @@ function makeKit(L) {
   K.panel = (yc, w, h, colour, off = 0.008) => K.put(K.patch(yc, w, h, off), colour);
   // the face: a screen on the shell (or, flat: [x, y, z] of its middle, on anything)
   K.faceAt = (yc, w, h, o = {}) => {
+    if (!o.flat && K.S?.sides === 4) { const f = 2 * (K.flat(yc) - 0.035); if (w > f) { h *= f / w; w = f; } }      // (on a rounded square, within its flat front, frame and all)
     K.face = o.flat ? T(new THREE.PlaneGeometry(w, h), { p: o.flat }) : K.patch(yc, w, h, o.off ?? 0.014); K.eye = yc;
     if (o.frame === false || !(o.flat || K.S.sides <= 8)) return;
     const t = 0.03, z = o.flat ? o.flat[2] : K.front(yc) + 0.014, tilt = o.flat ? 0 : Math.atan2(K.front(yc - h / 2) - K.front(yc + h / 2), h);
-    K.put(box(w + t * 2, h + t * 2, 0.02, [o.flat ? o.flat[0] : 0, o.flat ? o.flat[1] : yc, z - 0.016], [-tilt, 0, 0]), o.frame ?? TRIM);
+    K.put(slab(w + t * 2, h + t * 2, 0.026, h * 0.2 + t, [o.flat ? o.flat[0] : 0, o.flat ? o.flat[1] : yc, z - 0.019], [-tilt, 0, 0], 0.008), o.frame ?? TRIM);      // (a rounded frame, to the screen's own round corners)
   };
   // what is worn on the head, its brim at height y, for a head about hr in radius
   K.hat = (y, hr, o = {}) => {
@@ -174,15 +189,34 @@ function makeKit(L) {
   };
   // small things laid on, each where the form says
   K.buttons = (ys, z, x = 0) => { if (L.buttons) for (const y of ys) K.put(ball(0.035, [x, y, typeof z === 'function' ? z(y) : z], [1, 1, 1], 8, 6), L.buttons); };
-  K.bowtie = (y, z) => { if (L.bowtie) { for (const sx of [-1, 1]) K.put(T(new THREE.ConeGeometry(0.08, 0.16, 10), { p: [sx * 0.08, y, z], r: [0, 0, -sx * Math.PI / 2], s: [1, 1, 0.55] }), L.bowtie); K.put(ball(0.04, [0, y, z + 0.01]), L.bowtie); } };
+  // (each wing and the knot laid on the shell where it is at that height, if there is shell there; else at z)
+  K.bowtie = (y, z) => { if (L.bowtie) { const on = x => { const s = K.surfZ(x, y); return s > 0 ? s + 0.03 : z; }; for (const sx of [-1, 1]) K.put(T(new THREE.ConeGeometry(0.08, 0.16, 10), { p: [sx * 0.08, y, on(sx * 0.12)], r: [0, 0, -sx * Math.PI / 2], s: [1, 1, 0.55] }), L.bowtie); K.put(ball(0.04, [0, y, on(0) + 0.01]), L.bowtie); } };
   K.ears = (y, x) => {
-    if (L.ears === 'cups') for (const sx of [-1, 1]) K.put(torus(0.15, 0.04, [sx * (x + 0.1), y, 0], [0, 0, 0], 14), TRIM);
+    if (L.ears === 'cups') for (const sx of [-1, 1]) { K.put(torus(0.13, 0.04, [sx * (x + 0.035), y, 0], [0, Math.PI / 2, 0], 14), TRIM); K.put(T(cyl(0.11, 0.12, 0.05, 14), { p: [sx * (x + 0.02), y, 0], r: [0, 0, Math.PI / 2] }), BELLY); }      // (an ear cup turned out to the side, against it)
     if (L.ears === 'bolts') for (const sx of [-1, 1]) { K.put(T(cyl(0.11, 0.11, 0.1, 6), { p: [sx * (x + 0.03), y, 0], r: [0, 0, Math.PI / 2] }), TRIM); K.put(T(cyl(0.05, 0.05, 0.2, 8), { p: [sx * (x + 0.1), y, 0], r: [0, 0, Math.PI / 2] }), '#5b4630'); }
     if (L.ears === 'fins') for (const sx of [-1, 1]) K.put(T(new THREE.ConeGeometry(0.16, 0.36, 4), { p: [sx * (x + 0.08), y, -0.05], r: [0, 0, -sx * 1.1], s: [1, 1, 0.3] }), TRIM);
-    if (L.headphones) { K.put(torus(x * 1.02, 0.035, [0, y, 0], [0, 0, 0], 24, Math.PI), '#1d1b18'); for (const sx of [-1, 1]) K.put(T(cyl(0.2, 0.2, 0.12, 16), { p: [sx * (x + 0.03), y - 0.02, 0], r: [0, 0, Math.PI / 2] }), L.headphones); }
+    if (L.headphones) {
+      // the band up the sides and over the top of the head, close to it all the way (round over a round head, square over a square one)
+      const top = Math.max(y + 0.2, (K.S && y >= K.S.y0 && y <= K.S.y1 ? K.S.y1 : y + x) + 0.04), X = x + 0.03, rc = K.S?.sides === 4 ? Math.min(0.2, X * 0.5, top - y) : Math.min(X, top - y) * 0.95, path = [[-X, y], [-X, top - rc]];
+      for (let k = 1; k < 6; k++) { const a = Math.PI - (k / 6) * Math.PI / 2; path.push([-X + rc + Math.cos(a) * rc, top - rc + Math.sin(a) * rc]); }
+      path.push([-X + rc, top], [X - rc, top]); for (let k = 1; k < 6; k++) { const a = Math.PI / 2 - (k / 6) * Math.PI / 2; path.push([X - rc + Math.cos(a) * rc, top - rc + Math.sin(a) * rc]); } path.push([X, top - rc], [X, y]);
+      K.put(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(path.map(([px, py]) => new THREE.Vector3(px, py, 0)), false, 'centripetal'), 40, 0.035, 6, false), '#1d1b18');
+      for (const sx of [-1, 1]) K.put(T(cyl(0.2, 0.2, 0.12, 16), { p: [sx * (x + 0.03), y - 0.02, 0], r: [0, 0, Math.PI / 2] }), L.headphones); }
   };
   K.antenna = y => { if (L.antenna) { K.put(T(cyl(0.012, 0.016, 0.3, 6), { p: [0, y + 0.15, 0] }), '#5b4630'); K.put(ball(0.05, [0, y + 0.32, 0]), TRIM); return y + 0.37; } return y; };
-  K.scarf = (y, tail = true) => { if (L.scarf) { K.band(y - 0.07, y + 0.07, 0.035, L.scarf); if (tail) K.put(box(0.14, 0.42, 0.05, [K.side(y) * 0.4, y - 0.24, K.front(y - 0.2) * 0.93 + 0.04], [-0.2, 0, -0.15]), L.scarf); } };
+  // A scarf: a band round the shell at y, and its tail laid on the front from under the band, following the shell
+  // while it bulges out and hanging straight down where it falls away, so it neither floats nor sinks in
+  K.scarf = (y, tail = true, o = {}) => { if (!L.scarf) return; const hw = o.h ?? 0.07; K.band(y - hw, y + hw, 0.035, L.scarf); if (tail) K.put(K.ribbon(o.x ?? Math.min(K.side(y) * 0.4, K.S.sides === 4 ? K.flat(y) - 0.09 : 1), y - hw * 0.4, o.len ?? 0.46, 0.14, 0.03), L.scarf); };
+  K.ribbon = (x0, yTop, len, w, off = 0.03, t = 0.024) => {
+    const n = 8, rows = []; let zPrev = -1e9;
+    for (let j = 0; j <= n; j++) { const y = yTop - len * j / n, x = x0 + 0.05 * (j / n) ** 2, s = Math.max(K.surfZ(x - w / 2, y), K.surfZ(x + w / 2, y), K.surfZ(x, y)); const z = Math.max(s > 0 ? s + off : zPrev, zPrev); zPrev = z; rows.push([x, y, z]); }
+    const q = [], quad = (a, b, c, d) => q.push(...a, ...b, ...c, ...a, ...c, ...d);
+    for (let j = 0; j < n; j++) { const [xa, ya, za] = rows[j], [xb, yb, zb] = rows[j + 1], h = w / 2;
+      quad([xa - h, ya, za], [xb - h, yb, zb], [xb + h, yb, zb], [xa + h, ya, za]);                                    // the front
+      quad([xa + h, ya, za - t], [xb + h, yb, zb - t], [xb - h, yb, zb - t], [xa - h, ya, za - t]);                    // the back
+      quad([xa - h, ya, za - t], [xb - h, yb, zb - t], [xb - h, yb, zb], [xa - h, ya, za]); quad([xa + h, ya, za], [xb + h, yb, zb], [xb + h, yb, zb - t], [xa + h, ya, za - t]); }
+    const [xe, ye, ze] = rows[n]; quad([xe - w / 2, ye, ze], [xe - w / 2, ye, ze - t], [xe + w / 2, ye, ze - t], [xe + w / 2, ye, ze]);      // its end
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(q, 3)); g.computeVertexNormals(); return g; };
   // the one thing that moves by itself: a geometry about its own origin, where it sits, and how it moves
   K.move = (geo, at, kind, rate = 1, o = {}) => { K.mover = { geo, at, kind, rate, ...o }; };
   // ---- ways of getting about, under a body whose underside is at y0 and about w half across ----------------
@@ -345,7 +379,7 @@ export const FORMS = {
   book(K, L) {
     const w = N(L.w, 0.5), h = N(L.h, 1.3), d = N(L.d, 0.17), y0 = N(L.lift, 3.0), y1 = y0 + h, cy = y0 + h / 2;
     K.put(box(w * 2 - 0.1, h - 0.08, d * 2 - 0.05, [0.03, cy, 0]), '#f1e9d6');
-    for (const sz of [-1, 1]) K.put(box(w * 2, h, 0.04, [0, cy, sz * d]), K.coat(y0, y1));
+    for (const sz of [-1, 1]) K.put(slab(w * 2, h, 0.045, 0.1, [0, cy, sz * d]), K.coat(y0, y1));      // (its boards, with their corners rounded by wear)
     K.put(T(cyl(d + 0.02, d + 0.02, h, 10, 1, false, Math.PI, Math.PI), { p: [-w + 0.02, cy, 0] }), K.C); for (const u of [0.2, 0.8]) K.put(T(cyl(d + 0.03, d + 0.03, 0.03, 10, 1, false, Math.PI, Math.PI), { p: [-w + 0.02, y0 + h * u, 0] }), K.TRIM);
     K.faceAt(cy + h * 0.14, w * 1.5, w * 0.78, { flat: [0.02, cy + h * 0.14, d + 0.036], frame: K.TRIM });
     K.put(box(w * 0.9, 0.1, 0.012, [0.02, y0 + h * 0.2, d + 0.024]), K.TRIM); K.put(box(0.07, 0.5, 0.012, [w * 0.4, y0 - 0.18, 0]), '#b8452e');
@@ -361,7 +395,7 @@ export const FORMS = {
     K.put(tube([[g * 0.86, y0 + h * 0.36, 0], [g * 1.22, y0 + h * 0.5, 0], [g * 1.34, y0 + h * 0.78, 0], [g * 1.52, y0 + h * 0.95, 0]], 0.1, 8, 7), K.C); K.put(torus(0.1, 0.022, [g * 1.52, y0 + h * 0.95, 0], [Math.PI / 2, 0.6, 0], 10), K.C2);
     K.put(tube([[-g * 0.9, y0 + h * 0.76, 0], [-g * 1.36, y0 + h * 0.8, 0], [-g * 1.45, y0 + h * 0.5, 0], [-g * 0.96, y0 + h * 0.3, 0]], 0.06, 10, 6), K.C);
     const fy = y0 + h * 0.76; K.faceAt(fy, 0.92, 0.46, { frame: false });
-    if (L.apron) { K.panel(y0 + h * 0.33, g * 1.2, h * 0.4, L.apron, 0.012); K.band(y0 + h * 0.52, y0 + h * 0.545, 0.016, L.apron); K.put(box(0.36, 0.16, 0.03, [0, y0 + h * 0.27, K.front(y0 + h * 0.27) + 0.03], [0.25, 0, 0]), K.TRIM); }
+    if (L.apron) { K.panel(y0 + h * 0.33, g * 1.2, h * 0.4, L.apron, 0.012); K.band(y0 + h * 0.52, y0 + h * 0.545, 0.016, L.apron); K.panel(y0 + h * 0.27, 0.36, 0.16, K.TRIM, 0.024); }      // (the pocket, on the apron)
     K.top = Math.max(K.hat(y1 + 0.16, 0.56), K.topper(y1 + 0.18, {}), K.antenna(y1 + 0.2), y1 + 0.45); if (!L.hat) K.put(ball(0.1, [0, y1 + 0.27, 0]), K.C2);
     K.gait('hover', y0, g * 0.8, {}); K.pivot = y0 + h * 0.5;
     K.hands = [-1, 1].map(s => [s * g * 0.72, y0 + h * 0.34, g * 0.86]); K.r = g + 0.1; K.shoulder = y0 + h * 0.6;
@@ -376,7 +410,7 @@ export const FORMS = {
     K.put(T(new THREE.BoxGeometry(0.2, pb - pa, 0.015), { r: [-slope, 0, 0], p: [0, (pa + pb) / 2, (K.front(pa) + K.front(pb)) / 2 + 0.012] }), K.BELLY);
     for (let i = 0; i < 9; i++) { const y = pa + (pb - pa) * (i + 0.5) / 9; K.put(box(i % 2 ? 0.09 : 0.14, 0.014, 0.012, [0, y, K.front(y) + 0.026]), DARK); }
     K.move(merge([paint(rod([0, 0, 0], [0, (pb - pa) * 0.96, 0], 0.014, 0.014, 5), K.TRIM), paint(box(0.2, 0.15, 0.06, [0, (pb - pa) * N(L.weight, 0.62), 0]), K.TRIM), paint(ball(0.04, [0, 0, 0]), K.TRIM)]), [0, pa, K.front(pa) + 0.07], 'swing', 2.6, { tilt: -slope, amp: 0.15 });
-    if (L.scarf) { K.band(fy - 0.36, fy - 0.24, 0.03, L.scarf); K.put(box(0.12, 0.4, 0.04, [K.side(fy - 0.3) * 0.5, fy - 0.52, K.front(fy - 0.5) + 0.05], [-slope, 0, -0.12]), L.scarf); }
+    K.scarf(fy - 0.3, true, { h: 0.06, len: 0.44 });
     K.ears(fy, K.side(fy)); K.top = Math.max(K.hat(y1 - 0.03, wt * 2), K.topper(y1, {}), K.antenna(y1));
     K.hands = [-1, 1].map(s => [s * (K.side(y0 + h * 0.52) + 0.3), y0 + h * 0.52, 0.2]); K.r = w + 0.08; K.shoulder = y0 + h * 0.6;
   },
@@ -412,7 +446,7 @@ export const FORMS = {
     const R = N(L.w, 0.5), t = N(L.t, 0.2), leg = N(L.h, 0.75), y0 = N(L.lift, 2.75), ya = y0 + leg, dz = 1.25;
     K.put(T(new THREE.TorusGeometry(R, t, 8, 18, Math.PI), { p: [0, ya, 0], s: [1, 1, dz] }), K.C);
     for (const sx of [-1, 1]) { K.put(T(cyl(t, t, leg * 0.62, 10), { p: [sx * R, ya - leg * 0.31, 0], s: [1, 1, dz] }), K.C); K.put(T(cyl(t + 0.012, t + 0.012, leg * 0.4, 10), { p: [sx * R, y0 + leg * 0.2, 0], s: [1, 1, dz] }), K.C2); }
-    const fy = ya + R * 0.98; K.put(box(0.8, 0.46, 0.08, [0, fy - 0.02, t * dz - 0.02]), K.C); K.faceAt(fy, 0.74, 0.4, { flat: [0, fy - 0.02, t * dz + 0.04], frame: K.TRIM });
+    const fy = ya + R * 0.98; K.put(slab(0.8, 0.46, 0.08, 0.13, [0, fy - 0.02, t * dz - 0.02]), K.C); K.faceAt(fy, 0.74, 0.4, { flat: [0, fy - 0.02, t * dz + 0.04], frame: K.TRIM });
     for (const [x, y, a] of [[-0.17, y0 - 0.14, 0.5], [0.02, y0 - 0.3, 0], [0.2, y0 - 0.12, -0.6], [-0.05, y0 + 0.05, 1.2]]) K.put(box(0.022, 0.13, 0.022, [x, y, 0], [0, 0, a]), '#8a8f96');      // filings, held between the poles
     K.top = Math.max(K.hat(ya + R + t - 0.04, 0.5), K.topper(ya + R + t - 0.02, {}), K.antenna(ya + R + t));
     K.S = { pts: [[R + t, y0], [R + t, ya + R]], sides: 20, sx: 1, sz: 0.5 }; K.ring = { y: y0 - 0.5, r: 0.3 }; K.floats = true; K.pivot = ya;
@@ -447,7 +481,7 @@ export const FORMS = {
   scope(K, L) {
     const w = N(L.w, 0.62), d = N(L.d, 0.55), h = N(L.h, 1.1), y0 = N(L.lift, 2.2), y1 = y0 + h;
     K.shell([[0, y0], [d - 0.04, y0], [d, y0 + 0.04], [d, y1 - 0.04], [d - 0.04, y1], [0, y1]], { sides: 4, sx: w / d, colour: K.C });
-    K.put(box(w * 2 - 0.08, h - 0.08, 0.03, [0, y0 + h / 2, d + 0.01]), K.C2);
+    K.put(slab(w * 2 - 0.08 - 2 * cornerR(w, d), h - 0.08, 0.03, 0.08, [0, y0 + h / 2, d + 0.01]), K.C2);
     K.put(T(cyl(0.38, 0.4, 0.06, 20), { p: [-w * 0.3, y0 + h * 0.56, d + 0.03], r: [Math.PI / 2, 0, 0] }), K.TRIM);
     K.faceAt(y0 + h * 0.56, 0.62, 0.36, { flat: [-w * 0.3, y0 + h * 0.56, d + 0.066], frame: false });
     for (const [x, y, r] of [[0.62, 0.78, 0.07], [0.62, 0.5, 0.07], [0.62, 0.24, 0.05], [0.84, 0.24, 0.05], [-0.3, 0.13, 0.04], [0.1, 0.13, 0.04]]) { K.put(T(cyl(r, r, 0.07, 10), { p: [w * x, y0 + h * y, d + 0.05], r: [Math.PI / 2, 0, 0] }), DARK); K.put(box(0.012, r * 0.9, 0.012, [w * x, y0 + h * y + r * 0.4, d + 0.09]), '#f4eee2'); }
@@ -559,7 +593,7 @@ export const FORMS = {
     K.put(ball(0.2, [0, 0.72, 0.8], [2.6, 0.5, 1.2], 8, 5), '#6f9a52');                                                                                      // what is in it
     K.move(merge([...Array.from({ length: 5 }, (_, i) => paint(box(w * 2 - 0.2, 0.02, 0.09, [0, Math.cos(i * TAU / 5) * 0.24, Math.sin(i * TAU / 5) * 0.24], [i * TAU / 5 + 0.5, 0, 0]), '#b8452e')), paint(T(cyl(0.035, 0.035, w * 2 - 0.1, 6), { r: [0, 0, Math.PI / 2] }), '#4a4d52')]), [0, 0.27, 0.36], 'rollX', 5);
     K.S = { pts: [[w, 0.7], [w * 0.8, 1.5]], sides: 4, sx: 1, sz: 0.5, y0: 0.7, y1: 1.5 };
-    K.put(box(w * 1.5, 0.74, 0.5, [0, 1.06, -0.2]), K.C); K.put(box(w * 1.5 + 0.06, 0.06, 0.56, [0, 1.45, -0.2]), K.TRIM);                                     // the engine cover, where the face is
+    K.put(slab(w * 1.5, 0.74, 0.5, 0.16, [0, 1.06, -0.2], [0, 0, 0], 0.04), K.C); K.put(slab(w * 1.5 + 0.06, 0.06, 0.56, 0.03, [0, 1.42, -0.2], [0, 0, 0], 0.012), K.TRIM);                                     // the engine cover, where the face is
     K.faceAt(1.06, w * 1.2, 0.5, { flat: [0, 1.06, 0.056], frame: K.TRIM });
     for (const sx of [-1, 1]) { K.put(rod([sx * w * 0.7, 0.7, -0.4], [sx * w * 0.62, 2.5, -1.25], 0.03), K.TRIM); K.put(T(cyl(0.045, 0.045, 0.34, 8), { p: [sx * w * 0.62, 2.5, -1.25], r: [0, 0, Math.PI / 2] }), DARK); }
     K.put(rod([-w * 0.62, 2.1, -1.06], [w * 0.62, 2.1, -1.06], 0.022), K.TRIM);
@@ -582,36 +616,86 @@ export function buildBody(look) {
   if (K.mover) { mover = mesh(K.mover.geo, K.mover.kind === 'blink' || K.mover.kind === 'glow' ? new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false }) : undefined); mover.position.set(...K.mover.at); if (K.mover.tilt) mover.rotation.x = K.mover.tilt; inner.add(mover); }
   else if (K.ring) { ring = new THREE.Mesh(T(new THREE.TorusGeometry(K.ring.r, 0.032, 8, K.ring.seg ?? 30), { r: [Math.PI / 2, 0, 0] }), new THREE.MeshBasicMaterial({ color: L.ring ?? 0x8fe3d1, toneMapped: false, transparent: true, opacity: 0.85 })); ring.position.y = K.ring.y; inner.add(ring); }
   const gs = (K.glove ?? 0.12) / 0.12, glove = paint(T(sph(0.12, 10, 7), { s: [gs, 0.85 * gs, 1.15 * gs] }), L.glove ?? '#f4eee2');
+  const armGeo = p => ((K.arms ?? L.arms) ? [paint(rod([0, 0, 0], [(Math.sign(p[0]) * (K.armX ?? Math.abs(p[0]) - 0.3)) - p[0], K.shoulder - p[1], -p[2]], 0.05, 0.065, 6), L.armColour ?? K.TRIM)] : []);
   const hands = K.hands.map((p, i) => {
     const h = new THREE.Group(); h.position.set(...p); h.userData.rest = p;
-    const tool = TOOLS[i === 1 ? L.tool : L.tool2], g = [glove.clone(), ...(tool ? tool() : [])];
-    if (K.arms ?? L.arms) g.push(paint(rod([0, 0, 0], [(Math.sign(p[0]) * (K.armX ?? Math.abs(p[0]) - 0.3)) - p[0], K.shoulder - p[1], -p[2]], 0.05, 0.065, 6), L.armColour ?? K.TRIM));
+    const tool = TOOLS[i === 1 ? L.tool : L.tool2], g = [glove.clone(), ...(tool ? tool() : []), ...armGeo(p)];
     h.add(mesh(merge(g))); inner.add(h); return h;
   });
   root.traverse(o => { o.castShadow = false; o.receiveShadow = !!o.isMesh; });
-  const M = K.mover, st = { roll: 0, walk: 0, lean: 0, blinkAt: 0 }, hover = K.floats;
-  const animate = ({ t, dt = 0.016, moving, speed = 0, busy, speak, point, nod = 0 }) => {
-    st.lean += ((busy ? 0.13 : moving ? (hover ? 0.1 : 0.035) : 0) - st.lean) * Math.min(1, dt * 5);
-    bob.position.y = K.pivot + (hover ? Math.sin(t * 1.7) * 0.07 : 0);
-    bob.rotation.x = st.lean + nod * 0.2 + (hover ? Math.sin(t * 0.7) * 0.02 : 0) + (K.wobble ? Math.cos(t * 0.8) * K.wobble : 0);
-    bob.rotation.z = (hover ? Math.sin(t * 0.9) * 0.03 : Math.sin(t * 0.6) * 0.008) + (K.wobble ? Math.sin(t * 0.8) * K.wobble : 0);
-    if (ring) { ring.scale.setScalar(1 + 0.08 * Math.sin(t * 5)); ring.material.opacity = 0.6 + 0.25 * Math.sin(t * 5); }
+  body.geometry.computeBoundingBox();
+  const M = K.mover, hover = K.floats, eyeY = K.eye, sh = K.shoulder, front = Math.max(0.2, ...K.hands.map(p => p[2]));
+  const st = { roll: 0, walk: 0, lean: 0, blinkAt: 0, head: 0, sit: 0, tilt: 0, lastYaw: null, turn: 0, hp: hands.map(h => h.position.clone()) };
+  const tgt = new THREE.Vector3();
+  // Where the hands go for what it is doing (in the body's own frame: +z ahead, +x its left as you face it ... its
+  // right hand is hands[1]). act: 'write' (on a board in front of it, chalk going along a line), 'point' (up at the
+  // board), 'gesture' (both hands out to the room), 'ask' (a hand up: a question to the room), 'sip' (a cup to the
+  // face), 'read' (a book held low in both hands, head bent), 'type' (hands on a desk), 'think' (a hand to the
+  // chin), 'reach' (up to a shelf), 'wave', 'shrug'
+  function handTarget(i, r, a, t, busy, speak, point, u) {
+    const s = i ? 1 : -1, cupHand = L.tool === 'cup' ? 1 : 0;
+    tgt.set(r[0], r[1] + Math.sin(t * 2.1 + i * 2) * 0.03, r[2]);
+    switch (a) {
+      case 'write': if (i) { const ph = (t * 0.45) % 1; tgt.set(0.05 + 0.5 * ph - 0.1, eyeY - 0.05 + Math.sin(t * 11) * 0.05 + Math.sin(t * 2.3) * 0.08, front + 0.5); } else tgt.set(r[0] * 0.8, sh - 0.25, r[2] + 0.1); return tgt;
+      case 'point': if (i) tgt.set(r[0] * 0.55, eyeY + 0.45 + Math.sin(t * 3) * 0.04, front + 0.55); return tgt;
+      case 'gesture': tgt.set(r[0] * 1.3 + s * 0.08 * Math.sin(t * 1.4), sh + 0.05 + 0.14 * Math.sin(t * 1.7 + i * Math.PI), r[2] + 0.28); return tgt;
+      case 'ask': if (i) tgt.set(r[0] * 0.95, eyeY + 0.55 + Math.sin(t * 2.5) * 0.03, r[2] + 0.12); else tgt.set(r[0], r[1] + 0.12, r[2] + 0.12); return tgt;
+      case 'sip': if (i === cupHand) { const up = Math.max(0, Math.sin(t * 1.3)) ** 0.5; tgt.set(r[0] * (1 - up * 0.75), r[1] + (eyeY - 0.3 - r[1]) * up, r[2] + (front + 0.25 - r[2]) * up); } return tgt;
+      case 'read': tgt.set(s * 0.2, sh - 0.2, front + 0.32); return tgt;
+      case 'type': tgt.set(s * 0.22, sh - 0.45 + Math.max(0, Math.sin(t * 17 + i * 2.2)) * 0.035, front + 0.38); return tgt;
+      case 'think': if (i) tgt.set(0.14, eyeY - 0.42, front + 0.12); else tgt.set(-0.05, sh - 0.3, front + 0.15); return tgt;
+      case 'reach': tgt.set(r[0] * 0.7, eyeY + 0.55 + 0.08 * Math.sin(t * 2.4 + i), front + 0.45); return tgt;
+      case 'wave': if (i) tgt.set(r[0] + 0.12 * Math.sin(t * 9), eyeY + 0.3, r[2] + 0.1); return tgt;
+      case 'shrug': tgt.set(r[0] * 1.35, r[1] + 0.3, r[2] + 0.12); return tgt;
+    }
+    if (busy) tgt.set(r[0] - s * 0.12, r[1] + 0.16 + 0.1 * Math.sin(t * 6 + i * 3), r[2] + 0.26);
+    else if (point && i === 1) tgt.y += 0.5, tgt.z += 0.3;
+    else if (speak && i === 0) tgt.y += 0.14 + 0.06 * Math.sin(t * 7);
+    else if (speak && i === 1) tgt.y += 0.06 * Math.max(0, Math.sin(t * 1.9)), tgt.z += 0.08 * Math.max(0, Math.sin(t * 1.9));      // (a hand that moves with what it says)
+    return tgt;
+  }
+  // a: { t, dt, moving, speed, busy, speak, point, nod } as before, and now:
+  //   act, actU      what the hands are doing (above), and how far through it
+  //   head           radians to turn the head (the whole upper body, where there is no neck) from the body
+  //   sit, drop      0..1 how far it has settled onto a seat, and how far (feet, its own scale) the body comes down to it
+  //   yaw            the body's yaw in the world, so that it leans a little into a turn
+  //   look           'down' bends it to what is in its hands
+  const animate = ({ t, dt = 0.016, moving, speed = 0, busy, speak, point, nod = 0, act = null, actU = 0, head = 0, sit = 0, drop = 0, yaw = null, bend = 0 }) => {
+    st.lean += ((busy || act === 'write' || act === 'type' ? 0.11 : act === 'read' ? 0.16 : moving ? (hover ? 0.1 : 0.035) : 0) - st.lean) * Math.min(1, dt * 5);
+    if (yaw !== null) { if (st.lastYaw !== null) { const d = Math.atan2(Math.sin(yaw - st.lastYaw), Math.cos(yaw - st.lastYaw)) / Math.max(dt, 1e-3); st.turn += (Math.max(-2, Math.min(2, d)) - st.turn) * Math.min(1, dt * 4); } st.lastYaw = yaw; }
+    st.sit += (sit - st.sit) * Math.min(1, dt * 3); st.head += (head - st.head) * Math.min(1, dt * 4);
+    st.tilt += ((act === 'ask' ? 0.09 : act === 'think' ? -0.07 : 0) - st.tilt) * Math.min(1, dt * 3);
+    const k = 1 - st.sit, hv = hover ? k : 0;
+    bob.position.y = K.pivot + Math.sin(t * 1.7) * 0.07 * hv - drop * st.sit;
+    bob.rotation.x = st.lean + bend + nod * 0.2 + Math.sin(t * 0.7) * 0.02 * hv + (K.wobble ? Math.cos(t * 0.8) * K.wobble * k : 0);
+    bob.rotation.z = (hover ? Math.sin(t * 0.9) * 0.03 * k : Math.sin(t * 0.6) * 0.008) + (K.wobble ? Math.sin(t * 0.8) * K.wobble * k : 0) - st.turn * (hover ? 0.05 : 0.02) + st.tilt;
+    bob.rotation.y = st.head;
+    if (ring) { ring.visible = st.sit < 0.9; ring.scale.setScalar(1 + 0.08 * Math.sin(t * 5)); ring.material.opacity = (0.6 + 0.25 * Math.sin(t * 5)) * k; }
     if (M) {
       if (M.kind === 'spinY') mover.rotation.y = t * M.rate;
       else if (M.kind === 'tumble') { mover.rotation.y = t * M.rate; mover.rotation.x = Math.sin(t * M.rate * 0.6) * 0.5; }
       else if (M.kind === 'swing') mover.rotation.z = Math.sin(t * M.rate) * M.amp;
       else if (M.kind === 'rollX') { st.roll += speed * dt * M.rate; mover.rotation.x = st.roll; }
-      else if (M.kind === 'waddle') { st.walk += Math.min(speed, 3) * dt * 3.4; const k = Math.min(1, speed / 0.6); mover.rotation.y = Math.sin(st.walk) * 0.34 * k; bob.rotation.z += Math.sin(st.walk) * 0.05 * k; }
+      else if (M.kind === 'waddle') { st.walk += Math.min(speed, 3) * dt * 3.4; const k = Math.min(1, speed / 0.6); mover.rotation.y = Math.sin(st.walk) * 0.34 * k; bob.rotation.z += Math.sin(st.walk) * 0.05 * k; bob.position.y += Math.abs(Math.sin(st.walk)) * 0.04 * k; }
       else if (M.kind === 'blink' && t > st.blinkAt) { st.blinkAt = t + 0.18 + ((t * 7.3) % 1) * 0.5; mover.material.color.setScalar(((t * 13.7) % 1) > 0.4 ? 1 : 0.4); }
     }
-    hands.forEach((h, i) => { const r = h.userData.rest, s = i ? 1 : -1; h.position.set(r[0] + (busy ? -s * 0.12 : 0), r[1] + Math.sin(t * 2.1 + i * 2) * 0.03 + (busy ? 0.16 + 0.1 * Math.sin(t * 6 + i * 3) : point && i === 1 ? 0.5 : speak && i === 0 ? 0.14 + 0.06 * Math.sin(t * 7) : 0), r[2] + (busy ? 0.26 : point && i === 1 ? 0.3 : 0)); });
+    const e = Math.min(1, dt * (act ? 7 : 5));
+    hands.forEach((h, i) => { const p = handTarget(i, h.userData.rest, act, t, busy, speak, point, actU); st.hp[i].lerp(p, e); h.position.copy(st.hp[i]); });
   };
-  // (another tool in a hand: the gardener's, who changes them)
-  const toolGeo = {}, setTool = (i, name) => { if (hands[i].userData.tool === (name ?? null)) return; hands[i].userData.tool = name ?? null; hands[i].children[0].geometry = toolGeo[name ?? ''] ??= merge([glove.clone(), ...(TOOLS[name] ? TOOLS[name]() : [])]); };
+  // The face, every frame: its own rhythm of blinking (each robot's own, now and then twice: robokit/face.js
+  // makeFaceLife), the mouth moving while it speaks, the eyes where it looks (the caller says where). Redrawn only
+  // when something has changed by a visible step.
+  const life = makeFaceLife(`${L.form}|${L.colour}|${L.eye}`, 0);
+  const faceTick = ({ t, dt = 0.016, expr = 'neutral', look = 0, lookY = 0, speak = false }) => {
+    const lid = expr === 'sleepy' || expr === 'happy' || expr === 'love' ? 0 : life.step(t, dt, { w: 1, eye: look }).shut;      // (eyes already half shut or curved: no blink to draw)
+    face.draw(expr, look, lid, speak ? talkMouth(t) : 0, lookY);
+  };
+  // (another tool in a hand: the gardener's, who changes them; the arm, if it has one, stays)
+  const toolGeo = {}, setTool = (i, name) => { if (hands[i].userData.tool === (name ?? null)) return; hands[i].userData.tool = name ?? null; hands[i].children[0].geometry = toolGeo[i + '|' + (name ?? '')] ??= merge([glove.clone(), ...(TOOLS[name] ? TOOLS[name]() : []), ...armGeo(hands[i].userData.rest)]); };
   hands.forEach((h, i) => { h.userData.tool = (i === 1 ? L.tool : L.tool2) ?? null; });
   const maxS = Math.max(sc[0], sc[2]);
-  return { root, bob, inner, body, face, ring, mover, hands, animate, setTool, spout: K.spout ?? null, form: L.form ?? 'egg', gait: K.gaitKind ?? (hover ? 'hover' : 'glide'),
-    top: K.top * sc[1] + 0.12, eye: K.eye * sc[1], radius: Math.min(1.1, Math.max(0.4, K.r * maxS)), belly: 0 };
+  return { root, bob, inner, body, face, ring, mover, hands, animate, faceTick, setTool, spout: K.spout ?? null, form: L.form ?? 'egg', gait: K.gaitKind ?? (hover ? 'hover' : 'glide'), floats: !!hover,
+    under: body.geometry.boundingBox.min.y * sc[1], top: K.top * sc[1] + 0.12, eye: K.eye * sc[1], radius: Math.min(1.1, Math.max(0.4, K.r * maxS)), belly: 0 };
 }
 
 // ---- a new one, from a number ---------------------------------------------------------------------------

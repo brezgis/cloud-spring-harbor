@@ -24,7 +24,7 @@
 // Nothing runs while the visitor is indoors or the grounds are out of sight; a robot far from the eye is moved
 // twice a second and not posed. window.__outdoors is for tests.
 
-import { Polite, VR, makeWorld } from './manners.js';
+import { Polite, VR, makeWorld, attendVisitor, engageVisitor } from './manners.js';
 import { makePlan } from './nav.js';
 import { weighted } from './agent.js';
 import { buildBody, useThreeBody } from './body.js';
@@ -33,6 +33,7 @@ import { paint, merge, sph, cyl, xform as T } from './models.js';
 import { makeBubbles } from './bubbles.js';
 import { makeTalk } from './talk.js';
 import { hireResearchers } from './researchers.js';
+import { makeCandleFlame } from '../flame.js';
 
 const TAU = Math.PI * 2;
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -252,7 +253,7 @@ class Out extends Polite {
   say(text, expr = 'happy', secs) { if (!text) return; this.bubble.say(text, secs, this.W.now); this.expr = expr; this.exprUntil = this.W.now + 3.5; if (this.O.dist(this) < 60) this.O.ctx.sound?.chirp?.(this.chirp ?? [70 + (this.name.length % 5) * 2, 74 + (this.name.length % 4) * 2]); }
   line(kind, expr) { const l = this.spec.lines?.[kind]; if (l?.length) this.say(pick(l), expr ?? (kind === 'idle' ? 'neutral' : 'happy')); }
   spoken() { this.O.H.talk.press(this); }
-  topics(list) { return list.slice(0, 4).map(t => ({ text: t.q, act: () => { const a = typeof t.a === 'function' ? t.a(this.O, this) : t.a; this.say(Array.isArray(a) ? pick(a) : a, t.expr ?? 'happy', 6.5); this.asked++; return t.next ? this.topics(t.next) : null; } })); }
+  topics(list) { return list.slice(0, 4).map(t => ({ text: t.q, act: () => { const a = typeof t.a === 'function' ? t.a(this.O, this) : t.a; this.say(Array.isArray(a) ? pick(a) : a, t.expr ?? 'happy', 6.5); this.replyUntil = this.W.now + 6.5; this.asked++; return t.next ? this.topics(t.next) : null; } })); }
   dialogue() { const all = this.spec.lines?.topics ?? [], n = all.length, k = this.asked % Math.max(1, n), list = n <= 4 ? all : [...all.slice(0, 2), ...[0, 1].map(i => all[2 + ((k + i) % (n - 2))])]; this.expr = 'happy'; this.exprUntil = this.W.now + 2; return this.topics(list); }
   // a long way: by the walks, then across the grass to the place itself
   *trip(x, z, o = {}) {
@@ -283,9 +284,13 @@ class Out extends Polite {
   // manners and the task in hand: every frame, for anyone awake
   frame(dt) {
     const W = this.W, m = this.m, now = W.now, v = W.visitor;
-    if (!this.offPlan && now >= this.nextManners) { this.nextManners = now + 0.2; this.manners({ still: this.talking || this.still, back: true }); }
+    // Engaged with her (robokit/attend.js engageVisitor): spoken to, or come up to, it stops, turns to her and waits,
+    // whatever it was about held where it was, until the conversation is over and she has gone on
+    const eng = this.eng = engageVisitor(this.eng ?? {}, this, v, dt, { talking: this.talking || now < (this.replyUntil ?? 0), level: this.about() });
+    const hold = this.engaged = eng.on && (this.talking || !eng.give);      // (at a stride straight at it, she is passing: it gives way)
+    if (!this.offPlan && now >= this.nextManners) { this.nextManners = now + 0.2; this.manners({ still: hold || this.still, back: true }); }
     if (this.aside.phase) this.stepAside(dt);
-    else if (this.talking || now < this.pauseUntil) { m.v = 0; if (this.about() && !this.offPlan) m.faceTo(v.x, v.z, dt); }
+    else if (hold || now < this.pauseUntil) { m.v = 0; if (this.about() && !this.offPlan) m.faceTo(v.x, v.z, dt); }
     else { if (!this.task) this.think(); this.stepTask(); }
     if (this.offPlan) m.y = this.yFix; else { this.glide(dt); m.y = this.O.S.ground(m.x, m.z); }
     if (this.about()) { const g = hyp(v.x - m.x, v.z - m.z) - this.r - VR; if (g < this.minGap) this.minGap = g; if (g < this.O.minGap) { this.O.minGap = g; this.O.minWho = this.name; } }
@@ -308,18 +313,50 @@ class Named extends Out {
     b.root.position.set(m.x, m.y + this.lift, m.z); b.root.rotation.y = m.yaw;
     if (!vis) return false;
     const t = now + this.phase, talking = this.talking; busy = busy && !talking && !this.aside.phase;
-    b.animate({ t, dt, moving: m.v > 0.25, speed: m.v, busy, speak: this.bubble.talking(now), nod: Math.max(0, 1 - Math.abs(now - this.nod - 0.5) / 0.5) });
+    // turning to her as she comes up (manners.js attendVisitor): the eyes, the head, then (when it is not at work) the body
+    const at = this.attn = attendVisitor(this.attn, { x: m.x, z: m.z, yaw: m.yaw }, v, dt, { reach: 10, talking, hold: !!this.engaged, busy, keepWorking: busy || this.offPlan, level: this.about() });
+    if (at.yaw !== null && m.v < 0.3 && !this.aside.phase && !this.offPlan && !talking) m.face(at.yaw, dt * at.rate);
+    const speak = this.bubble.talking(now);
+    b.animate({ t, dt, moving: m.v > 0.25, speed: m.v, busy, speak, nod: Math.max(0, 1 - Math.abs(now - this.nod - 0.5) / 0.5), head: talking ? 0 : at.head, yaw: m.yaw });
     const dv = this.about() ? hyp(v.x - m.x, v.z - m.z) : 1e9, expr = now < this.exprUntil ? this.expr : busy ? 'focus' : dv < 12 && this.rest === 'neutral' ? 'happy' : this.rest;
-    b.face.draw(expr, dv < 30 ? clamp((((Math.atan2(v.x - m.x, v.z - m.z) - m.yaw + Math.PI * 3) % TAU) - Math.PI) * 1.2, -1, 1) : 0, ((t * 0.31) % 1) < 0.035);
+    b.faceTick({ t, dt, expr, look: at.looking ? at.eye : talking ? clamp((((Math.atan2(v.x - m.x, v.z - m.z) - m.yaw + Math.PI * 3) % TAU) - Math.PI) * 1.2, -1, 1) : Math.sin(t * 0.37) * 0.3, lookY: busy ? -0.6 : 0, speak });
     this.O.H.tmp.set(m.x, m.y + this.lift + b.top + 0.35, m.z); this.O.H.bubbles.place(this.bubble, this.O.H.tmp, now, this.O.dist(this) < 90);      // (nothing is called across the grounds)
     return busy;
   }
 }
 
+// Her lantern at night: a candle flame (flame.js) behind warm glass, a soft halo round it and a pool of warm light
+// on the ground under her. No light of its own: a lamp-pool slot would be taken from the rooms, and a shadow-casting
+// light costs too much, so the glow is drawn (additive, no depth write) and only once the day has gone.
+// The pane, wick and halo are put in the hand that carries the lantern (body.js TOOLS.lantern: its glass at
+// [0, -0.16, 0.12]); the pool is laid on the ground below it.
+function lanternGlow(O, hand) {
+  const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.35, 'rgba(255,255,255,.45)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+  const tex = new THREE.CanvasTexture(c), uT = { value: 0 }, add = { transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false };
+  const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.089, 0.089, 0.19, 8), new THREE.MeshBasicMaterial({ color: 0xffb35a, ...add }));
+  const flame = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 0.24).translate(0, 0.108, 0), makeCandleFlame(THREE, uT)); flame.scale.setScalar(0.62);
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0xffa040, ...add })); halo.scale.setScalar(1.3);
+  glass.position.set(0, -0.16, 0.12); flame.position.set(0, -0.245, 0.12); halo.position.set(0, -0.16, 0.12);
+  const parts = new THREE.Group(); parts.add(glass, flame, halo); hand.add(parts);
+  const pool = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: tex, color: 0xff9a40, ...add })); pool.renderOrder = 2; O.group.add(pool);
+  const at = new THREE.Vector3();
+  return {
+    update(now, on, k) {
+      parts.visible = pool.visible = on && k > 0.01; if (!parts.visible) return;
+      uT.value = now; const f = 0.9 + 0.1 * Math.sin(now * 9.1) * Math.sin(now * 3.7 + 1);      // (a candle's own unsteadiness)
+      glass.material.opacity = 0.75 * k; halo.material.opacity = 0.55 * k * f; flame.visible = k > 0.3;
+      hand.updateMatrixWorld(true); hand.localToWorld(at.set(0, -0.16, 0.12));
+      const h = Math.max(0.5, at.y - O.S.ground(at.x, at.z)), r = 2.2 + h * 1.1;                       // a wider, fainter pool the higher it is carried
+      pool.position.set(at.x, O.S.ground(at.x, at.z) + 0.06, at.z); pool.scale.set(r * 2, 1, r * 2); pool.material.opacity = Math.min(1, 1.6 / h) * 0.42 * k * f;
+    },
+  };
+}
+
 // ---- the gardener (after the house's Gardener: the jobs, the round of nearby places, the water and the petals) ----
 const KEEP_OFF = 12;
 class Gardener extends Named {
-  constructor(O, spec) { super(O, spec); this.work = { kind: null, pour: 0, T: new THREE.Vector3(), cut: -1, t0: 0 }; this.pourK = 0; this.reach = 0; this.drop = 0; this.fx = new Fx(O.group); this.jobs = {}; this.job = null; this.site = null; this.rnd = Math.random; this.seen = new Map(); this.places = []; }
+  constructor(O, spec) { super(O, spec); this.work = { kind: null, pour: 0, T: new THREE.Vector3(), cut: -1, t0: 0 }; this.pourK = 0; this.reach = 0; this.drop = 0; this.fx = new Fx(O.group); this.jobs = {}; this.job = null; this.site = null; this.rnd = Math.random; this.seen = new Map(); this.places = []; this.glow = lanternGlow(O, this.body.hands[0]); }
   // What to do next, and where. Jobs are weighted by the hour; places by how near they are (a round, not a
   // criss-cross of the island), and nothing is begun right beside the visitor.
   planWork() {
@@ -337,13 +374,14 @@ class Gardener extends Named {
   }
   think() {
     const O = this.O, sh = O.shift.gardener;
-    if (sh !== 'work') return this.run('home', this.home());
+    void sh;                                                                             // (robots: she does not go home, whatever the hour)
     const p = this.planWork(); if (!p) return this.run('idle', this.wait(4));
     this.begin(p);
   }
   begin(p) { this.job = p.k; this.site = p.s; this.jobs[p.k] = (this.jobs[p.k] ?? 0) + 1; this.seen.set(Math.floor(p.s.x / 50) * 64 + Math.floor(p.s.z / 50), this.W.now); this.places.push([p.k, Math.round(p.s.x), Math.round(p.s.z), Math.round(this.W.now)]); if (this.places.length > 80) this.places.shift(); this.run(p.k, this[p.k](p.s)); }
-  *home() { const O = this.O, h = O.home(0); this.state = 'going home'; this.job = 'home'; this.setTools('trowel', 'trug'); yield* this.trip(h.x, h.z, { must: true, patience: 40 }); this.state = 'asleep'; this.posted = true; this.drop = 1; try { while (O.shift.gardener !== 'work') { this.expr = 'sleepy'; this.exprUntil = this.W.now + 1; yield; } } finally { this.drop = 0; this.posted = false; } if (O.dist(this) < 80) this.line('morning'); }
-  setTools(r, l) { this.body.setTool(1, r); this.body.setTool(0, l); }
+  // (at night the trug is left on the path and the lantern taken up in that hand: she works by its light)
+  away() { super.away(); this.glow.update(0, false, 0); }
+  setTools(r, l) { const night = !!this.O.shift?.night; this.body.setTool(1, r); this.body.setTool(0, night && (l === 'trug' || !l) ? 'lantern' : l); }
   *goWork(s, side = false) {
     this.state = 'to ' + this.job; if (!(yield* this.trip(s.x, s.z, { patience: 20 }))) return false;
     // (watering, she stands side on: the spout is at her right hand)
@@ -404,15 +442,16 @@ class Gardener extends Named {
     const O = this.O, W = this.W;
     try { if (!(yield* this.goWork({ x: s.x, z: s.z, fx: s.x + s.fx * 6, fz: s.z + s.fz * 6 }))) return;
       O.sit(s, this); const e = O.seatSpot(s, 1.55);
-      this.still = true; if (!(yield* this.walkLine([{ x: e.x, z: e.z }], 0.9, false))) return; this.state = 'resting'; this.work.kind = 'rest'; this.lift = s.h - 1.5 * this.body.root.scale.y + 0.06; this.maybe('bench', 0.5);
-      const until = W.now + 70 + this.rnd() * 80; while (W.now < until && O.shift.gardener === 'work' && (this.cast.jobs(O.hour, O.light).bench ?? 0) > 1) { this.m.face(Math.atan2(s.fx, s.fz), W.dt); yield; }
+      this.still = true; if (!(yield* this.walkLine([{ x: e.x, z: e.z }], 0.9, false))) return; this.state = 'resting'; this.work.kind = 'rest'; this.lift = s.h - 1.5 * this.body.root.scale.y + 0.06; this.maybe('bench', 0.5); if (O.shift.night) this.setTools('thermos', 'lantern');      // (a minute with a thermos, and on again)
+      const until = W.now + (O.shift.night ? 40 + this.rnd() * 30 : 70 + this.rnd() * 80); while (W.now < until && O.shift.gardener === 'work' && (this.cast.jobs(O.hour, O.light).bench ?? 0) > 1) { this.m.face(Math.atan2(s.fx, s.fz), W.dt); yield; }
       this.lift = 0; yield* this.walkLine([{ x: s.x, z: s.z }], 0.9, false);
     } finally { this.lift = 0; this.still = false; this.offPlan = false; O.unsit(this); this.done(); }
   }
   update(dt, vis) {
     this.frame(dt); const b = this.body, w = this.work, W = this.W;
-    this.dropK = (this.dropK ?? 0) + (this.drop - (this.dropK ?? 0)) * Math.min(1, dt * 2); const lift0 = this.lift; this.lift = lift0 - this.dropK * (this.state === 'asleep' ? 1.42 : 1);
-    const busy = this.draw(dt, vis); this.lift = lift0; if (!vis) return;
+    this.dropK = (this.dropK ?? 0) + (this.drop - (this.dropK ?? 0)) * Math.min(1, dt * 2); const lift0 = this.lift; this.lift = lift0 - this.dropK * 1;
+    const busy = this.draw(dt, vis); this.lift = lift0;
+    this.glow.update(W.now, vis && !this.ghost && b.hands[0].userData.tool === 'lantern', Math.max(0, Math.min(1, (0.45 - this.O.light) / 0.3))); if (!vis) return;
     const on = !this.talking && !this.aside.phase; { const v = W.visitor; if (!v.present || hyp(v.x - this.x, v.z - this.z) < 70) this.sawHer = W.now; else this.sawHer ??= W.now; }
     this.pourK += ((on && w.kind === 'water' && w.pour ? 1 : 0) - this.pourK) * Math.min(1, dt * 3);
     b.bob.rotation.z -= this.pourK * 0.6; b.bob.rotation.x += this.lean * (busy ? 1 : 0);
@@ -426,11 +465,12 @@ class Gardener extends Named {
 // ---- the groundskeeper: a mower. Stripes up and down the open lawn, a turn at each end; home in the evening ----
 class Mower extends Named {
   constructor(O, spec) { super(O, spec); this.fieldAt = 0; this.stripeAt = 0; this.runs = 0; }
-  think() { const O = this.O; if (O.shift.mower !== 'mow' || !O.fields.length) return this.run('home', this.home()); this.run('mow', this.mow()); }
-  *home() { const O = this.O, h = O.home(1); this.state = 'going home'; yield* this.trip(h.x, h.z, { must: true, patience: 40 }); for (let t = 0; t < 1.5; t += this.W.dt) { this.m.face(h.yaw ?? 0, this.W.dt * 1.5); yield; } this.state = 'parked'; this.posted = true; try { while (O.shift.mower !== 'mow') { this.expr = 'sleepy'; this.exprUntil = this.W.now + 1; yield; } } finally { this.posted = false; } }
+  // (robots: he mows at every hour; with no lawn to mow he goes about the shed's end of the grounds and back, never parked)
+  think() { const O = this.O; if (!O.fields.length) return this.run('round', this.round()); this.run('mow', this.mow()); }
+  *round() { const O = this.O, h = O.home(1); this.state = 'about the shed'; yield* this.trip(h.x + (Math.random() - 0.5) * 20, h.z + (Math.random() - 0.5) * 20, { patience: 30 }); this.busy = true; try { yield* this.wait(6 + Math.random() * 6); } finally { this.busy = false; } }
   *mow() {
     const O = this.O, W = this.W, m = this.m;
-    while (O.shift.mower === 'mow') {
+    for (;;) {
       // a block of stripes on one lawn, then off to another: every lawn on the island is his, and he is seen on all of them
       if (!this.F || this.block <= 0) { const l = O.fields.filter(f => f !== this.F); this.F = l.length ? pick(l) : O.fields[0]; this.block = 6 + Math.floor(Math.random() * 5); if (this.runs && O.dist(this) < 80) this.line('field'); }
       const F = this.F; this.stripeAt = (F.next ?? 0) % F.stripes.length; F.next = this.stripeAt + 1; this.block--;
@@ -650,7 +690,7 @@ export function peopleOutdoors(ctx, place, cast) {
   O.doorFor = (not, weights) => { const v = O.W.visitor, l = O.doors.filter(d => d !== not && !O.onWay(d, v) && !(v.present && hyp(v.x - d.top.x, v.z - d.top.z) < 9)).map(d => [d, weights?.[d.name] ?? 1]); return weighted(l, Math.random); };
 
   // who should be about, and sending them: looked at once a second
-  let nextSend = 0, lastHour = null, asleep = 0, tickAt = 0, lastT = null;
+  let nextSend = 0, lastHour = null, paused = 0, tickAt = 0, lastT = null;
   function direct(t, fresh, force = null) {
     const sh = O.shift = cast.shift(O.hour, O.light), ord = O.ord.filter(a => a.who && !a.who.sp.watch), sitters = ord.filter(a => a.errand?.kind === 'sit').length;
     for (const a of O.named) if (a.ghost) { const h = O.home(a === O.mower ? 1 : 0), p = a === O.master ? O.masterSpots.beat[0] : h; a.put(p.x, p.z, p.yaw ?? 0); a.show(); a.task = null; }
@@ -710,11 +750,11 @@ export function peopleOutdoors(ctx, place, cast) {
     const W = O.W, H = O.H;
     if (own) { W.now = t; W.dt = dt; W.watch(ctx.walker, ctx.mode === 'walk', dt); if (!hooked && ctx.walker) { hooked = true; const w = ctx.walker, base = w.collide.bind(w); w.collide = p => { W.solid(p); base(p); }; } H.talk.update(); H.bubbles.update(t); }
     // indoors, or the grounds out of sight: nothing
-    if (ctx.room || ctx.scene.visible === false || O.off) { if (!asleep) asleep = t; walkers.length = 0; return; }
-    O.hour = ctx.day.hour ?? 12; O.light = ctx.day.light ?? 1; O.since = asleep ? 0 : O.since + dt;
+    if (ctx.room || ctx.scene.visible === false || O.off) { if (!paused) paused = t; walkers.length = 0; return; }      // (she is indoors: the grounds are paused, not asleep)
+    O.hour = ctx.day.hour ?? 12; O.light = ctx.day.light ?? 1; O.since = paused ? 0 : O.since + dt;
     const jumped = lastHour !== null && Math.abs(O.hour - lastHour) > 0.2 && Math.abs(O.hour - lastHour) < 23.8; lastHour = O.hour;
-    if (lastT === null || jumped || (asleep && t - asleep > 45)) settle(t);
-    asleep = 0; lastT = t;
+    if (lastT === null || jumped || (paused && t - paused > 45)) settle(t);
+    paused = 0; lastT = t;
     O.frames = (O.frames ?? 0) + 1; const tk0 = performance.now();
     if (t - tickAt > 1) { tickAt = t; direct(t, false); }
     let any = false, nw = 0;

@@ -8,6 +8,9 @@ the trees, the island, the sky.
   University Archives' drawings; the Cambridge Public Library as first built (Van Brunt & Howe, 1887-89). The
   sources are kept in research/ on the build machine.
 - three.js r170 (vendor/three), MIT licence.
+- The coastline round Tokyo Bay on the Stair Hall's slime-mould light table (src/furnish/exhibits_snow_hall.js):
+  Natural Earth, 1:10m land polygons (naturalearthdata.com), public domain; the model run on it is from
+  A. Tero et al., Science 327 (2010), 439.
 - Textures (assets/tex), all CC0: Poly Haven (polyhaven.com) `grey_roof_01`, `red_brick`,
   `brick_wall_001`, `red_brick_pavers`, `terracotta_floor_tiles`, `oak_wood_planks`,
   `wood_table_001`, `painted_plaster_wall`, `bark_brown_02` and the fabric, stone and ground sets
@@ -129,6 +132,14 @@ the trees, the island, the sky.
     The Metropolitan Museum of Art, New York, accession 31.45, Catharine Lorillard Wolfe Collection, Wolfe Fund,
     1931; Met Open Access, https://www.metmuseum.org/art/collection/search/436105 (the photograph trimmed to the
     canvas). Public domain (Met Open Access, CC0).
+  - `stone_habs_sheet2`, `stone_habs_sheet6`, `stone_habs_sheet7`: Adams Stone Library, floor and balcony plans (sheet 2),
+    ladder, balcony handrail and weathervane details (sheet 6), French door, framing, mantel and tile floor details
+    (sheet 7). Historic American Buildings Survey, survey MA-841, sheets 2, 6 and 7 of 7, drawn by Frederic C.
+    Detwiller; Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/ma0435/. Public domain
+    (a work of the U.S. Government).
+  - `stone_saenredam_cave`: Plato's Cave (Antrum Platonicum), Jan Saenredam after Cornelis van Haarlem, engraving,
+    1604, published by Hendrik Hondius I. National Gallery of Art, Washington, 1983.61.1, NGA Open Access,
+    https://www.nga.gov/artworks/62542-platos-cave (image via the NGA's IIIF service). Public domain (CC0).
   - `snow_rear_elevation`, `snow_west_elevation`, `snow_east_elevation`: Old Snow Hall, the other three elevations;
     the same source and rights as the two below.
   - `snow_front_elevation`, `snow_long_section`: Old Snow Hall, front elevation and longitudinal section of the
@@ -293,6 +304,19 @@ the trees, the island, the sky.
     of Diderot and d'Alembert, Recueil de planches: Mathématiques, Algèbre, plate 2 (Paris, 1767); Wellcome
     Collection, London, no. 47855i, https://wellcomecollection.org/works/g3kp5a89. Public domain (Public Domain
     Mark; Wellcome Collection).
+  - `p_hollerith_tabulator_1890`: The Hollerith electric tabulating machine at the 1890 United States census.
+    Scientific American, 30 August 1890 (wood engraving, artist not credited); scan via Wikimedia Commons,
+    https://commons.wikimedia.org/wiki/File:1890_Census_Hollerith_Electrical_Counting_Machines_Sci_Amer.jpg.
+    Public domain (published in the United States in 1890).
+  - `p_principia_54_43`: Proposition *54.43 of Principia Mathematica, on the way to 1 + 1 = 2. A. N. Whitehead and
+    B. Russell, Principia Mathematica, vol. 1 (Cambridge University Press, 1910); scan from the University of
+    Michigan Historical Math Collection, via Wikimedia Commons,
+    https://commons.wikimedia.org/wiki/File:Principia_Mathematica_54-43.png. Public domain in the United States
+    (published 1910).
+  - `p_leibniz_binary_1703`: Table des nombres, from G. W. Leibniz, Explication de l'arithmétique binaire, Mémoires
+    de l'Académie royale des sciences (Paris, 1703), p. 86; scan via Wikimedia Commons,
+    https://commons.wikimedia.org/wiki/File:Leibniz_binary_system_1703.png. Public domain (Public Domain Mark 1.0;
+    the author died in 1716).
   - `p_durer_melencolia`: Melencolia I. Albrecht Dürer, 1514 (engraving); The Cleveland Museum of Art, accession
     1926.211, https://clevelandart.org/art/1926.211. CC0 1.0 (Cleveland Museum of Art Open Access).
   - `p_cajal_retina`: The retina of vertebrates: cells stained by the Golgi method (plate III). Santiago Ramón y
@@ -376,6 +400,14 @@ the trees, the island, the sky.
   - `p_piranesi_pantheon`: Veduta del Pantheon d'Agrippa, from the Vedute di Roma. Giovanni Battista Piranesi, 1761
     (etching and engraving); The Cleveland Museum of Art, accession 1922.5, https://clevelandart.org/art/1922.5. CC0
     1.0 (Cleveland Museum of Art Open Access).
+  - `p_wpa_careful_machinery`: Be careful near machinery. Robert Lachenmann, WPA Federal Art Project, 1936 (woodblock
+    poster); Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/98518717/. No known restrictions.
+  - `p_wpa_save_your_eyes`: Save your eyes: use your goggles. WPA Federal Art Project, Illinois Safety Division, 1936 or
+    1937 (silkscreen poster); Library of Congress, https://www.loc.gov/item/98517852/. No known restrictions.
+  - `p_wpa_protect_hands`: Protect your hands! You work with them. Robert Muchley, WPA Federal Art Project, Pennsylvania,
+    1936 (silkscreen poster); Library of Congress, https://www.loc.gov/item/98518513/. No known restrictions.
+  - `p_wpa_work_with_care`: Work with care. Nathan Sherman, WPA Federal Art Project, Pennsylvania, 1936 (silkscreen
+    poster); Library of Congress, https://www.loc.gov/item/98517388/. No known restrictions.
   - `p_wpa_see_america_parks`: See America: visit the national parks. Harry Herzog for the NYC Art Project, WPA, for
     the United States Travel Bureau, between 1936 and 1940 (silkscreen poster); Library of Congress, Prints and
     Photographs Division, WPA Poster Collection, POS - WPA - NY .H47, no. 13,
@@ -476,6 +508,215 @@ the trees, the island, the sky.
     musculari commentarius, with Giovanni Aldini's dissertation and notes (Modena: Società Tipografica, 1792),
     folding plate II; Wellcome Collection, London, https://wellcomecollection.org/works/rnbddkf5. Public domain
     (Public Domain Mark; Wellcome Collection).
+  - `p_harvard_class_day_1853`: Order of exercises for Class Day, at Harvard College, Friday, June 24, 1853. Harvard
+    College, 1853; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection,
+    Portfolio 61, Folder 20, https://www.loc.gov/item/2021771134/. No known U.S. copyright: printed in the United
+    States before 1930 (Library of Congress: "the Library is not aware of any U.S. copyright protection ... in the
+    materials in the Printed Ephemera Collection").
+  - `p_yale_applied_chemistry_1848`: School of Applied Chemistry: Analytical Laboratory, Yale College. B. Silliman Jr.
+    and J. P. Norton, New Haven, June 1848; Library of Congress, Rare Book and Special Collections Division, Printed
+    Ephemera Collection, Portfolio 8, Folder 23, https://www.loc.gov/item/2021769432/. No known U.S. copyright:
+    printed in the United States before 1930 (Library of Congress: "the Library is not aware of any U.S. copyright
+    protection ... in the materials in the Printed Ephemera Collection").
+  - `p_yale_wooden_spoon_1858`: Presentation of the Wooden Spoon, by the Junior Class in Yale College, Brewster's
+    Hall, June 15th, 1858. Yale College, 1858; Library of Congress, Rare Book and Special Collections Division,
+    Printed Ephemera Collection, Portfolio 9, Folder 5, https://www.loc.gov/item/rbpe.00900500/. No known U.S.
+    copyright: printed in the United States before 1930 (Library of Congress: "the Library is not aware of any U.S.
+    copyright protection ... in the materials in the Printed Ephemera Collection").
+  - `p_yale_junior_exhibition_1836`: Junior Exhibition, Yale University, 1836: an engraved invitation. engraved by
+    Charles E. Ely, New York, 1836; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera
+    Collection, Portfolio 7, Folder 22, https://www.loc.gov/item/2021767246/. No known U.S. copyright: printed in the
+    United States before 1930 (Library of Congress: "the Library is not aware of any U.S. copyright protection ... in
+    the materials in the Printed Ephemera Collection").
+  - `p_transylvania_philosophy_of_mind_1826`: The Philosophy of Mind according to Thomas Brown, M.D.: a table for
+    students. Transylvania University, Lexington, Ky., January 1826; Library of Congress, Rare Book and Special
+    Collections Division, Printed Ephemera Collection, Portfolio 174, Folder 10, https://www.loc.gov/item/2020770848/.
+    No known U.S. copyright: printed in the United States before 1930 (Library of Congress: "the Library is not aware
+    of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection").
+  - `p_harvard_quaestiones_1790`: Quaestiones sub reverendo Josepho Willard ... in comitiis publicis a laureae
+    magistralis candidatis. Harvard University, Cambridge, Mass., 1790; Library of Congress, Rare Book and Special
+    Collections Division, Printed Ephemera Collection, Portfolio 44, Folder 5b,
+    https://www.loc.gov/item/rbpe.0440050b/ (Evans 22562; LOC dates the sheet 1781-91; 1790 is the year Adams took his
+    master's degree). No known U.S. copyright: printed in the United States before 1930 (Library of Congress: "the
+    Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection").
+  - `p_transylvania_lecture_card_1823`: Transylvania University: Lectures on the Theory & Practice of Medicine, by
+    Samuel Brown, M.D., 1823-4. Transylvania University, Lexington, Ky., 1823; Library of Congress, Rare Book and
+    Special Collections Division, Printed Ephemera Collection, Portfolio 21, Folder 45a,
+    https://www.loc.gov/item/rbpe.0210450a/, card 1 of the set of 17. No known U.S. copyright: printed in the United
+    States before 1930 (Library of Congress: "the Library is not aware of any U.S. copyright protection ... in the
+    materials in the Printed Ephemera Collection").
+  - `p_transylvania_chemistry_card_1826`: Transylvania University, Medical Department: Course of Chemistry, by James
+    Blythe, D.D., 1826-7. Transylvania University, Lexington, Ky., 1826; Library of Congress, Rare Book and Special
+    Collections Division, Printed Ephemera Collection, Portfolio 21, Folder 45a,
+    https://www.loc.gov/item/rbpe.0210450a/, image 5 of the set. No known U.S. copyright: printed in the United States
+    before 1930 (Library of Congress: "the Library is not aware of any U.S. copyright protection ... in the materials
+    in the Printed Ephemera Collection").
+  - `p_transylvania_library_ticket_1826`: Transylvania University, Medical Department: Matriculation and Library
+    Ticket, winter session 1826-7. Transylvania University, Lexington, Ky., 1826; Library of Congress, Rare Book and
+    Special Collections Division, Printed Ephemera Collection, Portfolio 21, Folder 45a,
+    https://www.loc.gov/item/rbpe.0210450a/, image 14 of the set. No known U.S. copyright: printed in the United
+    States before 1930 (Library of Congress: "the Library is not aware of any U.S. copyright protection ... in the
+    materials in the Printed Ephemera Collection").
+  - `p_upenn_lecture_ticket_1848`: University of Pennsylvania: Lectures on the Theory & Practice of Medicine, by N.
+    Chapman, M.D.. University of Pennsylvania, Philadelphia, 1848; Library of Congress, Rare Book and Special
+    Collections Division, Printed Ephemera Collection, Portfolio 154, Folder 13,
+    https://www.loc.gov/item/rbpe.15401300/. No known U.S. copyright: printed in the United States before 1930
+    (Library of Congress: "the Library is not aware of any U.S. copyright protection ... in the materials in the
+    Printed Ephemera Collection").
+  - `p_silliman_structure_of_earth_1852`: Course of Lectures upon the Structure of the Earth, by Professor B.
+    Silliman, of Yale College. Benjamin Silliman, 1852; Library of Congress, Rare Book and Special Collections
+    Division, Printed Ephemera Collection, Portfolio 61, Folder 2, https://www.loc.gov/item/2021771150/. No known U.S.
+    copyright: printed in the United States before 1930 (Library of Congress: "the Library is not aware of any U.S.
+    copyright protection ... in the materials in the Printed Ephemera Collection").
+  - `p_amherst_williams_baseball_chess_1859`: Amherst Express. Extra. Williams and Amherst Base Ball and Chess! Muscle
+    and Mind!!. Amherst, Mass., July 1859; Library of Congress, Rare Book and Special Collections Division, Printed
+    Ephemera Collection, Portfolio 0, Folder 7, https://www.loc.gov/item/rbpe.00000700/. No known U.S. copyright:
+    printed in the United States before 1930 (Library of Congress: "the Library is not aware of any U.S. copyright
+    protection ... in the materials in the Printed Ephemera Collection").
+  - `p_harvard_lowell_inauguration_1909`: Inauguration of President Lowell: undergraduate torchlight parade and
+    fireworks. Harvard Co-operative Society, Cambridge, October 1909; Library of Congress, Rare Book and Special
+    Collections Division, Printed Ephemera Collection, Portfolio 79, Folder 49e,
+    https://www.loc.gov/item/rbpe.0790490e/, sheet 1 of the folder of seven Harvard broadsides. No known U.S.
+    copyright: printed in the United States before 1930 (Library of Congress: "the Library is not aware of any U.S.
+    copyright protection ... in the materials in the Printed Ephemera Collection").
+  - `p_harvard_change_in_programme_1917`: Harvard University: Change in Programme. Commencement, June 21, 1917,
+    Sanders Theatre. C. C. Little, Acting University Marshal, Cambridge, 1917; Library of Congress, Rare Book and
+    Special Collections Division, Printed Ephemera Collection, Portfolio 79, Folder 49e,
+    https://www.loc.gov/item/rbpe.0790490e/, image 7 of the folder of seven Harvard broadsides. No known U.S.
+    copyright: printed in the United States before 1930 (Library of Congress: "the Library is not aware of any U.S.
+    copyright protection ... in the materials in the Printed Ephemera Collection").
+  - `p_queens_college_lottery_1814`: By authority of the State of New-Jersey: Queen's College Lottery, No. III (an
+    uncut sheet of tickets). Queen's College (now Rutgers), New Brunswick, June 1814; Library of Congress, Rare Book
+    and Special Collections Division, Printed Ephemera Collection, Portfolio 99, Folder 14,
+    https://www.loc.gov/item/rbpe.09901400/. No known U.S. copyright: printed in the United States before 1930
+    (Library of Congress: "the Library is not aware of any U.S. copyright protection ... in the materials in the
+    Printed Ephemera Collection").
+  - `p_uva_absence_report_1831`: University of Virginia: a monthly report to a student's parent. University of
+    Virginia, Charlottesville, 1831; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera
+    Collection, Portfolio 186, Folder 28a, https://www.loc.gov/item/2020775168/. No known U.S. copyright: printed in
+    the United States before 1930 (Library of Congress: "the Library is not aware of any U.S. copyright protection ...
+    in the materials in the Printed Ephemera Collection").
+  - `p_oxford_chemistry_syllabus_1831`: Syllabus of a Course of Lectures on the Principles of Chemistry, commencing at
+    the Museum, Oxford, in October 1831. Charles Daubeny, Oxford, 1831; Wellcome Collection, London,
+    https://wellcomecollection.org/works/jw85n8pf. Public domain (Public Domain Mark; Wellcome Collection).
+  - `p_princeton_rah_1903`: Princeton, rah, rah, rah. Nanon West, 1903; Nanon West, 1903 (colour print, poster
+    format); Library of Congress, Prints and Photographs Division, Artist Poster filing series, POS - US .W458, no. 2,
+    https://www.loc.gov/item/2015646618/ (the photograph's margin trimmed). No known restrictions on publication
+    (Library of Congress rights statement); published in the United States before 1930.
+  - `p_mercantile_library_lectures_1861`: The Eighteenth Annual Course of Lectures before the Mercantile Library
+    Association, Boston Music Hall. Mercantile Library Association, Boston, 1861; Library of Congress, Rare Book and
+    Special Collections Division, Printed Ephemera Collection, Portfolio 67, Folder 1,
+    https://www.loc.gov/item/2020770140/. No known U.S. copyright: printed in the United States before 1930 (Library
+    of Congress: "the Library is not aware of any U.S. copyright protection ... in the materials in the Printed
+    Ephemera Collection").
+  - `p_lyceum_lecture_medford_1852`: Lyceum Lecture: the introductory lecture before the West Medford Library and
+    Lyceum Association. T. S. Harlow, Sec'y, Medford, Mass., January 19, 1852; Library of Congress, Rare Book and
+    Special Collections Division, Printed Ephemera Collection, Portfolio 61, Folder 1,
+    https://www.loc.gov/item/2021771183/. No known U.S. copyright: printed in the United States before 1930 (Library
+    of Congress: "the Library is not aware of any U.S. copyright protection ... in the materials in the Printed
+    Ephemera Collection").
+  - `p_dog_lost_fancy_1851`: Dog Lost! A Cuba lap dog ... answers to the name of "Fancy". Boston, August 4th, 1851;
+    Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 60, Folder
+    27, https://www.loc.gov/item/2021771794/. No known U.S. copyright: printed in the United States before 1930
+    (Library of Congress: "the Library is not aware of any U.S. copyright protection ... in the materials in the
+    Printed Ephemera Collection").
+  - `p_dancing_school_1861`: Afternoon Dancing School: Joseph B. Brown. Joseph B. Brown, Boston, December 1861;
+    Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 68, Folder
+    7, https://www.loc.gov/item/rbpe.06800700/. No known U.S. copyright: printed in the United States before 1930
+    (Library of Congress: "the Library is not aware of any U.S. copyright protection ... in the materials in the
+    Printed Ephemera Collection").
+  - `p_penmanship_lessons_1843`: Penmanship: Messrs. Dolbear are now commencing their last course of lessons in this
+    city. Messrs. Dolbear, Nashville, September 1843; Library of Congress, Rare Book and Special Collections Division,
+    Printed Ephemera Collection, Portfolio 175, Folder 3, https://www.loc.gov/item/2021769009/. No known U.S.
+    copyright: printed in the United States before 1930 (Library of Congress: "the Library is not aware of any U.S.
+    copyright protection ... in the materials in the Printed Ephemera Collection").
+  - `p_musicians_ball_1854`: Musicians' Military & Civic Ball, complimentary to the Lowell Cornet Band, at French's
+    Hall. Lowell, Mass., November 16th, 1854; Library of Congress, Rare Book and Special Collections Division, Printed
+    Ephemera Collection, Portfolio 61, Folder 36, https://www.loc.gov/item/2021771062/. No known U.S. copyright:
+    printed in the United States before 1930 (Library of Congress: "the Library is not aware of any U.S. copyright
+    protection ... in the materials in the Printed Ephemera Collection").
+  - `p_tyndall_lectures_on_light_1872`: Announcement: Prof. John Tyndall, of the Royal Institution, London, will
+    deliver a Course of Six Lectures on Light. Gibson Brothers, printers, Washington, D.C., 1872; Library of Congress,
+    Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 206, Folder 33,
+    https://www.loc.gov/item/2020781545/. No known U.S. copyright: printed in the United States before 1930 (Library
+    of Congress: "the Library is not aware of any U.S. copyright protection ... in the materials in the Printed
+    Ephemera Collection").
+  - `p_ymca_scientific_lectures_1870`: Scientific Lectures: a course of twelve popular scientific lectures, Lincoln
+    Hall. Young Men's Christian Association, Washington, D.C., 1870; Library of Congress, Rare Book and Special
+    Collections Division, Printed Ephemera Collection, Portfolio 206, Folder 1, https://www.loc.gov/item/2020779282/.
+    No known U.S. copyright: printed in the United States before 1930 (Library of Congress: "the Library is not aware
+    of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection").
+  - `p_armitstead_lectures_ticket_1888`: The Armitstead Lectures, Kinnaird Hall: tickets for the course, first seats,
+    no. 370. Dundee, 1888; Wellcome Collection, London, https://wellcomecollection.org/works/u9f7ppam. Public domain
+    (Public Domain Mark; Wellcome Collection).
+  - `p_chemical_industry_programme_1900`: Reception to the President and Members of the Society of Chemical Industry,
+    the Mansion House: Programme of Music. London, July 19th, 1900; Wellcome Collection, London,
+    https://wellcomecollection.org/works/z6a9xepm. Public domain (Public Domain Mark; Wellcome Collection).
+  - `p_royal_institution_notice_1841`: Royal Institution of Great Britain: the extended and practical course of
+    chemical lectures and demonstrations. Joseph Fincher, Assistant Secretary, London, August 30, 1841; Wellcome
+    Collection, London, https://wellcomecollection.org/works/v65vwkzs. Public domain (Public Domain Mark; Wellcome
+    Collection).
+  - `p_maelzel_automaton_chess_player_1826`: Maelzel's Exhibition at the Julien Hall: Automaton Chess Player,
+    Automaton Trumpeter, Automaton Rope Dancers. W. W. Clapp, printer, Boston, 1826; Library of Congress, Rare Book
+    and Special Collections Division, Printed Ephemera Collection, Portfolio 54, Folder 24,
+    https://www.loc.gov/item/2020770872/. No known U.S. copyright: printed in the United States before 1930 (Library
+    of Congress: "the Library is not aware of any U.S. copyright protection ... in the materials in the Printed
+    Ephemera Collection").
+  - `p_thermo_lamp_1802`: Thermo Lamp: this recent, extraordinary, and celebrated discovery. E. Savage, Columbian
+    Museum, New York, December 31, 1802; Library of Congress, Rare Book and Special Collections Division, Printed
+    Ephemera Collection, Portfolio 113, Folder 6a, https://www.loc.gov/item/2020781488/. No known U.S. copyright:
+    printed in the United States before 1930 (Library of Congress: "the Library is not aware of any U.S. copyright
+    protection ... in the materials in the Printed Ephemera Collection").
+  - `p_aeroport_flying_ship_1853`: Wonderful, Unprecedented, and Exciting Exhibition! An Aeroport or Flying-Ship.
+    Washington, D.C., March 1853; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera
+    Collection, Portfolio 201, Folder 9, https://www.loc.gov/item/2021771099/. No known U.S. copyright: printed in the
+    United States before 1930 (Library of Congress: "the Library is not aware of any U.S. copyright protection ... in
+    the materials in the Printed Ephemera Collection").
+  - `p_air_balloon_lecture_1783`: Air Balloon: at Mr. Patterson's Great Room ... will be delivered a Lecture on Air.
+    J. Dinwiddie, London, 1783; Wellcome Collection, London, https://wellcomecollection.org/works/s3j2y6rv. Public
+    domain (Public Domain Mark; Wellcome Collection).
+  - `p_great_comet_1858_bill`: Music Hall, George Street: Mr. Henry's Heavens, Celestial Scenery, the Planetarium; the
+    path of the great comet of 1858. Edinburgh, about 1859; Wellcome Collection, London,
+    https://wellcomecollection.org/works/gpajjast. Public domain (Public Domain Mark; Wellcome Collection).
+  - `p_dioastrodoxon_orrery_1820`: Astronomical Lecture on the new Dioastrodoxon, or Grand Transparent Orrery,
+    twenty-one feet in diameter. London, about 1820; Wellcome Collection, London,
+    https://wellcomecollection.org/works/kxqktjwd. Public domain (Public Domain Mark; Wellcome Collection).
+  - `p_walker_eidouranion_1817`: Positively the Last Times: Mr. D. F. Walker ... Three Astronomical Lectures on the
+    Eidouranion, or Large Transparent Orrery. Theatre, Dover, 1817; Wellcome Collection, London,
+    https://wellcomecollection.org/works/j773v7k5. Public domain (Public Domain Mark; Wellcome Collection).
+  - `p_philipsthal_exhibition`: Grand Philosophical, Optical, & Mechanical Exhibition, by M. de Philipsthal, Lyceum,
+    Strand. London; Wellcome dates it 1784?; Wellcome Collection, London,
+    https://wellcomecollection.org/works/zw87shps. Public domain (Public Domain Mark; Wellcome Collection).
+  - `p_miller_chemistry_lectures`: Dr. Miller will begin a Course of Lectures on Chemistry, illustrated by
+    experiments. late 18th century; Wellcome Collection, London, https://wellcomecollection.org/works/bksty9ex. Public
+    domain (Public Domain Mark; Wellcome Collection).
+  - `p_wpa_adler_planetarium`: The drama of the heavens: Adler Planetarium, operated by Chicago Park District. Beard,
+    Illinois WPA Art Project, 1939; Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS -
+    WPA - ILL .B42, no. 6, https://www.loc.gov/item/98508993/ (the film-copy border trimmed). No known restrictions on
+    publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration).
+  - `p_wpa_museum_science_industry`: Museum of Science & Industry. Galic, Illinois WPA Art Project, 1936-40; Library
+    of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .G36, no. 3,
+    https://www.loc.gov/item/98510059/ (the film-copy border trimmed). No known restrictions on publication (Library
+    of Congress rights statement; a work made for the U.S. Works Progress Administration).
+  - `p_wpa_whos_who_zoo`: Who's who in the zoo: illustrated natural history prepared by the WPA Federal Writers
+    Project. attributed to Sidney Jacobson, WPA Federal Art Project (New York), 1936-37; Library of Congress, Prints
+    and Photographs Division, WPA Poster Collection, POS - WPA - NY .J34, no. 2, https://www.loc.gov/item/98514973/
+    (the film-copy border trimmed). No known restrictions on publication (Library of Congress rights statement; a work
+    made for the U.S. Works Progress Administration).
+  - `p_wpa_romance_of_robot`: Two chamber operas: "The Romance of Robot" and "La Serva Padrona". WPA Federal Music
+    Project of New York City, 1936-41; Library of Congress, Prints and Photographs Division, WPA Poster Collection,
+    POS - WPA - NY .01 .T89, no. 1, https://www.loc.gov/item/98514982/ (the film-copy border trimmed). No known
+    restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress
+    Administration).
+  - `p_wpa_beethoven_series_1937`: Beethoven Series. WPA Federal Music Project (New York), 1937; WPA Federal Art
+    Project (New York), 1937 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster
+    Collection, POS - WPA - NY .L37, no. 4, https://www.loc.gov/item/98507229/ (the film-copy border trimmed). No
+    known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress
+    Administration).
+  - `p_bamber_dime_show_1880`: 5th Annual Tour: B. A. Bamber's Dime Show: travels, art, history, astronomy, fun,
+    electricity. about 1880; Library of Congress, Prints and Photographs Division, Theatrical poster collection, POS -
+    TH - SPE, no. 7, https://www.loc.gov/item/2014635917/. No known restrictions on publication (Library of Congress
+    rights statement); published in the United States before 1930.
 - Passages printed in books (src/books/quotes.js): each is from a work in the public domain in the United States,
   cut word for word from the Project Gutenberg text named beside it (compiled and checked for Anna's House).
 - The animals about the grounds (src/creatures.js, src/creatures/; assets/models/v_*), in the copies prepared for

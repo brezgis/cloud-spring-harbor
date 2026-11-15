@@ -203,7 +203,9 @@ export function buildSky(scene, renderer, centre) {
     const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4; moon.material.map = tex;
   }
 
-  const state = { hour: 12, light: 1, night: 0, sunDir: new THREE.Vector3(0, 1, 0), low: 1, moonDir: new THREE.Vector3(0, 1, 0), moonUp: false };
+  // (skyCol, sunCol, sunK: the colour of the open sky's light at this hour, the sun's colour and how strong it is,
+  // 0 to 1; lighting.js tints the rooms' daylight with them)
+  const state = { hour: 12, light: 1, night: 0, sunDir: new THREE.Vector3(0, 1, 0), low: 1, moonDir: new THREE.Vector3(0, 1, 0), moonUp: false, skyCol: new THREE.Color(1, 1, 1), sunCol: new THREE.Color(1, 1, 1), sunK: 1 };
   const T = [1, 1, 1], now = new Date();
   const doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);
 
@@ -239,6 +241,7 @@ export function buildSky(scene, renderer, centre) {
     hemi.color.lerp(new THREE.Color(0x6f84b0), dark); hemi.groundColor.set(0x8a7a5c).lerp(new THREE.Color(0x2c2a2a), dark);
     hemi.intensity += 0.55 * dark;
     nightSky.value.setRGB(0.010, 0.018, 0.040).multiplyScalar(dark);
+    state.skyCol.copy(hemi.color); state.sunCol.copy(sun.color); state.sunK = up ? clamp(sun.intensity / 4.6, 0, 1) : 0;
     uLitCol.value.copy(sun.color).multiplyScalar(up ? 0.8 + 1.9 * state.light : 0.16).lerp(uShadeCol.value, up ? 0 : 0.5);
     stars.material.opacity = smoothstep(state.night, 0.55, 1);
     cloudUniforms.uOpK.value = lerp(0.35, 1, state.light);

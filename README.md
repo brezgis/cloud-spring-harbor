@@ -78,6 +78,11 @@ Query parameters, for looking and testing:
 - `selftest` puts a second test building (round end, cone roof, tower) on the Library's site while it is empty.
 - `facing=stone:north` turns a site to face another way: a test of the building interface only.
 - `quality=low|medium|high`, `stages`, `statsdump`, `cull=0`, `lantern`, `keys=...` as in the house and the town.
+- `light=old`: the lighting as it was before the November 2026 pass (no sky-coloured daylight indoors, no glow in
+  lit windows seen from outside, no pilot lamps), for comparing and timing. `sheetmb=N`: the budget, in MB, for the
+  rooms' lettering and pictures on the graphics card (`life.js`; 150, 130 or 90 by quality). `texcap=0`: every
+  sheet and picture kept at full size however far off, for comparing.
+- `crowd` stands one ordinary researcher of each make at the Landing.
 - `airship=0` leaves the airship out. `airship=docked` (or `aboard,0.5`, `coming,0.6`, `tour,0.4`, `arrive,0.7`,
   `depart,0.3`, `pass,0.5`) puts her straight into that state, for pictures (with `at=` or `view=`).
 - `from=house` or `from=town` starts you aboard the airship, coming down out of cloud to the Landing, with no
@@ -143,13 +148,15 @@ the same thing in the same words.
   `perf.js`, `sound.js` (birds and breeze only), `ui.js`/`ui.css`, `welcome.js`, `about.js`, `reticle.js`.
 - `site/src/furnish.js`, `site/src/furnish/`: what stands in the rooms, one or more files per building, each
   given `f` in the building's own plan coordinates. **Read `site/src/furnish/README.md` before furnishing a room.**
-  With it: `faculty.js` and `faculty/` (the twenty-four named robots, `faculty/roster.js` is who they are, and the ordinary researchers, `faculty/researchers.js`; `faculty/nav.js`, `agent.js` and `manners.js` are how any of them gets about politely), `hold.js`
+  With it: `faculty.js` and `faculty/` (the twenty-four named robots, `faculty/roster.js` is who they are, and the ordinary researchers: a cohort of eighteen, the same all day and night, who move between their rooms and work at the spots the furnish files mark with `f.researcher`; `faculty/researcher_cohort.js` is who they are, `researcher_life.js` what they do, `researcher_looks.js` how they are made, `researchers.js` draws them; `faculty/nav.js`, `agent.js` and `manners.js` are how any of them gets about politely), `hold.js`
   (carrying, sipping, eating), `boards.js` (chalkboards, signs, door plates, paper), `record.js` (the record
   player; `sound.js` plays its music), `books.js` and `books/` (the books: every shelf holds real titles from `assets/books.json`, shelved by subject as `books/plan.js` says, one printed spine a title, and any of them can be taken down), `card.js` (a card to read),
   `chess.js` and `chess_rules.js`. `?furnish=0` shows the bare buildings; `?room=<name>` and
   `?stand=<site>:X,Y,h,degrees` stand you in a room or at a point of a building's plan; `?lineup` shows the faculty.
-- `site/src/kit.js`, `site/src/kit/`: the furniture kit (see `kit/README.md`), kept for later. Nothing is
-  furnished yet; the example uses it only for its ceiling lamps.
+- `site/src/kit.js`, `site/src/kit/`: the furniture kit (see `kit/README.md`); `kit/chairs.js` is the chairs,
+  stools and wall benches (`K.chair`, `K.stool`, `K.wallBench`).
+- `site/src/robokit/`: what every robot body is made with (shell, parts, face, turning to the visitor), shared
+  with the house and the town and kept identical in all three: change it in all three or not at all.
 - `site/src/grounds.js`: the school's grounds (above). `site/src/grounds/`: the tools it is made with: `ground.js` (laid surfaces: gravel, flags),
   `flora.js` and `paint.js` (planting), `tools.js` (benches, pots, rocks), `cards.js` (foliage cards: the
   trees use these now).
@@ -182,7 +189,7 @@ What differs from the town's engine is listed at the end of this file.
 
 Run from the project root. Every tool that starts Chrome clears Chrome's leftover cache first
 (`tools/clean_cache.sh`) and waits for one of the two render slots shared with the house and the town
-(`/tmp/claude-1002/my_house_shot_locks`), so at most two renders run at once on this machine.
+(the lock folder named in `tools/local.env`), so at most two renders run at once on this machine.
 
 - `tools/check.sh`: syntax-checks every module with node 22 (from nvm) and checks that every relative
   import resolves.
@@ -194,6 +201,8 @@ Run from the project root. Every tool that starts Chrome clears Chrome's leftove
 - `tools/walk_test.js`: the walk every change should survive: from the Landing across the green to each
   site's door, in at the stand-in's door, up its stair, to a window.
   `python3 tools/drive.py "at=landing&time=13" "$(cat tools/walk_test.js)"`
+- `tools/soak_researchers.js`: a soak of the researchers' day in a few rooms (stuck, inside furniture, on the
+  visitor, two in one seat). `python3 tools/drive.py "at=snow&time=22" "$(cat tools/soak_researchers.js)"`
 
 Test hooks in the page: `window.__house` has `renderer`, `scene`, `camera`, `walker`, `campus` (sites, rooms,
 doors, boxes ...), `groundAt(x, z)`, `colliders`, `surfaces`, `setView`, `setHour`, `lastCalls`, `lastTris`,

@@ -69,6 +69,8 @@ export class Builder {
   //           each face (for boards, whose grain runs along v)
   //   swap:   swap u and v on every face
   //   collide: register the box as an obstacle for walking
+  //   skip:   [[nx, ny, nz], ...] the faces (by their outward normals, before any rot) left out: a board laid against
+  //           a wall has no back, which lay in the plane of the wall's face
   wbox(mat, x0, x1, y0, y1, z0, z1, o = {}) {
     if (x0 > x1) [x0, x1] = [x1, x0];
     if (y0 > y1) [y0, y1] = [y1, y0];
@@ -86,6 +88,12 @@ export class Builder {
       else { u = x; v = y; du = sx; dv = sy; }
       if (o.swap || (o.grain === 'long' && du > dv)) [u, v] = [v, u];
       uv.setXY(i, u, v);
+    }
+    if (o.skip?.length) {
+      const keep = [], pa = p.array, na = n.array, ua = uv.array, pos = [], nor = [], tex = [];
+      for (let i = 0; i < p.count; i += 3) if (!o.skip.some(q => q[0] * n.getX(i) + q[1] * n.getY(i) + q[2] * n.getZ(i) > 0.5)) keep.push(i);
+      for (const i of keep) { pos.push(...pa.slice(i * 3, i * 3 + 9)); nor.push(...na.slice(i * 3, i * 3 + 9)); tex.push(...ua.slice(i * 2, i * 2 + 6)); }
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(tex, 2));
     }
     if (o.rot) g.applyMatrix4(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(...o.rot)));
     g.translate(cx, cy, cz);

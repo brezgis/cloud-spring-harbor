@@ -114,13 +114,25 @@ export function makeBubbles(THREE, camera, headless = false, opts = {}) {
         // so that what is written there can still be read from the back of the room
         const sx = (v.x + 1) / 2 * W, sy = (1 - v.y) / 2 * H, gap = Math.max(26, Math.min(170, (b.radius ?? 0.9) * H / (2 * d * Math.tan(camera.fov * Math.PI / 360)))) + 14;      // the speaker's own half-width on screen, and a little
         let top = sy - h * 0.3;
-        if (b.avoid) { v2.copy(b.avoid).project(camera); const ax = (v2.x + 1) / 2 * W; if (Math.abs(sx - ax) > 30) b.side = sx > ax ? 1 : -1; v2.set(pos.x, b.avoid.y - 2.1, pos.z).project(camera); top = Math.max(top, (1 - v2.y) / 2 * H); }
-        // rigidly beside the speaker: on its own side if the screen has room there, else on the other; never slid along the screen's edge
+        // the side away from the board is chosen when a line begins (and when the speaker is first seen), and kept for the
+        // line: a speaker walking past the board, or a visitor stepping close, does not send it from side to side
+        if (b.avoid) { v2.set(pos.x, b.avoid.y - 2.1, pos.z).project(camera); top = Math.max(top, (1 - v2.y) / 2 * H); }
+        if (b.sideFor !== b.text || !b.wasOn) { b.sideFor = b.text; if (b.avoid) { v2.copy(b.avoid).project(camera); const ax = (v2.x + 1) / 2 * W; if (Math.abs(sx - ax) > 30) b.side = sx > ax ? 1 : -1; } b.mode = null; }
+        // rigidly beside the speaker: on its side if the screen has room there, else the other; with neither, over its
+        // head. The way it is placed changes only when it must (a margin each way), and then it slides, not jumps.
         const fits = (sd, m) => { const left = sd > 0 ? sx + gap : sx - gap - 2 * hw; return left > 8 + m && left + 2 * hw < W - 8 - m; };
-        if (b.flip ? fits(b.side, 40) : !fits(b.side, 0)) b.flip = !b.flip && fits(-b.side, 0);
-        const sd = b.flip ? -b.side : b.side;
-        if (fits(sd, 0)) { x = sx + sd * (gap + hw); y = Math.min(floor - h / 2, Math.max(h / 2 + 12, top + h / 2)); }
-        else { x = Math.max(hw + 10, Math.min(W - hw - 10, sx)); y = Math.min(floor - h / 2, Math.max(h / 2 + 12, sy - h / 2 - 10)); }      // (a screen too narrow for either: over the head, as any bubble)
+        let mode = b.mode;
+        if (mode === null || mode === undefined) mode = fits(b.side, 0) ? b.side : fits(-b.side, 0) ? -b.side : 0;
+        else if (mode !== 0 && !fits(mode, -6)) mode = fits(-mode, 30) ? -mode : 0;
+        else if (mode === 0 && (fits(b.side, 50) || fits(-b.side, 50))) mode = fits(b.side, 50) ? b.side : -b.side;
+        if (mode !== b.mode && b.mode !== null && b.mode !== undefined) b.slideAt = now; b.mode = mode;
+        let ox, oy;
+        if (mode !== 0) { ox = mode * (gap + hw); oy = Math.min(floor - h / 2, Math.max(h / 2 + 12, top + h / 2)) - sy; }
+        else { ox = Math.max(hw + 10, Math.min(W - hw - 10, sx)) - sx; oy = Math.min(floor - h / 2, Math.max(h / 2 + 12, sy - h / 2 - 10)) - sy; }      // (a screen too narrow for either: over the head, as any bubble)
+        // offsets from the speaker, eased for half a second after a change of place (held rigidly otherwise, so it never swims as you turn)
+        const ease = now - (b.slideAt ?? -9) < 0.6 && b.ox !== undefined, e = Math.min(1, (now - (b.placedAt ?? now)) * 9);
+        b.ox = ease ? b.ox + (ox - b.ox) * e : ox; b.oy = ease ? b.oy + (oy - b.oy) * e : oy; b.placedAt = now;
+        x = sx + b.ox; y = sy + b.oy;
       } else {
         x = Math.max(hw + 10, Math.min(W - hw - 10, (v.x + 1) / 2 * W));
         y = Math.min(floor, Math.max(h + 12, (1 - v.y) / 2 * H - 10));
@@ -137,6 +149,7 @@ export function makeBubbles(THREE, camera, headless = false, opts = {}) {
       b.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, ${lec ? '-50%' : '-100%'}) scale(${s.toFixed(3)})`;
       if (moved !== b.moved) { b.moved = moved; b.el.classList.toggle('moved', moved); }
     }
+    b.wasOn = on;
     if (on !== b.shown) { b.shown = on; b.el.classList.toggle('on', on); }
   }
 

@@ -29,9 +29,10 @@ import library_trustees from './library_trustees.js';
 import library_upper from './library_upper.js';
 import library_smalls from './library_smalls.js';
 import stone_stone from './stone_stone.js';
+import stairs from './stairs.js';      // the stairwells of every building (one file across buildings: it looks for its rooms)
 
 export const ROOMS = {
-  snow: [snow_janitor, snow_workshop, snow_lecture, snow_cafe, snow_r102, snow_r103, snow_r202, snow_r201, snow_r205, snow_r207, snow_r206, snow_botany, snow_r203, snow_r208, snow_common, snow_attic_offices, snow_r302, snow_r303, snow_r301a, snow_bullpen, snow_servers],
-  library: [library_reading, library_delivery, library_bookroom, library_cataloguing, library_trustees, library_upper, library_smalls],
+  snow: [snow_janitor, snow_workshop, snow_lecture, snow_cafe, snow_r102, snow_r103, snow_r202, snow_r201, snow_r205, snow_r207, snow_r206, snow_botany, snow_r203, snow_r208, snow_common, snow_attic_offices, snow_r302, snow_r303, snow_r301a, snow_bullpen, snow_servers, stairs],
+  library: [library_reading, library_delivery, library_bookroom, library_cataloguing, library_trustees, library_upper, library_smalls, stairs],
   stone: [stone_stone],
 };

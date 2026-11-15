@@ -68,7 +68,7 @@ export async function statsDump(H, which, hours) {
       const fam = {}; for (const [k, [c, t]] of Object.entries(tally)) { const f = k.split(':')[0]; fam[f] ??= [0, 0]; fam[f][0] += c; fam[f][1] += t; }
       const byFam = Object.entries(fam).sort((a, b) => b[1][1] - a[1][1]).map(([k, [c, t]]) => `${k}:${c}/${(t / 1000).toFixed(0)}k`).join(' ');
       let mc = 0, mt = 0; for (const [c, t] of Object.values(tally)) { mc += c; mt += t; }
-      out.views[`${name}@${h}`] = { byFam, calls: mc, tris: Math.round(mt), frameCalls: H.lastCalls, frameTris: H.lastTris, textures: info.memory.textures, geometries: info.memory.geometries, programs: info.programs?.length, texMB: mem.texMB, geoMB: mem.geoMB, visMs: H.visTime?.() ?? null, seen: H.vis ? [...H.vis.state.seen].map(([k, v]) => k.slice(2) + '/' + v.level).join(', ') : '', quality: H.quality, byTris: top.join(' '), byCalls: topc.join(' ') };
+      out.views[`${name}@${h}`] = { byFam, calls: mc, tris: Math.round(mt), frameCalls: H.lastCalls, frameTris: H.lastTris, textures: info.memory.textures, geometries: info.memory.geometries, programs: info.programs?.length, texMB: mem.texMB, sheetMB: mem.sheetMB, sheets: mem.sheets, geoMB: mem.geoMB, visMs: H.visTime?.() ?? null, seen: H.vis ? [...H.vis.state.seen].map(([k, v]) => k.slice(2) + '/' + v.level).join(', ') : '', quality: H.quality, byTris: top.join(' '), byCalls: topc.join(' ') };
     }
   }
   out.totalMs = Math.round(performance.now() - t0);
@@ -80,17 +80,20 @@ export async function statsDump(H, which, hours) {
 // Texture and geometry bytes actually uploaded to the GPU (estimated from sizes).
 function memory(H) {
   const props = H.renderer.properties, seen = new Set(), geos = new Set();
-  let tex = 0, geo = 0;
+  let tex = 0, geo = 0, sheet = 0, sheets = 0;
   const KEYS = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap', 'bumpMap', 'clearcoatMap', 'clearcoatNormalMap', 'clearcoatRoughnessMap', 'sheenColorMap', 'sheenRoughnessMap', 'transmissionMap', 'thicknessMap', 'specularIntensityMap', 'specularColorMap', 'iridescenceMap', 'lightMap', 'displacementMap', 'anisotropyMap'];
   H.scene.traverse(o => {
+    // (a room's sheets, life.js, keep copies at several sizes, not all of them on a material at any one time)
+    for (const t of o.userData.textures ?? []) { const id = t.source?.uuid ?? t.uuid; if (seen.has(id) || !props.get(t).__webglTexture) continue; seen.add(id); const b = t.image.width * t.image.height * 4 * 1.333; tex += b; sheet += b; sheets++; }
     if (o.geometry && !geos.has(o.geometry)) { geos.add(o.geometry); for (const a of Object.values(o.geometry.attributes)) geo += a.array?.byteLength ?? 0; if (o.geometry.index) geo += o.geometry.index.array.byteLength; }
     for (const m of [].concat(o.material ?? [])) for (const k of KEYS) {
       const t = m[k]; const id = t && (t.source?.uuid ?? t.uuid); if (!t || seen.has(id)) continue; seen.add(id);
       const src = t.source?.data ?? t.image; if (!src) continue;
       if (!props.get(t).__webglTexture) continue;
       const w = src.width ?? 0, h = src.height ?? 0;
-      tex += w * h * 4 * (t.generateMipmaps !== false && t.minFilter !== 1006 ? 1.333 : 1);
+      const b = w * h * 4 * (t.generateMipmaps !== false && t.minFilter !== 1006 ? 1.333 : 1);
+      tex += b; if (o.userData.sheet) { sheet += b; sheets++; }      // (the rooms' lettering and pictures, life.js: the part that comes and goes)
     }
   });
-  return { texMB: +(tex / 1048576).toFixed(1), geoMB: +(geo / 1048576).toFixed(1) };
+  return { texMB: +(tex / 1048576).toFixed(1), sheetMB: +(sheet / 1048576).toFixed(1), sheets, geoMB: +(geo / 1048576).toFixed(1) };
 }

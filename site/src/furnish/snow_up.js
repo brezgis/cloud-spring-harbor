@@ -10,9 +10,11 @@
 // One idea to a room. The classrooms are a board and benches; each differs from the next by what is on its
 // board and by one object: a double pendulum (Dynamical Systems), the flatworms' tank (Morphogenesis), three little carts and a contraption
 // of beer cans (Philosophy of Mind), a model neuron (Neural Computation), a board of lamps (Deep Learning), an ant farm (Collective Behavior).
-// The benches, tables and chairs are plain oak boards built here (a kit chair is 700 triangles, and there are
-// sixty places to sit); so are the offices' desks, lamps and shelves (the building's furniture has a budget of triangles, and six robots
-// and the chess set take most of this file's half); the kit's upholstery is kept for the common room.
+// The pews are plain oak boards built here (there are sixty places to sit in them). The loose chairs, tables, stools and
+// hall benches are the kit's (Windsor chairs, tables with aprons and tapered legs, turned stools, plank benches with
+// shaped ends: about 1,200 triangles a chair, all in the oak's one batch, so they cost triangles and no draw calls);
+// the offices' desks and the laboratory benches are built here with eased edges; lamps and shelves stay plain (the
+// building's furniture has a budget of triangles); the kit's upholstery is kept for the common room.
 //
 // (The chalk face's Cyrillic subset, assets/fonts/caveat-600-cyrillic.woff2, stays installed; nothing here uses it now.)
 
@@ -243,47 +245,51 @@ export default function (f) {
 
   // ---- joinery: plain oak boards. Every piece runs a little way into its neighbor, so no two faces share a plane ----
   const ob = (s, ...a) => s.box(OAK, ...a, G);
-  // A bench with its desk, for two or three: the frame faces the board; the bench's front edge is y = 0.
+  // A bench with its desk, for two or three: the frame faces the board; the bench's front edge is y = 0. The
+  // school desk of the 1890s: oak seat, back rails and desk top with their edges eased, a lip along the desk's far
+  // edge so a pencil stays put, a shelf for books under it, all on cast-iron standards (a foot rail on the floor,
+  // a post to the desk and one to the seat and back), one at each end and one in the middle of a long one. The desk
+  // top (2.5, from 0.7 to 2.2) and the seat (1.5) are where they were: what is left on the desks still lies on them.
   function pew(s, w, n = 2) {
-    const a = w / 2;
-    ob(s, -a, a, 0.7, 2.15, 2.4, 2.5);
-    for (const x of [-a + 0.22, a - 0.22]) ob(s, x - 0.07, x + 0.07, 0.85, 2.05, 0, 2.42);
-    ob(s, -a + 0.22, a - 0.22, 1.96, 2.02, 0.9, 2.42);
-    ob(s, -a, a, -1.15, 0.05, 1.4, 1.5);
-    for (const x of [-a + 0.25, a - 0.25]) { ob(s, x - 0.07, x + 0.07, -1.05, -0.05, 0, 1.42); ob(s, x - 0.06, x + 0.06, -1.24, -1.1, 0, 3.0); }
-    ob(s, -a, a, -1.2, -1.13, 2.4, 2.95);
+    const a = w / 2, IRON = 'c#26282b/0.5';
+    s.bev(OAK, -a, a, 0.7, 2.2, 2.4, 2.5, 0.025, G);
+    s.bev(OAK, -a + 0.1, a - 0.1, 2.12, 2.2, 2.5, 2.58, 0.015, G);                                   // the lip
+    s.bev(OAK, -a + 0.3, a - 0.3, 1.0, 2.0, 1.9, 1.95, 0.012, G);                                    // the book shelf
+    s.bev(OAK, -a + 0.3, a - 0.3, 2.02, 2.08, 0.9, 2.38, 0.012, G);                                  // the modesty board
+    s.bev(OAK, -a, a, -1.15, 0.05, 1.4, 1.5, 0.03, G);                                               // the seat
+    for (const [z0, z1] of [[2.12, 2.38], [2.68, 2.98]]) s.bev(OAK, -a + 0.1, a - 0.1, -1.24, -1.15, z0, z1, 0.02, G);      // the back rails
+    const xs = w > 5 ? [-a + 0.3, 0, a - 0.3] : [-a + 0.3, a - 0.3];
+    for (const x of xs) {
+      const P = pts => pts.map(([y, z]) => [x, y, z]);
+      tube(s, IRON, P([[-1.28, 0.05], [2.2, 0.05]]), 0.05, 6);
+      for (const y of [-1.24, 2.16]) s.box(IRON, x - 0.08, x + 0.08, y - 0.1, y + 0.1, 0, 0.04);   // its feet
+      tube(s, IRON, P([[2.0, 0.05], [1.88, 0.7], [1.86, 1.6], [1.96, 2.38]]), 0.04, 6);           // up to the desk
+      tube(s, IRON, P([[1.9, 1.15], [1.4, 1.9], [0.8, 2.37]]), 0.028, 5);                          // and its bracket
+      tube(s, IRON, P([[-0.45, 0.05], [-0.55, 0.7], [-0.45, 1.38]]), 0.035, 6);                    // the seat's post
+      tube(s, IRON, P([[-1.22, 0.05], [-1.2, 1.4], [-1.19, 2.98]]), 0.04, 6);                      // the back post
+      tube(s, IRON, P([[-1.18, 1.37], [-0.6, 1.375], [0.0, 1.37]]), 0.025, 4);                     // under the seat
+    }
     for (let i = 0; i < n; i++) f.seat(s, -a + (w * (i + 0.5)) / n, -0.5, 1.5, 'sit at the desk');
-    s.block(-a, a, -1.24, 2.15, 0, 2.6);
+    s.block(-a, a, -1.28, 2.2, 0, 2.6);
   }
-  // A plain chair at (x, y) of a frame, facing the frame's front (dq quarter turns more).
-  function chair(fr0, x, y, dq = 0, sit = true) {
-    const s = fr0.sub(x, y, 0, dq);
-    ob(s, -0.72, 0.72, -0.7, 0.72, 1.42, 1.5);
-    for (const sx of [-1, 1]) { ob(s, sx * 0.62 - 0.06, sx * 0.62 + 0.06, 0.56, 0.68, 0, 1.44); ob(s, sx * 0.62 - 0.06, sx * 0.62 + 0.06, -0.68, -0.56, 0, 3.1); }
-    ob(s, -0.62, 0.62, -0.66, -0.6, 2.72, 3.04); ob(s, -0.62, 0.62, -0.65, -0.61, 2.15, 2.38);
-    if (sit) f.seat(s, 0, 0.1, 1.5, 'sit');
-    s.block(-0.72, 0.72, -0.7, 0.72, 0, 1.6);
-  }
-  // A table: its back edge is the frame (y = 0), like the kit's desk; the top is at h.
-  function table(s, w, d, h = 2.5) {
-    const a = w / 2 - 0.22;
-    ob(s, -w / 2, w / 2, 0, d, h - 0.1, h);
-    for (const x of [-a, a]) for (const y of [0.22, d - 0.22]) ob(s, x - 0.09, x + 0.09, y - 0.09, y + 0.09, 0, h - 0.08);
-    for (const y of [0.22, d - 0.22]) ob(s, -a, a, y - 0.035, y + 0.035, h - 0.5, h - 0.06);
-    for (const x of [-a, a]) ob(s, x - 0.03, x + 0.03, 0.22, d - 0.22, h - 0.48, h - 0.04);
-    s.block(-w / 2, w / 2, 0, d, 0, Math.max(h, 1.5));
-  }
+  // A chair at (x, y) of a frame, facing the frame's front (dq quarter turns more): the kit's Windsor (bow back,
+  // saddle seat, turned legs; seat 1.5 and its place as the old box chair had them, so every spot on one still fits).
+  function chair(fr0, x, y, dq = 0, sit = true) { K.chair(fr0, x, y, { kind: 'windsor', dq, sit }); }
+  // A table: its back edge is the frame (y = 0), like the kit's desk; the top is at h. (The kit's table, with apron
+  // rails and tapered legs, is centred on its frame, so it is moved forward by half its depth; it blocks itself.)
+  function table(s, w, d, h = 2.5) { K.table(s.sub(0, d / 2), w, d, h, OAK); }
   // An office desk: a top on two pedestals of three drawers, a shallow drawer over the knee hole. The frame is its
-  // back edge and the sitter's side is +y, as the kit's (which is 1,500 triangles; this is 250).
+  // back edge and the sitter's side is +y, as the kit's (which is 1,500 triangles; this is about 400). The top, the
+  // plinths and the drawer fronts have eased edges; the drawers are proud of their carcass by a finger's width.
   function desk(s, w = 5, d = 2.4) {
     const a = w / 2, pw = 1.35;
-    ob(s, -a, a, 0, d, 2.4, 2.5);
+    s.bev(OAK, -a, a, 0, d, 2.4, 2.5, 0.025, G);
     for (const sx of [-1, 1]) {
       const x0 = sx > 0 ? a - 0.12 - pw : -a + 0.12, x1 = x0 + pw, xm = (x0 + x1) / 2;
-      ob(s, x0, x1, 0.12, d - 0.12, 0.3, 2.42); ob(s, x0 + 0.06, x1 - 0.06, 0.18, d - 0.18, 0, 0.32);
-      for (const [z0, z1] of [[0.4, 1.0], [1.06, 1.66], [1.72, 2.32]]) { ob(s, x0 + 0.07, x1 - 0.07, d - 0.14, d - 0.09, z0, z1); s.box(BRASS, xm - 0.035, xm + 0.035, d - 0.1, d - 0.04, (z0 + z1) / 2 - 0.035, (z0 + z1) / 2 + 0.035); }
+      ob(s, x0, x1, 0.12, d - 0.12, 0.3, 2.42); s.bev(OAK, x0 - 0.02, x1 + 0.02, 0.1, d - 0.08, 0, 0.32, 0.02, G);
+      for (const [z0, z1] of [[0.4, 1.0], [1.06, 1.66], [1.72, 2.32]]) { s.bev(OAK, x0 + 0.07, x1 - 0.07, d - 0.14, d - 0.09, z0, z1, 0.015, G); s.cyl(BRASS, xm, d - 0.06, (z0 + z1) / 2 - 0.03, (z0 + z1) / 2 + 0.03, 0.05, 0.05, 8); s.box(BRASS, xm - 0.12, xm + 0.12, d - 0.025, d - 0.003, (z0 + z1) / 2 - 0.018, (z0 + z1) / 2 + 0.018); }
     }
-    ob(s, -a + pw + 0.1, a - pw - 0.1, d - 0.34, d - 0.26, 2.02, 2.42); s.box(BRASS, -0.035, 0.035, d - 0.27, d - 0.21, 2.18, 2.25);
+    s.bev(OAK, -a + pw + 0.1, a - pw - 0.1, d - 0.34, d - 0.26, 2.02, 2.42, 0.015, G); s.box(BRASS, -0.14, 0.14, d - 0.24, d - 0.22, 2.2, 2.235);
     ob(s, -a + pw + 0.1, a - pw - 0.1, 0.14, 0.2, 0.8, 2.42);
     s.block(-a, a, 0, d, 0, 2.5);
   }
@@ -303,33 +309,23 @@ export default function (f) {
     for (let z = 0.28; z < tall - 0.6; z += 1.08) { if (z > 0.3) ob(s, -a + 0.04, a - 0.04, 0.03, 0.87, z - 0.06, z); K.bookRow(s, -a + 0.12, a - 0.12, 0.04, z, Math.min(1.01, tall - 0.03 - z), fill); }
     s.block(-a, a, 0, 0.95, 0, tall);
   }
-  // A laboratory bench, centered on the frame: a dark top, 3 ft high.
+  // A laboratory bench, centered on the frame: a dark top, 3 ft high, on four stout legs with rails under the top
+  // and a shelf for boxes low down; every board's edges eased (the top's a little more, as a worked slab's are).
   function labBench(s, w, d) {
     const a = w / 2 - 0.35, b = d / 2 - 0.3;
-    s.box(DARKTOP, -w / 2, w / 2, -d / 2, d / 2, 2.9, 3.0);
-    for (const x of [-a, a]) for (const y of [-b, b]) ob(s, x - 0.11, x + 0.11, y - 0.11, y + 0.11, 0, 2.92);
-    for (const y of [-b, b]) ob(s, -a, a, y - 0.04, y + 0.04, 2.45, 2.94);
-    for (const x of [-a, a]) ob(s, x - 0.035, x + 0.035, -b, b, 2.47, 2.96);
-    ob(s, -a, a, -b, b, 0.5, 0.58);
+    s.bev(DARKTOP, -w / 2, w / 2, -d / 2, d / 2, 2.9, 3.0, 0.03);
+    for (const x of [-a, a]) for (const y of [-b, b]) s.bev(OAK, x - 0.11, x + 0.11, y - 0.11, y + 0.11, 0, 2.92, 0.025, { grain: 'z' });
+    for (const y of [-b, b]) s.bev(OAK, -a, a, y - 0.04, y + 0.04, 2.45, 2.94, 0.012, G);
+    for (const x of [-a, a]) s.bev(OAK, x - 0.035, x + 0.035, -b, b, 2.47, 2.96, 0.012, G);
+    s.bev(OAK, -a, a, -b, b, 0.5, 0.58, 0.015, G);
     s.block(-w / 2, w / 2, -d / 2, d / 2, 0, 3);
   }
-  function stool(fr0, x, y, dq = 0) {
-    const s = fr0.sub(x, y, 0, dq);
-    s.cyl(OAK, 0, 0, 1.95, 2.05, 0.5, 0.5, 10);
-    for (const sx of [-1, 1]) for (const sy of [-1, 1]) ob(s, sx * 0.28 - 0.05, sx * 0.28 + 0.05, sy * 0.28 - 0.05, sy * 0.28 + 0.05, 0, 1.97);
-    for (const sy of [-1, 1]) ob(s, -0.28, 0.28, sy * 0.28 - 0.03, sy * 0.28 + 0.03, 0.6, 0.68);
-    for (const sx of [-1, 1]) ob(s, sx * 0.28 - 0.03, sx * 0.28 + 0.03, -0.28, 0.28, 0.8, 0.88);
-    f.seat(s, 0, 0, 2.05, 'sit on the stool');
-    s.block(-0.45, 0.45, -0.45, 0.45, 0, 2.05);
-  }
-  // A hall bench standing against a wall (the frame lies on the wall).
-  function bench(s, w) {
-    ob(s, -w / 2, w / 2, 0.12, 1.45, 1.4, 1.5);
-    for (const x of [-w / 2 + 0.25, w / 2 - 0.25]) ob(s, x - 0.07, x + 0.07, 0.2, 1.35, 0, 1.42);
-    ob(s, -w / 2, w / 2, 0.08, 0.16, 1.48, 2.9);
-    for (const x of [-w / 4, w / 4]) f.seat(s, x, 0.8, 1.5, 'sit on the bench');
-    s.block(-w / 2, w / 2, 0, 1.45, 0, 2.9);
-  }
+  // A turned laboratory stool (the kit's: splayed legs and a ring for the feet; seat 2.05, as the old one), kept to
+  // the old one's half-foot radius so that stools set close along a bench do not run into each other.
+  function stool(fr0, x, y, dq = 0) { K.stool(fr0, x, y, { dq, r: 0.5 }); }
+  // A hall bench standing against a wall (the frame lies on the wall): the kit's, with shaped ends and a slatted
+  // back; two places at the quarters, as before.
+  function bench(s, w) { K.wallBench(s, w, { d: 1.45, every: w / 2 }); }
   function trunk(fr0, x, y, w, d, h, col = 'c#4a3a2c/0.8', z = 0) {
     const s = fr0.sub(x, y, z, 0);
     s.box(col, -w / 2, w / 2, -d / 2, d / 2, 0, h * 0.72); s.box(col, -w / 2 - 0.03, w / 2 + 0.03, -d / 2 - 0.03, d / 2 + 0.03, h * 0.72, h);
@@ -647,7 +643,7 @@ export default function (f) {
       const ap = u => { const t = u * 5; return t < 1 ? 0.2 + 0.03 * t : t < 1.25 ? 0.23 + 0.12 * ((t - 1) / 0.25) ** 2 : t < 1.6 ? 0.35 + 0.6 * Math.sin(((t - 1.25) / 0.35) * Math.PI / 2) : t < 2.3 ? 0.95 - 0.86 * (1 - Math.cos(((t - 1.6) / 0.7) * Math.PI)) / 2 : 0.09 + 0.11 * (1 - Math.exp(-(t - 2.3) / 0.8)); };
       c.axes(70, 14, 44, 24, { xl: 'time', size: 2.7 }); c.plot(ap, 70, 14, 44, 24, { col: P, lw: 0.3 });
       c.line(70, 38 - 24 * 0.33, 114, 38 - 24 * 0.33, { lw: 0.1, dash: 0.6 }); c.text('threshold', 101, 38 - 24 * 0.33 - 0.8, 2.6, { col: B }); c.text('+40 mV', 86.5, 15.4, 2.6, { col: B }); c.text('−65 mV', 63.5, 38 - 24 * 0.2 + 0.8, 2.5, { col: B });
-      c.text('Na in, fast', 76, 22, 2.6, { col: Gn }); c.text('K out, slower', 93, 27, 2.6, { col: Gn }); c.line(96, 41.2, 104.8, 41.2, { lw: 0.2 }); c.text('1 ms', 97.8, 44.4, 2.6);
+      c.text('Na in, fast', 76, 22, 2.6, { col: Gn }); c.text('K out, slower', 92, 23, 2.6, { col: Gn }); c.line(96, 41.2, 104.8, 41.2, { lw: 0.2 }); c.text('1 ms', 97.8, 44.4, 2.6);
     }, CH);
     pews(F2, 2, [42, 47.5, 53], [93.6, 102.9], 6.5, 2);
     const t = fr(108.5, 34.9, F2, 2); table(t, 4.5, 2.2); chair(t, 0, 3.1, 2);
@@ -714,12 +710,12 @@ export default function (f) {
       [[0, 0.12], [1, 0.42], [3, 0.1], [4, 0.36]].forEach(([i, wt]) => { const a = xs[2], b = xs[i], top = 39.5 - Math.abs(a - b) * 0.36; c.curve([[a, 39.4], [(a * 3 + b) / 4, top], [(a + b * 3) / 4, top], [b, 39.4]], { col: P, lw: wt }); });
       c.text('each word looks at all the others, and weighs them', 58, 31, 2.9, { col: B });
     }, CH);
-    pews(F2, 0, [15, 9.5], [95.6, 104.9], 6.5, 2);
+    // (the class's tables and chairs, in the pews' places: rooms/snow_r206.js)
     const t = fr(108.8, 21.1, F2, 0); table(t, 4.5, 2.2); chair(t, 0, 3.1, 2);
     sheet(t, 1.4, 1.1, 2.5, 'CS 330', 'Problem set 2: backpropagation by hand', { n: 5 }); K.laptop(t, 0.2, 1.2, 2.5); sheet(fr(95.6, 15, F2, 0), 1.3, 1.45, 2.5, 'CS 330', 'Problem set 2: backpropagation by hand', { turn: 0.35, red: '?' });
     // the one object: a board of lamps and wires, after the perceptron
     { const s = t.sub(-1.25, 0.75, 2.5);
-      s.box('c#5a3c29/0.5', -0.8, 0.8, -0.12, 0.0, 0, 1.25); s.box('c#3a2a1e/0.6', -0.86, 0.86, -0.3, 0.3, 0, 0.06);
+      s.box('c#5a3c29/0.5', -0.8, 0.8, -0.12, 0.0, 0.06, 1.25); s.box('c#3a2a1e/0.6', -0.86, 0.86, -0.3, 0.3, 0, 0.06);
       for (let i = 0; i < 5; i++) for (let j = 0; j < 4; j++) { const on = (i * 3 + j * 5) % 7 < 3; s.box(on ? 'e#ffd58a/2.2' : 'c#6f6558/0.4', -0.62 + i * 0.31 - 0.05, -0.62 + i * 0.31 + 0.05, 0.0, 0.05, 0.22 + j * 0.27 - 0.05, 0.22 + j * 0.27 + 0.05); }
       for (const [x0, z0, x1] of [[-0.62, 1.03, -0.3], [0, 1.03, 0.1], [0.62, 1.03, 0.4]]) tube(s, 'c#8a2f25/0.6', [[x0, 0.06, z0], [x0, 0.25, 0.6], [x1, 0.55, 0.12]], 0.012, 4);
       s.box(BLACK, -0.5, 0.6, 0.45, 0.75, 0, 0.14); for (const x of [-0.3, 0, 0.3]) s.cyl(BRASS, x, 0.6, 0.14, 0.2, 0.05, 0.05, 8);
@@ -769,23 +765,16 @@ export default function (f) {
       s.box(BLACK, -0.2, 0.2, -0.26, 0.22, 0, 0.06); s.box(BLACK, -0.04, 0.04, -0.24, -0.16, 0.06, 0.64); s.box(BLACK, -0.17, 0.17, -0.2, 0.15, 0.36, 0.39); s.box(BLACK, -0.033, 0.033, -0.22, 0.0, 0.64, 0.72);
       s.cyl(BRASS, 0, -0.02, 0.14, 0.16, 0.09, 0.09, 8); s.cyl(BRASS, 0, -0.02, 0.5, 1.02, 0.055, 0.055, 8); s.cyl(BRASS, 0, -0.02, 0.42, 0.5, 0.032, 0.045, 8); s.cyl(BLACK, 0, -0.02, 1.02, 1.1, 0.042, 0.042, 8); s.box(BRASS, -0.12, 0.12, -0.235, -0.165, 0.5, 0.57); };
     scope(B1, -4.6, 0.5); scope(B2, -4.6, 0.5);
-    // the ant farm: sand between two panes, the galleries drawn; a tube to the foraging tray, where the trail is
-    { const s = B1.sub(-1.6, -0.4, 3.0); s.box('c#3a2a1e/0.6', -1.5, 1.5, -0.14, 0.14, 0, 0.1); s.box('glass', -1.45, 1.45, -0.1, 0.1, 0.1, 1.5); s.box('c#3a2a1e/0.6', -1.5, 1.5, -0.14, 0.14, 1.5, 1.58);
-      for (const sd of [1, -1]) f.sign(s, sd * 0, 0.78, 2.8, 1.3, (g, W, H) => { g.fillStyle = '#c9a86a'; g.fillRect(0, H * 0.18, W, H); g.fillStyle = '#e9e2cf'; g.fillRect(0, 0, W, H * 0.18); g.strokeStyle = '#4a3422'; g.lineWidth = H * 0.05; g.lineCap = 'round'; g.lineJoin = 'round';
-        for (const p of [[[0.1, 0.18], [0.14, 0.4], [0.3, 0.5], [0.34, 0.75], [0.2, 0.86]], [[0.3, 0.5], [0.5, 0.55], [0.62, 0.42], [0.62, 0.18]], [[0.5, 0.55], [0.56, 0.8], [0.78, 0.84], [0.9, 0.7]], [[0.78, 0.84], [0.74, 0.62]]]) { g.beginPath(); p.forEach(([x, y], i) => (i ? g.lineTo(x * W, y * H) : g.moveTo(x * W, y * H))); g.stroke(); }
-        g.fillStyle = '#1c1410'; for (let i = 0; i < 14; i++) g.fillRect(W * (0.12 + ((i * 37) % 76) / 100), H * (0.3 + ((i * 53) % 55) / 100), W * 0.012, H * 0.02); }, { y: sd * 0.09, res: 130, turn: sd > 0 ? 0 : Math.PI });
-      tube(s, 'c#d8e0e0/0.3', [[1.45, 0, 1.2], [1.9, 0, 1.3], [2.4, 0.1, 0.4], [2.7, 0.2, 0.12]], 0.035, 5);
-      s.box('c#e9e2cf/0.7', 2.3, 4.2, -0.5, 0.9, 0, 0.1); f.sign(s, 3.25, 0.12, 1.8, 1.3, (g, W, H) => { g.fillStyle = '#efe9da'; g.fillRect(0, 0, W, H); g.fillStyle = '#1c1410'; for (let i = 0; i < 40; i++) { const u = i / 40; g.fillRect(W * (0.08 + 0.8 * u), H * (0.3 + 0.35 * u + 0.05 * Math.sin(u * 9)), W * 0.016, H * 0.014); } g.fillStyle = '#b5281f'; g.beginPath(); g.arc(W * 0.9, H * 0.68, H * 0.07, 0, 7); g.fill(); }, { flat: true, y: 0.2, res: 130 });
-      f.label(B1, -1.6, -0.4, 4.6, { label: 'look at the ant farm', title: 'A formicarium', kicker: 'Lasius niger, the black garden ant', text: 'No ant knows the way to the sugar. Each lays a little scent where it walks and prefers to walk where the scent is strongest. A short path gets walked more often in the same time, so it smells stronger, so it gets walked more.\nThe line of ants across the tray is that feedback, made visible. Wipe it with a finger and watch them find it again.' }); }
+    // (the ant farm, its foraging tray and the ants that walk them are the curator's: rooms/snow_botany.js)
     // slime mold: dishes of Physarum, and the maze
-    { for (const x of [0.2, 1.1]) { B2.cyl('glass', x, -0.5, 3.0, 3.07, 0.36, 0.36, 12); B2.cyl('c#d9c63a/0.7', x - 0.05, -0.45, 3.01, 3.03, 0.2, 0.2, 9); }
-      f.sign(B2, 2.6, 3.03, 1.5, 1.5, (g, W, H) => { g.fillStyle = '#e9e6d6'; g.fillRect(0, 0, W, H); g.strokeStyle = '#3a3a40'; g.lineWidth = W * 0.035; g.lineCap = 'square'; const L = (a, b, c2, d) => { g.beginPath(); g.moveTo(a * W, b * H); g.lineTo(c2 * W, d * H); g.stroke(); };
+    { for (const x of [0.2, 1.1]) { B2.cyl('glass', x, -0.5, 3.012, 3.07, 0.36, 0.36, 12); B2.cyl('c#d9c63a/0.7', x - 0.05, -0.45, 3.01, 3.03, 0.2, 0.2, 9); }
+      f.sign(B2, 2.6, 3.04, 1.5, 1.5, (g, W, H) => { g.fillStyle = '#e9e6d6'; g.fillRect(0, 0, W, H); g.strokeStyle = '#3a3a40'; g.lineWidth = W * 0.035; g.lineCap = 'square'; const L = (a, b, c2, d) => { g.beginPath(); g.moveTo(a * W, b * H); g.lineTo(c2 * W, d * H); g.stroke(); };
         g.strokeRect(W * 0.06, H * 0.06, W * 0.88, H * 0.88); L(0.28, 0.06, 0.28, 0.5); L(0.28, 0.72, 0.28, 0.94); L(0.5, 0.28, 0.5, 0.94); L(0.5, 0.28, 0.72, 0.28); L(0.72, 0.5, 0.94, 0.5); L(0.72, 0.5, 0.72, 0.74);
         g.strokeStyle = '#d2b81f'; g.lineWidth = W * 0.05; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); [[0.17, 0.16], [0.17, 0.61], [0.39, 0.61], [0.39, 0.17], [0.83, 0.17], [0.83, 0.39], [0.61, 0.39], [0.61, 0.84], [0.84, 0.84]].forEach(([x, y], i) => (i ? g.lineTo(x * W, y * H) : g.moveTo(x * W, y * H))); g.stroke();
         for (const [x, y] of [[0.17, 0.16], [0.84, 0.84]]) { g.fillStyle = '#b98a5a'; g.beginPath(); g.arc(x * W, y * H, W * 0.05, 0, 7); g.fill(); } }, { flat: true, y: -0.35, res: 150 });
-      B2.box('c#3a3a40/0.6', 1.8, 3.4, -1.15, 0.45, 3.0, 3.02);
-      f.label(B2, 2.6, -0.35, 3.3, { label: 'look at the maze', title: 'Physarum polycephalum', kicker: 'A slime mold: one cell, no brain', text: 'Nakagaki, Yamada and Tóth, 2000. They filled a maze with the mold and put oat flakes at the two ends. Within hours it had drawn back from every dead end and left one thick tube along the shortest way through.\nIt does not look for the path. Tubes that carry more flow grow; tubes that carry less wither. What is left is the answer.' });
-      B2.box('c#2a2c2e/0.5', 3.9, 5.5, -1.15, -1.05, 3.2, 4.3); B2.box('c#2a2c2e/0.5', 4.5, 4.9, -1.3, -0.9, 3.0, 3.2);
+      B2.box('c#3a3a40/0.6', 1.8, 3.4, -1.15, 0.45, 3.012, 3.025);
+      f.label(B2, 2.6, -0.35, 3.3, { label: 'look at the maze', title: 'Physarum polycephalum', kicker: 'A slime mold: one cell, no brain', text: 'Nakagaki, Yamada and Tóth, 2000. They filled a maze with the mold and put oat flakes at the two ends. Within hours it had drawn back from every dead end and left one thick tube along the shortest way through.\nIt does not look for the path. Tubes that carry more flow grow; tubes that carry less wither. What is left is the answer.\nThe same mold, set loose on a map of Tokyo with oats for the towns, is on the light table in the Stair Hall, drawing a railway.' });
+      B2.box('c#2a2c2e/0.5', 3.9, 5.5, -1.15, -1.05, 3.2, 4.3); B2.box('c#2a2c2e/0.5', 4.5, 4.9, -1.3, -0.9, 3.012, 3.2);
       f.sign(B2, 4.7, 3.75, 1.44, 0.95, (g, W, H) => { g.fillStyle = '#10161a'; g.fillRect(0, 0, W, H); for (let i = 0; i < 4; i++) { const x = W * (0.14 + i * 0.24); g.strokeStyle = '#d2b81f'; g.lineWidth = 2; for (let k = 0; k < 3 + i * 4; k++) { const a = k * 2.4; g.beginPath(); g.moveTo(x, H * 0.45); g.lineTo(x + Math.cos(a) * W * 0.02 * (1 + i), H * 0.45 + Math.sin(a) * W * 0.02 * (1 + i)); g.stroke(); } D.T(g, [0, 4, 8, 16][i] + ' h', x, H * 0.84, H * 0.085, '#d2c070', { f: F.sans }); } D.T(g, 'plate 7: time-lapse', W * 0.04, H * 0.1, H * 0.085, '#d2c070', { f: F.sans, a: 'left' }); }, { y: -1.04, res: 160 }); }
     // one pressed sunflower stays on the bench: it is a lesson in phyllotaxis
     f.sign(B1, 3.4, 3.03, 0.96, 1.375, herbarium(SPECIMENS[0]), { flat: true, y: 0.35, res: 240 }); f.label(B1, 3.4, 0.35, 3.1, { label: 'read the sheet', title: SPECIMENS[0].name, kicker: SPECIMENS[0].common, text: SPECIMENS[0].text + '\nCount the spirals in the head: as a rule thirty-four one way and fifty-five the other, two neighbors in the Fibonacci series. Each floret sits 137.5 degrees round from the one before.', foot: SPECIMENS[0].family });
@@ -871,7 +860,7 @@ export default function (f) {
       s.box('c#5a3c29/0.45', -0.62, 0.62, -0.3, 0.3, 0, 0.8); s.box('c#b3a37c/0.95', -0.5, 0.12, 0.3, 0.325, 0.12, 0.68); s.box('c#e7dfc6/0.4', 0.2, 0.52, 0.3, 0.325, 0.42, 0.62);
       for (const x of [0.27, 0.45]) s.box(BLACK, x - 0.045, x + 0.045, 0.3, 0.36, 0.16, 0.25);
       tube(s, STEEL, [[0.5, -0.2, 0.8], [0.72, -0.2, 2.1]], 0.012, 4);
-      f.label(d, 1.3, 0.62, 3.2, { label: 'look at the wireless', note: 'A wireless set, tuned somewhere between two stations. Tobias says the hiss is only very many words at once.' }); }
+      f.label(d, 1.3, 1.6, 3.4, { label: 'look at the wireless', note: 'A wireless set, tuned somewhere between two stations. Tobias says the hiss is only very many words at once.' }); }
     shelves(fr(85.5, 8.5, F2, 1).sub(0, 0.06, 0), 3.8, 3.7, 0.85);
   });
 
@@ -993,8 +982,8 @@ export default function (f) {
       c.text('Generalization', 3, 6.4, 4.4, { col: Y }); c.text('error on data it has not seen', 28, 6.4, 2.7, { col: B });
       c.axes(6, 9, 46, 21, { xl: 'size of the model', size: 2.6 }); c.text('error', 5.2, 11.4, 2.6, { a: 'right' });
       c.plot(u => (u < 0.5 ? 0.3 + 2.2 * (u - 0.25) ** 2 + 0.9 * Math.max(0, u - 0.36) ** 2 * 6 : 0.92 * Math.exp(-(u - 0.5) * 6) + 0.12), 6, 9, 46, 21, { col: P, lw: 0.28 }); c.plot(u => 0.85 * Math.exp(-u * 7) + 0.02, 6, 9, 46, 21, { col: B, lw: 0.2 });
-      c.line(6 + 46 * 0.5, 10, 6 + 46 * 0.5, 30, { lw: 0.1, dash: 0.6 }); c.text('fits the data exactly', 6 + 46 * 0.5 + 0.6, 11.8, 2.4, { col: Gn }); c.text('bias', 7.2, 16, 2.5); c.text('variance', 20.5, 14.6, 2.5); c.text('and down again: double descent', 31, 27.6, 2.4, { col: P });
-      c.text('Belkin et al., 2019', 3, 36.2, 2.6, { col: B }); c.text('training error', 34, 34, 2.4, { col: B }); }, { ...CH, tray: false });
+      c.line(6 + 46 * 0.5, 10, 6 + 46 * 0.5, 30, { lw: 0.1, dash: 0.6 }); c.text('fits the data exactly', 6 + 46 * 0.5 + 0.6, 11.8, 2.4, { col: Gn }); c.text('bias', 7.2, 16, 2.5); c.text('variance', 20.5, 14.6, 2.5); c.text('and down again: double descent', 29.5, 27.6, 2.4, { col: P });
+      c.text('Belkin et al., 2019', 3, 36.2, 2.6, { col: B }); c.text('training error', 40, 24.2, 2.4, { col: B }); }, { ...CH, tray: false });
     cupboard(rw, 0, 3.4, 3.3); cork(rw, 0, 5.7, 3.2, 2.4, [[-0.75, 0.1, 1.3, 1.7, note('CS 330', ['Monday, Wednesday and Friday at two.', 'The machines in Room 303 are booked by the hour. Sign the sheet.'], 'Tobias')], [0.8, 0.15, 1.15, 1.5, note('REMINDER', ['A loss that reaches zero has not learned. It has memorized. Usually.'], 'T.', true)]]);
     screen(bw, 0, 7.9, 9);
     { const s = rw.sub(0, 0.75, 3.38); s.box('c#2a2c2e/0.5', -1.2, -0.2, -0.35, 0.35, 0, 0.16); s.box('e#7fe0a0/1.5', -1.1, -1.04, 0.35, 0.365, 0.05, 0.11); tube(s, BLACK, [[-0.2, 0, 0.08], [0.3, 0.2, 0.03], [0.9, -0.1, 0.03], [1.3, 0.3, 0.03]], 0.02, 4); s.box('c#e6dfcc/0.9', 0.4, 1.2, -0.45, -0.05, 0, 0.12); }      // a graphics card out of its machine, one light still on; cables
@@ -1008,9 +997,9 @@ export default function (f) {
     chart(bw, 9, 6.3, 4.2, 3.2, 'ants'); cupboard(bw, 9, 5, 3.4); chart(bw, -6.3, 6, 3.6, 3.2, 'physarum'); chart(bw, -11.4, 6, 3.6, 3.2, 'alife'); bins(bw, -4.6);
     cork(rw, 7.2, 5.5, 2.3, 2.4, [[-0.5, 0.15, 1.0, 1.5, note('BIO 260', ['Tuesday and Thursday at one.', 'Thursday is outdoors: wear something you can kneel in.'], 'Greta')], [0.55, -0.1, 0.95, 1.3, note('ROTA', ['Ants: sugar water, Mondays.', 'Slime mold: oats, in the dark.', 'Plants: Greta. Always Greta.'], '', true)]]); clock(rw, 7.2, 8.9);
     rail(lw, 0, 5.6, 1.3, [[0, 'c#e9e6dc', 'coat'], [1, 'c#e9e6dc', 'coat']]); screen(rw, 0, 8.3, 8.4);
-    { const s = bw.sub(9, 0.75, 3.48); for (const [x, c] of [[-1.9, 'c#b8755a/0.8'], [-1.3, 'c#b8755a/0.8'], [-0.7, 'c#a5673f/0.8']]) s.cyl(c, x, 0, 0, 0.5, 0.18, 0.25, 8); for (let i = 0; i < 3; i++) s.box('c#8a7a5a/0.9', 0.3, 1.9, -0.5, 0.5, i * 0.17, i * 0.17 + 0.15); }      // empty pots; the plant press
+    { const s = bw.sub(9, 0.75, 3.485); for (const [x, c] of [[-1.9, 'c#b8755a/0.8'], [-1.3, 'c#b8755a/0.8'], [-0.7, 'c#a5673f/0.8']]) s.cyl(c, x, 0, 0, 0.5, 0.18, 0.25, 8); for (let i = 0; i < 3; i++) s.box('c#8a7a5a/0.9', 0.3, 1.9, -0.5, 0.5, i * 0.17, i * 0.17 + 0.15); }      // empty pots; the plant press
     // a growth cabinet in the corner: lit shelves of seedlings
-    { const s = bw.sub(13.6, 0.08, 0); s.box('c#d9d5c8/0.6', -1.2, 1.2, 0, 1.6, 0, 6.2); s.box('glass', -1.05, 1.05, 1.78, 1.8, 0.5, 5.9); for (const x of [-1.16, 1.1]) s.box('c#d9d5c8/0.6', x, x + 0.06, 1.6, 1.82, 0.4, 6.0); for (let i = 0; i < 4; i++) { s.box('e#ffb8e0/1.3', -1.0, 1.0, 1.6, 1.64, 1.75 + i * 1.3, 1.82 + i * 1.3); s.box('c#3a2a1e/0.8', -1.0, 1.0, 1.6, 1.7, 0.7 + i * 1.3, 0.85 + i * 1.3); for (let j = 0; j < 7; j++) s.box('c#4f8a3c/0.7', -0.9 + j * 0.28, -0.84 + j * 0.28, 1.62, 1.68, 0.85 + i * 1.3, 1.0 + i * 1.3 + (j % 3) * 0.08); } s.block(-1.2, 1.2, 0, 1.85, 0, 6.2);
+    { const s = bw.sub(13.6, 0.08, 0); s.box('c#d9d5c8/0.6', -1.2, 1.2, 0, 1.6, 0.012, 6.2); s.box('glass', -1.05, 1.05, 1.78, 1.8, 0.5, 5.9); for (const x of [-1.16, 1.1]) s.box('c#d9d5c8/0.6', x, x + 0.06, 1.6, 1.82, 0.4, 6.0); for (let i = 0; i < 4; i++) { s.box('e#ffb8e0/1.3', -1.0, 1.0, 1.6, 1.64, 1.75 + i * 1.3, 1.82 + i * 1.3); s.box('c#3a2a1e/0.8', -1.0, 1.0, 1.6, 1.7, 0.7 + i * 1.3, 0.85 + i * 1.3); for (let j = 0; j < 7; j++) s.box('c#4f8a3c/0.7', -0.9 + j * 0.28, -0.84 + j * 0.28, 1.62, 1.68, 0.85 + i * 1.3, 1.0 + i * 1.3 + (j % 3) * 0.08); } s.block(-1.2, 1.2, 0, 1.85, 0, 6.2);
       f.label(s, 0, 2, 3.5, { label: 'look into the growth cabinet', note: 'Sunflower seedlings under pink light, sixteen hours a day. Greta is counting which way each one spirals.' }); }
     // Greta's own table by the door; and a place kept for a second researcher
     const t = fr(25.5, 31.2, F2, 2); table(t, 4.2, 2); chair(t, 0, 2.9, 2); K.laptop(t, -0.8, 1.1, 2.5); mug(t, 1.6, 0.5, 2.5, 'c#b48530/0.3'); sheet(t, 0.6, 1.1, 2.5, 'BIO 260', 'Practical 2: marks', { n: 5 });
@@ -1063,9 +1052,8 @@ export default function (f) {
   part('Room 306: the reading groups', () => {
     const w = fr(30, 35.55, F3, 2);
     cork(w, 0, 5.2, 7.2, 2.9, [[-2.7, 0, 1.6, 2.3, { kind: 'poster', title: 'INFORMATION\nTHEORY', sub: 'and inference: a reading group', lines: ['MacKay, chapter by chapter', 'Mondays at four', 'here, by the kettle'], foot: 'BRING A PENCIL' }], [-0.9, 0, 1.6, 2.3, { kind: 'poster', title: 'NETWORKS', sub: 'a reading group', lines: ['small worlds, hubs, and why', 'your friends have more friends', 'Tuesdays at four'], foot: 'ALL GROUPS WELCOME', colour: '#dfe6dc', accent: '#2f5a5a' }], [0.9, 0, 1.6, 2.3, { kind: 'poster', title: 'ANALOGY', sub: 'and generalization', lines: ['Hofstadter; Mitchell', 'Wednesdays at four,', 'after journal club'], foot: 'A : B  ::  C : ?', colour: '#ece0c8', accent: '#6e2b2a' }], [2.7, 0, 1.6, 2.3, { kind: 'poster', title: 'THE ORIGINS\nOF LIFE', sub: 'a seminar', lines: ['from chemistry to cells', 'Fridays at four, in the café', 'convened by Greta and Horatio'], foot: 'NO PRIOR LIFE REQUIRED', colour: '#e4e6d2', accent: '#4a5a28' }]]);
-    bench(fr(29.2, 30.9, F3, 2).sub(0, 0.6, 0), 6); clock(fr(42.2, 30.65, F3, 2), 0, 6.4); plant(fr(21.6, 31.6, F3, 0), 0, 0); bins(fr(24.5, 35.55, F3, 2), 0);
-    f.model('st_coat_stand_2', fr(44, 27.4, F3, 0), 0, 0, 0, 0, { collide: true });
-    const k = fr(42.2, 30.6, F3, 2); for (const x of [0.1, 0.45]) mug(k, x, 0.75, 2.8, 'c#cfcbc2/0.3'); k.box('c#8a2f25/0.5', -1.35, -0.95, 0.35, 0.95, 2.8, 3.05);      // mugs by the kettle; the biscuit tin
+    clock(fr(42.2, 30.65, F3, 2), 0, 7.3);      // (over the pigeonholes; the bench, the coat stand, the tea and the rest of the room: rooms/snow_common.js)
+    bins(fr(44.45, 21.3, F3, 1), 0);      // (waste and recycling, under the low east end of the roof, beside the tea)
   });
 
   // ---- real prints on the walls: scans of the things themselves (site/assets/art/CATALOG.md), each with its card ----
@@ -1079,7 +1067,7 @@ export default function (f) {
     hang(100.5, 64.95, 2, F2, 6, 'p_cajal_retina', 2.8, 2.26, 'The retina of vertebrates: cells stained by the Golgi method (plate III)', 'Santiago Ramón y Cajal, 1894', 'The layered nerve cells of the retina, drawn by Ramón y Cajal from his own preparations.', 'Wellcome Collection, London');
     hang(110.3, 64.95, 2, F2, 6, 'p_galvani_frogs', 2.8, 2.06, 'Experiments on animal electricity (Tab. II)', 'Luigi Galvani, 1792', 'Frogs\' legs that kick when a metal arc joins nerve to muscle: Galvani\'s table of experiments on animal electricity, 1792.', 'Wellcome Collection, London');
     hang(83.9, 42.8, 3, F2, 6, 'p_golgi_pyramidal_cells', 1.98, 2.6, 'Nerve cells of the hippocampus, stained black (plate XIII)', 'Camillo Golgi, 1885', 'Whole nerve cells seen for the first time, by Golgi\'s \'black reaction\': five cells of the hippocampus with their branching trees.', 'reproduction via Wikimedia Commons');
-    hang(102.9, 2, 0, F2, 5.8, 'p_mark_i_perceptron', 2.6, 2.03, 'The Mark I Perceptron being shown the letter C', 'U.S. Navy photograph, c. 1960', 'An early learning machine: the Mark I Perceptron, which was trained rather than programd, is shown a letter C to recognize. U.S. Navy photograph.', 'National Archives, 330-PSA-80-60 (USN 710739), via the National Museum of the U.S. Navy and Wikimedia Commons');
+    hang(101.33, 1, 0, F2, 6.55, 'p_mark_i_perceptron', 2.6, 2.03, 'The Mark I Perceptron being shown the letter C', 'U.S. Navy photograph, c. 1960', 'An early learning machine: the Mark I Perceptron, which was trained rather than programd, is shown a letter C to recognize. U.S. Navy photograph.', 'National Archives, 330-PSA-80-60 (USN 710739), via the National Museum of the U.S. Navy and Wikimedia Commons');
     hang(31.75, 15.7, 1, F2, 5.8, 'p_termites_forms', 1.47, 2.4, 'Termes: the forms of the termite, laborers, soldiers, male and queen', 'Moses Griffith, 1805', 'One colony, many bodies: the laborer, the soldier, the winged male and the swollen queen of the termite, 1805.', 'Wellcome Collection, London');
     hang(37.2, 36.65, 0, F2, 5.6, 'p_vesalius_brain', 1.79, 2.0, 'The base of the brain, from De humani corporis fabrica', 'Andreas Vesalius, 1543', 'The underside of the brain and the nerves leaving it, cut in wood for Vesalius in 1543.', 'copy of the Universitätsbibliothek Basel, e-rara (via Wikimedia Commons)');
     hang(22.2, 59.15, 2, F2, 5.6, 'p_golgi_hippocampus', 3.0, 2.27, 'Section through the hippocampus (plate XX)', 'Camillo Golgi, 1885', 'The curled layers of the hippocampus and the thousands of cells ranked along them, drawn by Golgi from a kitten\'s brain, 1885.', 'reproduction via Wikimedia Commons');
@@ -1103,19 +1091,7 @@ export default function (f) {
 
   // ---- Room 306: the common room, where the reading groups meet, under the great window of the front gable ----
   part('Room 306', () => {
-    const t = fr(29.17, 17.1, F3, 0); table(t, 3, 3); chair(t, 0, -0.8, 0, false); chair(t, 0, 3.85, 2, false);
-    f.chess(t, 0, 1.5, 2.512, { opponent: 'Euclid' });
-    K.armchair(fr(23.4, 26, F3, 3), K.SAGE, K.MUSTARD); K.armchair(fr(35, 26, F3, 1), K.RUST);
-    const low = fr(29.2, 24.8, F3, 0); table(low, 2.4, 2.4, 1.45);
-    K.mug(low, -0.55, 0.8, 1.45, 'c#5d6f7c', true); K.bookStack(low, 0.45, 1.3, 1.45, 2);
-    f.rug(22.4 + XO, 36 + XO, 22.9 + YO, 29.1 + YO, F3, 'tabriz');
-    K.floorLamp(fr(22.4, 28.9, F3, 0), 0, 0);
-    // the kettle, on a side table by the door
-    const k = fr(42.2, 30.6, F3, 2); table(k, 3, 1.3, 2.8);
-    { const s = k.sub(-0.6, 0.65, 2.8);
-      turned(s, COPPER, [[0, 0], [0.27, 0], [0.31, 0.04], [0.33, 0.16], [0.29, 0.34], [0.17, 0.44], [0.16, 0.47], [0.05, 0.49], [0.04, 0.54], [0, 0.55]]);
-      tube(s, COPPER, [[0.27, 0, 0.16], [0.43, 0, 0.27], [0.5, 0, 0.42]], 0.035, 6); tube(s, BLACK, [[-0.2, 0, 0.42], [-0.23, 0, 0.72], [0, 0, 0.82], [0.23, 0, 0.72], [0.2, 0, 0.42]], 0.02); }
-    k.cyl('c#33483f/0.4', 0.75, 0.6, 2.8, 3.2, 0.16, 0.16, 10); k.cyl(BRASS, 0.75, 0.6, 3.2, 3.24, 0.17, 0.17, 10);      // the tea caddy
+    // furnished by its curator: rooms/snow_common.js (the window seat, the sofa and armchairs, Euclid's chess table, the tea, the pigeonholes)
   });
 
   // ---- Room 307: Cedric's office, in the dormer over the front door ----
@@ -1223,13 +1199,14 @@ export default function (f) {
   // ---- Room 306 A: the snug, low under the slopes: an armchair, a lamp, a rug, things to read ----
   part('Room 306 A', () => {
     rug(8.2, 18.6, 22.6, 33.4, F3, 'tabriz');
-    K.armchair(fr(11.4, 24.2, F3, 0), K.MUSTARD, K.NAVY); { const b = fr(8.6, 30.2, F3, 3); bench(b, 5); for (const [x, c] of [[-1.6, 'c#96492f/0.9'], [0, 'c#c9c0ac/0.9'], [1.6, 'c#6c7a60/0.9']]) b.box(c, x - 0.6, x + 0.6, 0.2, 1.4, 1.5, 1.72); }
+    { const ac = fr(11.4, 24.2, F3, 0); K.armchair(ac, K.MUSTARD, K.NAVY); K.throwBlanket(ac, 0.95, 1.47, 0.5, 2.5, 2.05, 'wool#6e2b2a', { over: 'arm' }); }
+    K.wallBench(fr(8.6, 30.2, F3, 3), 5, { d: 1.4, back: false, cushion: 'linen#96492f', label: 'sit on the bench' });      // (free-standing: no wall behind it to lean a back on)
     const lt = fr(14.4, 28.2, F3, 0); table(lt, 2.6, 2.2, 1.45); pile(lt, -0.6, 1.1, 1.45, 4); cup(lt, 0.7, 0.8, 1.45); book(lt, 0.6, 1.6, 1.45);
     K.floorLamp(fr(8.6, 26.6, F3, 0), 0, 0); K.pouf(fr(16.6, 31.6, F3, 0), 0, 0, {});
     const w = fr(13.5, 35.55, F3, 2);
     f.framed(w, 2.6, 4.6, 2.2, 1.63, 'cpl_reading_room_1889', { title: 'The Reading Room, 1889', kicker: 'Cambridge Public Library', text: 'The reading room of the library that the Laboratory\'s own is built from, photographed the year it opened.', foot: 'From the Existing Conditions Report, Ann Beha Architects.' });
     f.framed(w, -0.4, 4.6, 1.6, 1.76, 'cpl_memorial_hall_1870', { title: 'Memorial Hall, Harvard, 1870', text: 'Ware & Van Brunt, architects: the same hand as the Cambridge library, seventeen years earlier.', foot: 'From the Existing Conditions Report, Ann Beha Architects.' });
-    f.paper(w, -3.4, 4.5, 1.5, 1.9, note('THE SNUG', ['For reading, not for meetings.', 'If you fall asleep here, nobody will say anything.'], 'the Common Room committee'));
+    f.paper(w, -3.4, 4.5, 1.5, 1.9, note('THE SNUG', ['For reading, not for meetings.', 'If you sit here all evening and never turn a page, nobody will say anything.'], 'the Common Room committee'));
     { const s = fr(17.4, 23.4, F3, 1); table(s, 2.4, 1.2, 2.4); for (let i = 0; i < 9; i++) s.box(['c#7a2f2a/0.7', 'c#2f4f3f/0.7', 'c#3a3f6a/0.7', 'c#8a6a3a/0.7'][i % 4], -1.0 + i * 0.2, -1.0 + i * 0.2 + 0.17, 0.2, 0.9, 2.4, 3.1 + (i % 3) * 0.08); mug(s, 1.0, 0.6, 2.4, 'c#cfcbc2/0.3'); }
   });
 

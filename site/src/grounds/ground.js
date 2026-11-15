@@ -213,7 +213,7 @@ export class Ground {
       } else m = kind === 'lawn' && grassMat ? grassMat.clone() : new THREE.MeshStandardMaterial({ map: tex(file + '_color', size, true), normalMap: tex(file + '_normal', size), color: Array.isArray(tint) ? new THREE.Color().setRGB(...tint, THREE.LinearSRGBColorSpace) : tint, roughness: rough, envMapIntensity: 0.5 });
       const solid = SETS[kind][3] === 0;
       if (kind === 'lawn' && grassMat) { m.transparent = false; m.alphaMap = null; m.depthWrite = true; }
-      if (!solid) { m.polygonOffset = true; m.polygonOffsetFactor = -1 - order; m.polygonOffsetUnits = -2 - order * 2; order++; }
+      if (!solid) { m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -4 - order * 4; order++; }      // (units only: an offset scaled by the slope pulled paving seen edge-on, from a basement's eye level just over the ground, through two feet of wall, a dark line round the room)
       const mesh = new THREE.Mesh(mergeGeometries(this.parts[kind]), m);
       mesh.receiveShadow = true; mesh.castShadow = solid; mesh.name = 'ground ' + kind;
       scene.add(mesh); mats[kind] = m;

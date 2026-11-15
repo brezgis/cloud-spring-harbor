@@ -17,19 +17,21 @@ export default function (f) {
   fr.box(M.BASE, -0.36, 0.36, -0.3, 0.3, H, H + 0.1);
   f.model('x_plato', fr, 0, 0, H + 0.07, 2, {});                                           // he looks east, down the room
   // the five solids, each on a small base: tetrahedron, octahedron, icosahedron, cube; and the dodecahedron
-  const solid = (x, g, rad, mat) => { fr.box(M.BASE, x - 0.2, x + 0.2, -0.2, 0.2, H, H + 0.05); g.rotateY(0.5); g.computeBoundingBox(); const [PX, PY] = fr.map(x, 0); g.translate(PX, GAL + H + 0.062 - g.boundingBox.min.y, -PY); f.mesh(mat, g.toNonIndexed()); };
+  const solid = (x, g, rad, mat) => { fr.box(M.BASE, x - 0.2, x + 0.2, -0.2, 0.2, H, H + 0.05); g.rotateY(0.5); g.computeBoundingBox(); const [PX, PY] = fr.map(x, 0); g.translate(PX, GAL + H + 0.062 - g.boundingBox.min.y, -PY); f.mesh(mat, g.index ? g.toNonIndexed() : g); };      // (the polyhedra come unindexed already; the cube does not)
   const BR = 'c#a8843f/0.4/0.85';
   solid(-1.55, new THREE.TetrahedronGeometry(0.26), 0.24, BR);
   solid(-1.0, new THREE.OctahedronGeometry(0.22), 0.22, BR);
   solid(-0.5, new THREE.IcosahedronGeometry(0.22), 0.22, BR);
   solid(0.55, new THREE.BoxGeometry(0.32, 0.32, 0.32), 0.2, BR);
   solid(1.25, new THREE.DodecahedronGeometry(0.24), 0.24, BR);
-  // ---- the dedication, on the back of the table, facing the room through the rail: read from the floor below ----
-  { const w = f.fr(RX - 0.58 + 0.3, r.cy, GAL, 3), D = f.draw, T = D.T;
-    w.box(M.WOOD, -1.75, 1.75, 0.012, 0.05, 1.5, 2.6);
-    f.sign(w, 0, 2.05, 3.4, 1.0, (g, W, H) => { D.fill(g, W, H, '#a58445'); D.grain(g, W, H, 0.07, 5); g.strokeStyle = '#4a3a1c'; g.lineWidth = H * 0.02; g.strokeRect(H * 0.06, H * 0.06, W - H * 0.12, H - H * 0.12);
+  // ---- the dedication: a board hung on the room side of the west rail, in front of its square panel, read from the floor
+  // below (it stood on the back of the table, behind the rail's bracing, where nobody could see it) ----
+  { const w = f.fr(RX + 0.25, r.cy, GAL, 3), D = f.draw, T = D.T;
+    w.box(M.WOOD, -1.75, 1.75, 0.012, 0.05, 0.75, 1.85);
+    for (const x of [-1.2, 1.2]) { w.box(M.WOOD, x - 0.03, x + 0.03, -0.43, -0.01, 2.58, 2.63); w.box(M.WOOD, x - 0.03, x + 0.03, -0.012, 0.012, 1.85, 2.63); }      // hung from the rail's top on two straps
+    f.sign(w, 0, 1.3, 3.4, 1.0, (g, W, H) => { D.fill(g, W, H, '#a58445'); D.grain(g, W, H, 0.07, 5); g.strokeStyle = '#4a3a1c'; g.lineWidth = H * 0.02; g.strokeRect(H * 0.06, H * 0.06, W - H * 0.12, H - H * 0.12);
       T(g, 'THE JOSEPH J. SCHWAB ACADEMY', W / 2, H * 0.3, H * 0.2, '#2a2010', { ls: H * 0.02 }); T(g, 'OF EROS AND EDUCATION', W / 2, H * 0.56, H * 0.2, '#2a2010', { ls: H * 0.02 }); T(g, 'where nobody is told the answer', W / 2, H * 0.82, H * 0.11, '#2a2010', { it: true }); }, { res: 200, y: 0.062, rough: 0.4 });
-    f.label(fr, 0, -0.6, 2.1, { label: 'read the dedication', reach: 9, title: 'The Joseph J. Schwab Academy of Eros and Education', kicker: 'The dedication',
+    f.label(w, 0, 0.3, 1.3, { label: 'read the dedication', reach: 14, title: 'The Joseph J. Schwab Academy of Eros and Education', kicker: 'The dedication',
       text: 'Joseph Schwab (1909-1988) taught biology and the reading of hard books at the University of Chicago for nearly forty years, by discussion: one table, one text, and no lecture. His essay “Eros and Education” (1954) is about what makes that work. It argues that the wish to know is a kind of love, that it is the engine of a liberal education and not an ornament on it, and that a teacher’s business is to turn a student’s wish to please the teacher into a wish to get the question right.\nThis room has one long table for that reason.\nThe building follows the Adams Stone Library at Quincy, Massachusetts (1870), built to hold the books of John Quincy Adams.',
       foot: 'The Laboratory could not check a line of the essay against the printed page in time, and so has lettered none: Schwab would have insisted.' }); }
   X.tag(fr, -1.0, 0.37, H - 0.47, { no: 1, name: 'Fire · Air · Water', it: false, lines: ['tetrahedron, octahedron,', 'icosahedron'] }, { up: true, w: 0.8, tall: 0.3 });

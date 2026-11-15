@@ -13,8 +13,11 @@ export function setTextureTier(t) { texTier = t ?? 'full'; }
 // Every photo arrives first at half size (a quarter of the bytes: the whole set is 5 MB instead of 20), so the street
 // is dressed almost at once; those the quality tier wants at full size are then fetched one at a time once the
 // street is up (sharpenTextures, called from main.js) and swapped in, which nobody sees happen.
+const ROUGH_FULL = typeof location !== 'undefined' && new URLSearchParams(location.search).has('roughfull');      // (for comparing)
 export function sharedTexture(file) {
-  const wantFull = !(texTier === 'half' || (texTier === 'detail' && /_(rough|normal)$/.test(file)));
+  // (a roughness map is kept at half size on every tier: it only shades the sheen, which has no edges to lose, and the
+  // full ones were 140 MB of the graphics card's memory)
+  const wantFull = !(texTier === 'half' || (/_rough$/.test(file) && !ROUGH_FULL) || (texTier === 'detail' && /_normal$/.test(file)));
   const url = `assets/tex/512/${file}.jpg`;
   let e = shared.get(url);
   if (!e) {

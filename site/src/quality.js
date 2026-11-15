@@ -13,9 +13,9 @@
 // lower (remembered in localStorage; ?quality=auto clears it).
 
 export const TIERS = {
-  high: { name: 'high', ratio: 1.5, antialias: true, shadow: 4096, softShadow: true, tex: 'full', reach: 1, lamps: 4, reachFull: 95, reachBig: 260 },
-  medium: { name: 'medium', ratio: 1.25, antialias: true, shadow: 2048, softShadow: false, tex: 'detail', reach: 0.85, lamps: 4, reachFull: 80, reachBig: 210 },
-  low: { name: 'low', ratio: 1, antialias: false, shadow: 2048, softShadow: false, tex: 'half', reach: 0.7, lamps: 3, reachFull: 60, reachBig: 150 },
+  high: { name: 'high', ratio: 1.5, aniso: 16, antialias: true, shadow: 4096, softShadow: true, tex: 'full', reach: 1, lamps: 4, reachFull: 95, reachBig: 260 },
+  medium: { name: 'medium', ratio: 1.25, aniso: 8, antialias: true, shadow: 2048, softShadow: false, tex: 'detail', reach: 0.85, lamps: 4, reachFull: 80, reachBig: 210 },
+  low: { name: 'low', ratio: 1, aniso: 4, antialias: false, shadow: 2048, softShadow: false, tex: 'half', reach: 0.7, lamps: 3, reachFull: 60, reachBig: 150 },
 };
 const ORDER = ['low', 'medium', 'high'];
 

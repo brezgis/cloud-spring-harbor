@@ -111,6 +111,7 @@ try { if (garden && Q.get('airship') !== '0') airline(Object.create(ctx, { scene
 try { if (garden && Q.get('people') !== '0') outdoorsCast(Object.create(ctx, { scene: { value: outdoors } }), garden); } catch (e) { console.error('people outdoors', e); }      // the gardener, the groundskeeper, the harbour master and whoever is crossing the grounds (outdoors_cast.js); ?people=0 leaves them out
 mark('gardenSetup');
 for (const f of items.later ?? []) { try { f(ctx); } catch (e) { console.warn('building', e); } }      // what the buildings set going once the scene exists (b.later)
+mark('later');
 import('./reticle.js').then(m => m.setupReticle(ctx)).catch(e => console.warn('reticle', e));      // the mark in the middle, and the ring on what it has hold of
 import('./welcome.js').then(m => m.setupWelcome(ctx)).catch(e => console.warn('welcome', e));      // the fade from the view above to the Landing
 
@@ -227,12 +228,13 @@ addEventListener('resize', () => {
 });
 
 // ---- What to draw this frame (visibility.js) -------------------------------------------
-const SMALL_NEAR = 34 * QUALITY.reach;                                 // clutter further off than this is not drawn
+const REACH = QUALITY.reach;                                           // (QUALITY.reach is lowered for a while when frames run slow: see the loop)
+const smallNear = () => 34 * QUALITY.reach;                            // clutter further off than this is not drawn
 for (const m of zoned) { m.geometry.computeBoundingBox(); m.userData.box = m.geometry.boundingBox; m.userData.small = vis.isSmall(m.userData.zone); }
 const cullOff = Q.get('cull') === '0';
 function cullScene(all = cullOff) {
   vis.update(camera);
-  const eye = camera.position;
+  const eye = camera.position, SMALL_NEAR = smallNear();
   for (const m of zoned) { const z = m.userData.zone, b = m.userData.box; m.visible = all || (vis.shows(z) && (!m.userData.small || b.distanceToPoint(eye) < SMALL_NEAR) && vis.inView(z, b)); }
   outdoors.visible = all || vis.state.out;
   sky.setOutdoors?.(all || vis.state.out);
@@ -258,7 +260,15 @@ function cullScene(all = cullOff) {
 // ---- Loop -----------------------------------------------------------------------------
 const clock = new THREE.Clock();
 let caption = '', frames = 0, since = 0, settled = 0, shown = '', fast = 0, slow = 0;
-let nextRatio = null, slowFrames = 0, slowSecs = 0, raisedAt = -1e9, ceiling = MAX_RATIO, holdUntil = 0, hold = 30;      // the drawing resolution's own bookkeeping
+let nextRatio = null, slowFrames = 0, slowSecs = 0, raisedAt = -1e9, ceiling = 0, holdUntil = 0, hold = 30;      // the drawing resolution's own bookkeeping
+// What is given up, in order, when frames run slow: [drawing resolution, how far off clutter is drawn (x the tier's)]
+const FLOOR_RATIO = Math.min(MAX_RATIO, 1), LADDER = [[MAX_RATIO, 1], [MAX_RATIO, 0.8]];
+for (let r = MAX_RATIO - 0.125; r > FLOOR_RATIO + 0.01; r -= 0.125) LADDER.push([r, 0.8]);
+if (MAX_RATIO > FLOOR_RATIO) LADDER.push([FLOOR_RATIO, 0.8]);
+LADDER.push([FLOOR_RATIO, 0.65]);
+if (FLOOR_RATIO > 0.85) LADDER.push([0.85, 0.65]);
+let rung = 0;
+function climb(to) { rung = to; const [r, k] = LADDER[rung]; QUALITY.reach = REACH * k; if (Math.abs(r - ratio) > 0.001) nextRatio = r; }
 const fpsBox = Q.has('fps') ? $('room') : null;
 setHour(hour);
 
@@ -293,7 +303,7 @@ renderer.setAnimationLoop(() => {
   sky.update(dt, t, camera);
   // The first frame: every shader the place needs is compiled now, behind the welcome, rather than
   // one by one as rooms are first seen
-  if (!perf.frames && !cullOff) { cullScene(true); renderer.compile(scene, camera); warmer.settle(); }
+  if (!perf.frames && !cullOff) { mark('loop'); cullScene(true); renderer.compile(scene, camera); warmer.settle(); mark('compiled'); }
   cullScene();
   renderer.render(scene, camera);
   warmer.update(dt);
@@ -301,26 +311,31 @@ renderer.setAnimationLoop(() => {
   if (perf.firstFrameMs === undefined) perf.firstFrameMs = Math.round(performance.now());
   if (Q.has('stages') && perf.frames === 3) console.log('STAGES', JSON.stringify(STAGE), 'first frame', perf.firstFrameMs, 'calls', renderer.info.render.calls, 'tris', renderer.info.render.triangles, 'tex', renderer.info.memory.textures, 'geo', renderer.info.memory.geometries, 'programs', renderer.info.programs.length);
 
-  // Keep it quick: if most frames run slow for two seconds together, draw at a lower resolution.
-  // (One slow second is not enough: a single hitch, as when a room's pictures first load, used
-  // to drop the resolution, which then crept back up in steps, each one a visible change.)
+  // Keep it quick, but sharp. If most frames run slow for two seconds together, the next rung of LADDER is taken:
+  // first the clutter and far furniture are drawn a little less far off, then the resolution comes down in small steps,
+  // but not below one pixel to each of the screen's points, then the distances once more, and only at the last below
+  // that. (One slow second is not enough: a single hitch, as when a room's pictures first load, used to drop the
+  // resolution, which then crept back up in steps, each one a visible change.)
   frames++; since += raw; if (raw > 1 / 46) slowFrames++;
   if (since >= 1) {
     const fps = frames / since, mostlySlow = slowFrames > frames * 0.6; frames = 0; since = 0; slowFrames = 0; settled++;
     if (fpsBox) fpsBox.textContent = `${fps.toFixed(0)} fps · ×${ratio.toFixed(2)} · ${QUALITY.name} · ${renderer.info.render.calls} calls · ${(renderer.info.render.triangles / 1000).toFixed(0)}k tris · ${(renderer.info.memory.textures)} tex`;
-    slowSecs = settled > 3 && mostlySlow && !life.pending() ? slowSecs + 1 : 0;      // not while the furniture is still arriving: that is the processor, not the picture
-    if (slowSecs >= 2 && ratio > 0.7 && !Q.has('ratio')) {
-      nextRatio = Math.max(0.7, ratio - 0.2); fast = 0; slowSecs = 0;
-      // If this undoes a recent sharpening, that level is too much for this machine here: hold
+    // (not while the furniture is still arriving: that is the processor, not the picture. Only the furniture: the far
+    // rooms' lettering is made only in frames with time to spare, so on a machine that is slow throughout it never
+    // finished, and the resolution was never let down at all)
+    slowSecs = settled > 3 && mostlySlow && !life.arriving() ? slowSecs + 1 : 0;
+    if (slowSecs >= 2 && rung < LADDER.length - 1 && !Q.has('ratio')) {
+      climb(rung + 1); fast = 0; slowSecs = 0;
+      // If this undoes a recent sharpening, that rung is too much for this machine here: hold
       // below it for a while (longer each time), so the resolution does not pump up and down.
-      if (t - raisedAt < 20) { ceiling = nextRatio; holdUntil = t + hold; hold = Math.min(hold * 2, 600); }
+      if (t - raisedAt < 20) { ceiling = rung; holdUntil = t + hold; hold = Math.min(hold * 2, 600); }
     }
-    // ...and sharpens again, slowly, when there is time to spare
+    // ...and sharpens again, slowly, when there is time to spare (the resolution back first, as it was given up last)
     fast = fps > 58 ? fast + 1 : 0;
-    const top = t < holdUntil ? Math.min(MAX_RATIO, ceiling) : MAX_RATIO;
-    if (fast >= 4 && ratio < top - 0.001 && nextRatio === null && !Q.has('ratio')) { nextRatio = Math.min(top, ratio + 0.1); fast = 0; raisedAt = t; }
-    // Still slow at the lowest resolution: the next visit starts at a lower quality tier
-    slow = ratio <= 0.7 && fps < 30 ? slow + 1 : 0;
+    const top = t < holdUntil ? ceiling : 0;
+    if (fast >= 4 && rung > top && nextRatio === null && !Q.has('ratio')) { climb(rung - 1); fast = 0; raisedAt = t; }
+    // Still slow at the last rung: the next visit starts at a lower quality tier
+    slow = rung === LADDER.length - 1 && fps < 30 ? slow + 1 : 0;
     if (slow === 8 && !QUALITY.forced) rememberSlow(QUALITY.name);
   }
 });
@@ -330,7 +345,7 @@ let loading = 0;
 THREE.DefaultLoadingManager.onStart = () => { loading++; };
 THREE.DefaultLoadingManager.onProgress = (url, done, total) => { loading = total - done; };
 const perf = { quality: QUALITY.name, gpu: QUALITY.gpu, stages: STAGE, visTime: () => vis.visMs(), resetVisTime: () => vis.resetMs(), vis, frames: 0, items, renderer, scene, camera, setView, setHour: h => setHour(h), pending: () => loading + life.pending() };
-window.__house = perf; perf.light = { HL, lampPool, sun, exposure }; perf.campus = house; perf.walker = walker; perf.groundAt = groundAt; perf.colliders = builder.colliders; perf.surfaces = surfaces;      // for looking at one light at a time (tools/evaljs.sh)
+window.__house = perf; perf.light = { HL, lampPool, sun, exposure }; perf.campus = house; perf.walker = walker; perf.groundAt = groundAt; perf.life = life; perf.loading = () => loading; perf.colliders = builder.colliders; perf.surfaces = surfaces;      // for looking at one light at a time (tools/evaljs.sh)
 // Which lamps the pool would light at each test viewpoint, for checking its choices (?statsdump's eval=)
 perf.lampChoice = (names = Object.keys(VIEWS), h) => { if (h !== undefined) setHour(h); const out = {}; for (const n of names) { setView(VIEWS[n]); camera.updateMatrixWorld(); vis.update(camera); out[n] = (vis.state.here.join('+') || 'out').replace(/r:/g, '') + ' -> ' + lampPool.choose(camera.position, QUALITY.lamps).map(lampPool.describe).join(', '); } return out; };
 // Walking by program, for tests (tools/drive.py, tools/walk_test.js): the real walker, with its collisions, stairs

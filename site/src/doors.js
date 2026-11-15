@@ -41,7 +41,7 @@ export const STYLES = {
   ladder: { rows: [0, 1, 2, 3, 4].map(() => ({ n: 1, f: 0.2 })), mould: 'ovolo' },                                         // five cross panels
   half: { rows: [{ n: 2, f: 0.3, lock: true }, { n: 1, f: 0.7, glass: [2, 3] }] },                                        // half-glazed: a schoolroom's or an office's
   frosted: { rows: [{ n: 2, f: 0.3, lock: true }, { n: 1, f: 0.7, glass: [2, 3], frost: true }] },
-  light: { rows: [{ n: 2, f: 0.22 }, { n: 1, f: 0.78, glass: [1, 1] }] },                                                 // two small panels under one large light
+  light: { rows: [{ n: 2, f: 0.22 }, { n: 1, f: 0.78, glass: [2, 3] }] },                                                 // two small panels under a light of six panes (one great pane read as an open doorway)
   french: { rows: [{ n: 1, f: 0.17 }, { n: 1, f: 0.83, glass: [1, 2] }], stile: 0.3 },                                    // a glazed leaf: a panel at the foot, lights above
   glazed: { rows: [{ n: 1, f: 0.14 }, { n: 1, f: 0.86, glass: [2, 4] }], stile: 0.3 },                                    // (what `glassy` alone used to mean)
   ledged: { boards: true, th: 0.08, metal: 'iron' },                                                                      // ledged and braced, of matched boards
@@ -133,6 +133,14 @@ export function makeLeaf(spec) {
           for (let q = 1; q < up; q++) P.box(x0 + 0.02, x1 - 0.02, y + q * gh - bwid / 2, y + q * gh + bwid / 2, -bz, bz, 0, 'xX');
           for (let q = 1; q < cols; q++) for (let k = 0; k < up; k++) P.box(x0 + q * gw - bwid / 2, x0 + q * gw + bwid / 2, y + k * gh + (k ? bwid / 2 : 0.02), y + (k + 1) * gh - (k < up - 1 ? bwid / 2 : 0.02), -bz, bz, 1, 'yY');
           panes.push({ m: M(x1 - x0 + 0.03, y1 - y + 0.03, 0.012, (x0 + x1) / 2, (y + y1) / 2, 0), frost: !!r.frost });
+          // Glass that comes down low is guarded: a metal bar across the light at the height of a hand, on a stand-off at
+          // each end, on both faces (as on the doors of libraries and shops). It keeps hands and trolleys off the glass, and it
+          // is what tells a visitor that the clear opening in front of her is a door and shut: with nothing in it but
+          // clear glass, a large light read as an open doorway.
+          if (y < h0 + 2.8 && y1 > h0 + 3.8) { const gy = h0 + 3.45; for (const s of [-1, 1]) {
+            fittings.push({ kind: 'box', m: M(x1 - x0 + 0.1, 0.06, 0.05, (x0 + x1) / 2, gy, s * (z + 0.1)), color });
+            for (const xe of [x0 - 0.03, x1 + 0.03]) fittings.push({ kind: 'box', m: M(0.045, 0.045, 0.1, xe, gy, s * (z + 0.05)), color });
+          } }
         } else for (const s of [-1, 1]) {
           // a raised and fielded panel in its moulding: the ground it stands on is sunk, the field comes up nearly to the framing
           P.mould(x0, x1, y, y1, z, s, prof);

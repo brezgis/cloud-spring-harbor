@@ -4,15 +4,18 @@
 // as day (the visitor's own clock is kept, and she comes at night):
 //
 //                 the gardener      the groundskeeper   the harbour master     the ordinary make
-//   night         asleep at home    parked at home      lamp lit, watching     the watch on his rounds with a lantern; one at a
-//                                                       for the airship        lit seat with a laptop; two more crossing, or
+//   night         weeding, raking   mowing (quietly)    lamp lit, watching     the watch on his rounds with a lantern; one at a
+//                 under the lamps                       for the airship        lit seat with a laptop; one more crossing, or
 //                                                                              stopped under a lamp to talk: lanterns in hand
-//   dawn          watering          parked              windsock, logbook      the watch hands over and goes in; early arrivals
-//   to ten        watering, weeding parked              about the Landing      three: crossing with books or coffee, one sitting
-//   ten to four   beds, a bench at  mowing the lawns    about the Landing;     two: crossing (often together), or one sitting
+//   dawn          watering          mowing              windsock, logbook      the watch hands over and goes in; early arrivals
+//   to ten        watering, weeding mowing              about the Landing      three: crossing with books or coffee, one sitting
+//   ten to four   beds, a bench at  mowing the lawns    about the Landing;     three: crossing (often together), or one sitting
 //                 noon, raking      in stripes          the shelter at noon
-//   four to dusk  deadheading       parked              about the Landing      three
-//   dusk          goes home         home                lamp lit               the watch comes out; two with lanterns
+//   four to dusk  deadheading       mowing              about the Landing      three
+//   dusk          on, with a lantern mowing             lamp lit               the watch comes out; two with lanterns
+//
+// They are robots: nobody goes home and nobody sleeps. The same number are out at every hour (the watch, when he is
+// out, is one of the three of the ordinary make).
 //
 //   Yarrow    the gardener: a rose-pink watering can (faculty/roster.js)       Fescue    the groundskeeper: a cylinder mower
 //   Halyard   the harbour master: a small lighthouse                           Nightjar  the night watch: one of the ordinary make
@@ -63,11 +66,10 @@ export function outdoorsCast(ctx, garden) {
   // ---- the hours -------------------------------------------------------------------------------------------------
   const doors = (lib, hall, side, stone) => ({ library: lib, snow: hall, 'snow:side': side, stone });
   const shift = (hour, light) => {
-    if (light < 0.15) return { night: true, gardener: 'home', mower: 'home', master: 'night', watch: true, ordinary: 3, sitters: 1, pairs: 0.75, cuts: 0, from: doors(2, 3, 1, 2), to: doors(3, 2, 1, 2) };
-    if (light < 0.7 && hour < 12) return { dawn: true, night: light < 0.35, gardener: 'work', mower: 'home', master: 'day', watch: light < 0.5, ordinary: 2, sitters: 0, pairs: 0.1, cuts: 0.1, carry: ['cup', 'cup', 'books'], from: doors(1, 1, 1, 3), to: doors(2, 4, 1, 1) };
-    if (light < 0.7) return { dusk: true, night: light < 0.45, gardener: 'home', mower: 'home', master: 'night', watch: light < 0.5, ordinary: 2, sitters: 1, pairs: 0.3, cuts: 0.1, from: doors(2, 4, 1, 1), to: doors(2, 1, 1, 3) };
-    const mowing = hour >= 10 && hour < 16;
-    return { gardener: 'work', mower: mowing ? 'mow' : 'home', master: 'day', watch: false, ordinary: mowing ? 2 : 3, sitters: hour < 10 || hour >= 16 || (hour >= 11.5 && hour < 14) ? 1 : 0, pairs: hour >= 14 ? 0.7 : 0.35, cuts: 0.25,
+    if (light < 0.15) return { night: true, gardener: 'work', mower: 'mow', master: 'night', watch: true, ordinary: 2, sitters: 1, pairs: 0.75, cuts: 0, from: doors(2, 3, 1, 2), to: doors(3, 2, 1, 2) };
+    if (light < 0.7 && hour < 12) return { dawn: true, night: light < 0.35, gardener: 'work', mower: 'mow', master: 'day', watch: light < 0.5, ordinary: light < 0.5 ? 2 : 3, sitters: 0, pairs: 0.1, cuts: 0.1, carry: ['cup', 'cup', 'books'], from: doors(1, 1, 1, 3), to: doors(2, 4, 1, 1) };
+    if (light < 0.7) return { dusk: true, night: light < 0.45, gardener: 'work', mower: 'mow', master: 'night', watch: light < 0.5, ordinary: light < 0.5 ? 2 : 3, sitters: 1, pairs: 0.3, cuts: 0.1, from: doors(2, 4, 1, 1), to: doors(2, 1, 1, 3) };
+    return { gardener: 'work', mower: 'mow', master: 'day', watch: false, ordinary: 3, sitters: hour < 10 || hour >= 16 || (hour >= 11.5 && hour < 14) ? 1 : 0, pairs: hour >= 14 ? 0.7 : 0.35, cuts: 0.25,
       from: hour < 12 ? doors(2, 1, 1, 3) : doors(2, 3, 1, 2), to: hour < 12 ? doors(2, 4, 1, 1) : doors(3, 1, 1, 3) };
   };
   // where an ordinary one may sit, and how much it is liked: by day the pond, the oak and the tables; at night, wherever a lamp is
@@ -99,7 +101,7 @@ export function outdoorsCast(ctx, garden) {
       }
       // morning: a word with the gardener at home, and in
       const g = O.gardener, h = O.home(0), p = O.G.snap(h.x, h.z, 12, 4, 1.4);
-      if (p && g) { a.state = 'handing over'; yield* a.trip(p.x, p.z, { patience: 30, speed: 0.9 }); if (hyp(g.x - a.x, g.z - a.z) < 30 && O.dist(a) < 90) { a.say(pick(['All quiet. Two late in the hall, one asleep in the library. Yours.', 'Nothing to report but the dew. Good morning.']), 'happy', 5); yield* a.wait(4); g.say(pick(['Morning. Go and put your lantern out.', 'Thank you. Mind the wet grass going in.']), 'happy', 5); yield* a.wait(3); } }
+      if (p && g) { a.state = 'handing over'; yield* a.trip(p.x, p.z, { patience: 30, speed: 0.9 }); if (hyp(g.x - a.x, g.z - a.z) < 30 && O.dist(a) < 90) { a.say(pick(['All quiet. Two late in the hall, one reading in the library. Yours.', 'Nothing to report but the dew. Good morning.']), 'happy', 5); yield* a.wait(4); g.say(pick(['Morning. Go and put your lantern out.', 'Thank you. Mind the wet grass going in.']), 'happy', 5); yield* a.wait(3); } }
       const near = [...O.doors].sort((x, y) => hyp(x.foot.x - a.x, x.foot.z - a.z) - hyp(y.foot.x - a.x, y.foot.z - a.z))[0]; a.state = 'going in'; yield* to(near); yield* a.enter(near);
     };
     return e;
@@ -113,7 +115,8 @@ export function outdoorsCast(ctx, garden) {
     gardener: { id: 'yarrow', speed: 3.1,
       // what the hour asks for (weights): water early and late, the beds through the morning, a bench at noon, the rake and the potting bench after
       // (she has the whole island to keep and is seen all over it: every kind of job is possible at every hour, a minute or so at each place)
-      jobs: hour => (hour < 9 ? { water: 8, weed: 2, hedge: 1, trees: 1, tend: 1, shed: 1 } : hour < 12 ? { weed: 5, deadhead: 4, hedge: 3, water: 2, rake: 2, trees: 1, tend: 1, shed: 1 } : hour < 13.2 ? { bench: 16, deadhead: 1, hedge: 1 } : hour < 16 ? { rake: 5, trees: 4, hedge: 3, weed: 3, tend: 2, deadhead: 2, shed: 1 } : { deadhead: 5, water: 5, hedge: 2, rake: 2, trees: 1, shed: 1 }),
+      // (through the night, by lantern: weeding and raking under the lamps, the hives and the pond looked at, a minute on a bench with a thermos)
+      jobs: (hour, light) => ((light ?? 1) < 0.3 ? { weed: 5, rake: 4, tend: 3, trees: 2, hedge: 1, bench: 2 } : hour < 9 ? { water: 8, weed: 2, hedge: 1, trees: 1, tend: 1, shed: 1 } : hour < 12 ? { weed: 5, deadhead: 4, hedge: 3, water: 2, rake: 2, trees: 1, tend: 1, shed: 1 } : hour < 13.2 ? { bench: 16, deadhead: 1, hedge: 1 } : hour < 16 ? { rake: 5, trees: 4, hedge: 3, weed: 3, tend: 2, deadhead: 2, shed: 1 } : { deadhead: 5, water: 5, hedge: 2, rake: 2, trees: 1, shed: 1 }),
       bench: b => /bench|willow|pond|meadow/.test(b.label) && !/airship/.test(b.label),
       lines: {
         water: ['*waters from her own spout*', 'Drink up. It is the spring\'s water; it comes with a little chaos in it.'], deadhead: ['*snip*', 'Off with the spent ones, and the rest take heart.'], weed: ['A weed is only a plant with initiative.', '*into the trug with you*'],
@@ -127,7 +130,7 @@ export function outdoorsCast(ctx, garden) {
             { q: 'The walk by the library.', a: 'The Hilbert walk: one path that visits every corner. People go in on purpose. The bench outside is for whoever is waiting for them.' }] },
           { q: 'Who mows?', a: 'Fescue. Ask him about the stripes, if you have the afternoon.' },
           { q: 'You water with yourself?', a: 'It saves carrying a can. And the flowers in my top came from the cutting bed, before you ask.' },
-          { q: 'Where do you go at night?', a: () => (campus.SHED ? 'The shed, with Fescue. Nightjar has the grounds till morning, and leaves them as he found them.' : 'Behind the hall, with Fescue, until the shed is built. Nightjar has the grounds till morning.') },
+          { q: 'Where do you go at night?', a: 'Nowhere. The beds want weeding in the dark as much as in the light, and I have a lantern. Nightjar keeps me company on his rounds.' },
         ],
       } },
     mower: { id: 'fescue', speed: 2.5, width: 2, half: 22, length: 40, fields: 7, apart: 52, heading: () => 0,
