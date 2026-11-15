@@ -52,7 +52,7 @@ export function layGrounds(B, items) {
   if (LAYOUT !== 'pair') return null;
   const K = makeKit(B, items, TREES), G = K.G, F = K.F, r = rng(1887);
   G.lift = groundAt;
-  G.fringe = (x, y, z, s) => F.add('boxsprig', x, z, s, { y, tint: 0.62 + ((x * 7.3 + z * 3.1) % 1 + 1) % 1 * 0.2 });      // (sprays of leaf on every hedge and clipped ball: ground.js)
+  G.fringe = (x, y, z, s) => F.add('boxsprig', x, z, s * 0.72, { y, tint: 0.4 + ((x * 7.3 + z * 3.1) % 1 + 1) % 1 * 0.14 });      // (sprays of leaf on every hedge and clipped ball: ground.js)
   const signs = [];
   // A thing built in its own frame and stood on the land: its +z is the way it faces, +x its right hand.
   const stand = (x, z, yaw, y = groundAt(x, z)) => {
