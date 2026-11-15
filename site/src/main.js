@@ -16,13 +16,14 @@ import { makeSound } from './sound.js';
 import { makeAbout } from './about.js';
 import { namedView, statsDump, VIEWS } from './perf.js';
 import { makeVisibility } from './visibility.js';
-import { chooseQuality, rememberSlow, QUALITY_OPTIONS, storedChoice, chooseTier } from './quality.js';
-import { setTextureTier, sharpenTextures } from './materials.js';
+import { chooseQuality, rememberSlow, QUALITY_OPTIONS, storedChoice, chooseTier, takeContext } from './quality.js';
+import { setTextureTier, sharpenTextures, markDressed } from './materials.js';
 import { HL, installHouseLight, setHourLight, makeLampPool, makeExposure, makeWindowGlow, makeVignette, makeHalos } from './lighting.js';
 import { makeWarmer } from './warm.js';
 import { makeShade } from './shade.js';
 
 import { loadFonts } from './fonts.js';
+import { makeFrameMeter } from './engine/frame.js';
 
 // Every label, leaf and painted stone on the island is painted on a 2D canvas and handed to the renderer as
 // a texture. Browsers keep such canvases on the graphics card unless told otherwise, and a card that is
@@ -31,6 +32,7 @@ import { loadFonts } from './fonts.js';
 { const get = HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext = function (type, opts) { return get.call(this, type, type === '2d' ? { willReadFrequently: true, ...opts } : opts); }; }
 await loadFonts();      // anything lettered is painted at start-up: the typeface first (fonts.js)
 const Q = new URLSearchParams(location.search);
+if (Q.has('loadlog')) { const M = THREE.DefaultLoadingManager, open = new Map(), s0 = M.itemStart, e0 = M.itemEnd; window.__loadlog = []; M.itemStart = u => { open.set(u, performance.now()); s0(u); }; M.itemEnd = u => { window.__loadlog.push([u.slice(-60), Math.round(open.get(u)), Math.round(performance.now())]); open.delete(u); e0(u); }; window.__loadopen = () => [...open.keys()]; }      // (?loadlog: what the threshold is waiting for, and when each came)
 const $ = id => document.getElementById(id);
 const sound = makeSound();
 
@@ -43,7 +45,7 @@ const QUALITY = chooseQuality(Q);
 setTextureTier(QUALITY.tex);
 const MAX_RATIO = Math.min(devicePixelRatio, Number(Q.get('ratio') ?? QUALITY.ratio));
 let ratio = MAX_RATIO;
-const renderer = new THREE.WebGLRenderer({ antialias: QUALITY.antialias, powerPreference: 'high-performance' });
+const renderer = new THREE.WebGLRenderer({ antialias: QUALITY.antialias, powerPreference: 'high-performance', ...takeContext(QUALITY.antialias) });
 renderer.setPixelRatio(ratio);
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -272,7 +274,9 @@ function climb(to) { rung = to; const [r, k] = LADDER[rung]; QUALITY.reach = REA
 const fpsBox = Q.has('fps') ? $('room') : null;
 setHour(hour);
 
+const meter = makeFrameMeter();      // (where a frame's time goes, for the ?fps caption: engine/frame.js)
 renderer.setAnimationLoop(() => {
+  meter.begin();
   const raw = clock.getDelta(), dt = Math.min(raw, 0.05), t = clock.elapsedTime;
   // A change of drawing resolution is made here, before the frame is drawn. (Made after drawing, it
   // emptied the canvas, and the page's dark background showed for a frame: a full-screen blink.)
@@ -305,10 +309,10 @@ renderer.setAnimationLoop(() => {
   // one by one as rooms are first seen
   if (!perf.frames && !cullOff) { mark('loop'); cullScene(true); renderer.compile(scene, camera); warmer.settle(); mark('compiled'); }
   cullScene();
-  renderer.render(scene, camera);
+  meter.draw(); renderer.render(scene, camera); meter.end();
   warmer.update(dt);
   perf.frames++; perf.lastCalls = renderer.info.render.calls; perf.lastTris = renderer.info.render.triangles;
-  if (perf.firstFrameMs === undefined) perf.firstFrameMs = Math.round(performance.now());
+  if (perf.firstFrameMs === undefined) { perf.firstFrameMs = Math.round(performance.now()); if (window.__ready) document.body.classList.add('ready'); }      // (the threshold lifts when the photos are in AND a frame has been drawn: whichever comes second, onLoad below or this)
   if (Q.has('stages') && perf.frames === 3) console.log('STAGES', JSON.stringify(STAGE), 'first frame', perf.firstFrameMs, 'calls', renderer.info.render.calls, 'tris', renderer.info.render.triangles, 'tex', renderer.info.memory.textures, 'geo', renderer.info.memory.geometries, 'programs', renderer.info.programs.length);
 
   // Keep it quick, but sharp. If most frames run slow for two seconds together, the next rung of LADDER is taken:
@@ -319,7 +323,7 @@ renderer.setAnimationLoop(() => {
   frames++; since += raw; if (raw > 1 / 46) slowFrames++;
   if (since >= 1) {
     const fps = frames / since, mostlySlow = slowFrames > frames * 0.6; frames = 0; since = 0; slowFrames = 0; settled++;
-    if (fpsBox) fpsBox.textContent = `${fps.toFixed(0)} fps · ×${ratio.toFixed(2)} · ${QUALITY.name} · ${renderer.info.render.calls} calls · ${(renderer.info.render.triangles / 1000).toFixed(0)}k tris · ${(renderer.info.memory.textures)} tex`;
+    if (fpsBox) fpsBox.textContent = `${fps.toFixed(0)} fps · ×${ratio.toFixed(2)} · ${QUALITY.name}${QUALITY.antialias ? '' : ' (no aa)'} · ${renderer.info.render.calls} calls · ${(renderer.info.render.triangles / 1000).toFixed(0)}k tris · ${(renderer.info.memory.textures)} tex · ${meter.text()} · first frame ${((perf.firstFrameMs ?? 0) / 1000).toFixed(1)} s, open ${perf.readyMs ? (perf.readyMs / 1000).toFixed(1) + ' s' : '…'}`;      // (the last two: how long the visit took to start)
     // (not while the furniture is still arriving: that is the processor, not the picture. Only the furniture: the far
     // rooms' lettering is made only in frames with time to spare, so on a machine that is slow throughout it never
     // finished, and the resolution was never let down at all)
@@ -371,7 +375,7 @@ perf.walkTo = (x, z, o = {}) => new Promise(done => {
 if (Q.has('statsdump')) statsDump(perf, Q.get('statsdump') || null, (Q.get('hours') ?? '13,22').split(',').map(Number));
 
 let sharpened = false;
-THREE.DefaultLoadingManager.onLoad = () => { sun.shadow.needsUpdate = true; document.body.classList.add('ready'); window.__ready = true; if (!sharpened) { sharpened = true; setTimeout(() => sharpenTextures(), 2500); } };      // (the photos came at half size; now the full ones, one at a time)
+THREE.DefaultLoadingManager.onLoad = () => { perf.readyMs ??= Math.round(performance.now()); sun.shadow.needsUpdate = true; if (perf.frames) document.body.classList.add('ready'); window.__ready = true; markDressed(); if (!sharpened) { sharpened = true; setTimeout(() => sharpenTextures(), 2500); } };      // (the photos came at half size; now the full ones, one at a time)
 if (Q.has('view') || Q.has('at') || Q.has('shot')) { renderer.domElement.style.transition = 'none'; document.body.classList.add('ready'); }
 if (Q.has('shot')) document.body.classList.add('shot');      // ?shot: the view from above with no invitation over it (test pictures)
 window.house = { ctx, setHour: h => { setHour(h); ctx.hourMoved = true; }, get hour() { return hour; } };

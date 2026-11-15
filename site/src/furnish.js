@@ -180,9 +180,14 @@ function start(ctx) {
   if (placed.records.length > 1) console.warn('furnish: more than one record player; only the first plays');
   for (const l of placed.labels) ctx.interact.push({ x: l.x, y: l.y, z: l.z, reach: l.reach ?? 6, size: l.size ?? 0.8, label: () => l.label ?? 'read the label',
     act: () => (l.note ? ctx.flash(l.note) : import('./card.js').then(m => m.showCard({ title: l.title ?? '', kicker: l.kicker, text: l.text ?? '', foot: l.foot })).catch(e => console.warn('card', e))) });
-  if (ctx.items.books?.length) import('./books.js').then(m => m.setupBooks(ctx)).catch(e => console.warn('books', e));      // every book on a shelf can be taken down
-  import('./hold.js').then(m => m.setupHold(ctx)).catch(e => console.warn('hold', e));
-  if (Q.get('faculty') !== '0' && (placed.faculty.length || placed.researchers.length || Q.has('lineup') || Q.has('crowd'))) import('./faculty.js').then(m => m.hireFaculty(ctx, placed.faculty, placed.researchers)).catch(e => console.warn('faculty', e));
-  if (placed.chess[0]) import('./chess.js').then(m => m.setupChess(ctx, placed.chess[0])).catch(e => console.warn('chess', e));
-  if (rec) import('./record.js').then(m => m.setupRecord(ctx, rec)).catch(e => console.warn('record', e));
+  // The parts that are set going once the scene exists (books, the faculty, chess, the record player...) take turns, one a
+  // frame: they arrive together, and run back to back they made one frame of more than half a second just after the
+  // threshold lifted.
+  let turns = Promise.resolve();
+  const inTurn = (name, f) => (turns = turns.then(() => new Promise(ok => requestAnimationFrame(() => { try { f(); } catch (e) { console.warn(name, e); } ok(); }))));
+  if (ctx.items.books?.length) import('./books.js').then(m => inTurn('books', () => m.setupBooks(ctx))).catch(e => console.warn('books', e));      // every book on a shelf can be taken down
+  import('./hold.js').then(m => inTurn('hold', () => m.setupHold(ctx))).catch(e => console.warn('hold', e));
+  if (Q.get('faculty') !== '0' && (placed.faculty.length || placed.researchers.length || Q.has('lineup') || Q.has('crowd'))) import('./faculty.js').then(m => inTurn('faculty', () => m.hireFaculty(ctx, placed.faculty, placed.researchers))).catch(e => console.warn('faculty', e));
+  if (placed.chess[0]) import('./chess.js').then(m => inTurn('chess', () => m.setupChess(ctx, placed.chess[0]))).catch(e => console.warn('chess', e));
+  if (rec) import('./record.js').then(m => inTurn('record', () => m.setupRecord(ctx, rec))).catch(e => console.warn('record', e));
 }

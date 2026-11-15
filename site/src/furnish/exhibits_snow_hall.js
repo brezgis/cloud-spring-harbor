@@ -110,7 +110,8 @@ export function stairHall({ f, X, on, M }) {
         if (net.t >= DONE) return;
         const c = ctx.camera.position; if (Math.hypot(c.x - o.x, c.z - o.z) > 40 || Math.abs(c.y - o.y) > 9) return;      // (nothing is worked out while nobody is in the hall)
         owed = Math.min(2, owed + RATE * Math.min(dt || 0.016, 0.1)); while (owed >= 1 && net.t < DONE) { net.step(); owed--; }
-        if ((since += dt || 0.016) > 0.5 || net.t >= DONE) { since = 0; paintNet(g, cv.width, cv.height, net, f.draw); tex.needsUpdate = true; }
+        if ((since += dt || 0.016) > 1 || net.t >= DONE) {      // (redrawn once a second: the mold thins over two minutes, and each redraw is a picture sent to the card)
+          since = 0; paintNet(g, cv.width, cv.height, net, f.draw); tex.needsUpdate = true; }
       });
     });
   }
@@ -209,16 +210,33 @@ export function slimeNet(seed = 1, o = {}) {
 }
 // the dish as it looks: dark agar, the land a shade lighter inside the white line of the coast (the light that kept
 // the plasmodium off the sea), oat flakes for the cities, and the tubes in the plasmodium's yellow
+// The dish and its faint web change slowly, and the web is nearly every tube there is: they are drawn on a canvas of their
+// own every five seconds or so (WEB_EVERY steps of the model), and only the tubes and their cores, far fewer, are drawn over
+// it each time. (All of it drawn twice a second was a stutter of 20 to 30 ms for anyone standing in the hall.)
+const webs = new WeakMap(), WEB_EVERY = 110;
 export function paintNet(g, W, H, net, draw) {
   const k = W / NET_W, P = (x, y) => [x * k, H - y * k], T = draw.T;
-  g.fillStyle = '#17130f'; g.fillRect(0, 0, W, H);
-  g.beginPath(); for (let i = 0; i < LAND.length; i += 2) { const [x, y] = P(LAND[i], LAND[i + 1]); i ? g.lineTo(x, y) : g.moveTo(x, y); } g.closePath();
-  g.fillStyle = '#2e261d'; g.fill(); g.strokeStyle = 'rgba(236,230,214,0.85)'; g.lineWidth = Math.max(1.2, W * 0.0018); g.stroke();
+  let web = webs.get(g);
+  if (!web || web.net !== net || net.t - web.t >= WEB_EVERY || web.c.width !== W) {
+    const c = web?.c.width === W ? web.c : Object.assign(document.createElement('canvas'), { width: W, height: H }), b = c.getContext('2d');
+    b.fillStyle = '#17130f'; b.fillRect(0, 0, W, H);
+    b.beginPath(); for (let i = 0; i < LAND.length; i += 2) { const [x, y] = P(LAND[i], LAND[i + 1]); i ? b.lineTo(x, y) : b.moveTo(x, y); } b.closePath();
+    b.fillStyle = '#2e261d'; b.fill(); b.strokeStyle = 'rgba(236,230,214,0.85)'; b.lineWidth = Math.max(1.2, W * 0.0018); b.stroke();
+    b.lineCap = 'round'; strokeTubes(b, net, P, W, 0.004, 1, 'rgba(196,150,40,0.55)');      // a faint web
+    webs.set(g, web = { c, net, t: net.t });
+  }
+  g.drawImage(web.c, 0, 0);
   g.lineCap = 'round';
-  for (const [lo, w, col] of [[0.004, 1, 'rgba(196,150,40,0.55)'], [0.06, 1, '#e3b52e'], [0.3, 0.55, '#f6db70']]) {      // a faint web, the tubes, their bright cores
-    g.strokeStyle = col;
-    for (let e = 0; e < net.E; e++) { const d = net.D[e]; if (d < lo) continue; const [x0, y0] = P(net.X[net.A[e]], net.Y[net.A[e]]), [x1, y1] = P(net.X[net.B[e]], net.Y[net.B[e]]);
-      g.lineWidth = Math.max(0.8, Math.sqrt(d) * W * 0.0065 * w); g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); } }
+  strokeTubes(g, net, P, W, 0.06, 1, '#e3b52e'); strokeTubes(g, net, P, W, 0.3, 0.55, '#f6db70');      // the tubes, their bright cores
+  paintMarks(g, W, H, P, T, k);
+}
+function strokeTubes(g, net, P, W, lo, w, col) {
+  g.strokeStyle = col;
+  for (let e = 0; e < net.E; e++) { const d = net.D[e]; if (d < lo) continue; const [x0, y0] = P(net.X[net.A[e]], net.Y[net.A[e]]), [x1, y1] = P(net.X[net.B[e]], net.Y[net.B[e]]);
+      g.lineWidth = Math.max(0.8, Math.sqrt(d) * W * 0.0065 * w); g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); }
+}
+// the oat flakes, the names and the scale
+function paintMarks(g, W, H, P, T, k) {
   CITIES.forEach((c, i) => { const [x, y] = P(c.x, c.y), r = W * (i === 0 ? 0.011 : 0.0055); g.save(); g.translate(x, y); g.rotate(i * 1.7);
     g.fillStyle = '#e9dfc4'; g.beginPath(); g.ellipse(0, 0, r * 1.3, r * 0.85, 0, 0, Math.PI * 2); g.fill(); g.restore(); });
   const named = ['Tokyo', 'Yokohama', 'Chiba', 'Ōmiya', 'Hachiōji', 'Odawara', 'Narita', 'Yokosuka', 'Kisarazu', 'Kawagoe'];

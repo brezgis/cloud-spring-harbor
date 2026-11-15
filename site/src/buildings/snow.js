@@ -641,24 +641,42 @@ export default function (b) {
       try {
         if (!hooked) { hooked = true; const w = ctx.walker, g0 = w.ground ?? (() => 0);
           w.ground = (x, z) => g0(x, z) - (R.some(r => x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1) ? 5.4 : 0); }
-        const land = ctx.scene.getObjectByName('island-land'), g = land?.geometry; if (!g?.index) return;
-        const names = Object.keys(g.attributes), at = names.map(n => g.attributes[n]), ip = names.indexOf('position'), idx = g.index.array;
+        const land = ctx.scene.getObjectByName('island-land'), g = land?.geometry; if (!g?.index || g.userData.dug) return;
+        // Only the triangles that meet a pit are cut (a few hundred of the land's two hundred thousand); the rest are kept
+        // as they are, indexed. (The whole sheet used to be taken apart into arrays and put back together unindexed: a
+        // quarter of a second on the first frame, and the land three times the memory.)
+        const names = Object.keys(g.attributes), at = names.map(n => g.attributes[n]), ip = names.indexOf('position'), idx = g.index.array, P = at[ip].array;
         const vert = i => at.map(a => Array.from({ length: a.itemSize }, (_, k) => a.array[i * a.itemSize + k]));
         const mix = (p, q, t) => p.map((a, j) => a.map((v, k) => v + (q[j][k] - v) * t));
         const cut = (P, f) => { const o = []; for (let i = 0; i < P.length; i++) { const p = P[i], q = P[(i + 1) % P.length], fp = f(p[ip]), fq = f(q[ip]); if (fp >= 0) o.push(p); if ((fp > 0 && fq < 0) || (fp < 0 && fq > 0)) o.push(mix(p, q, fp / (fp - fq))); } return o; };
-        let tris = []; for (let i = 0; i < idx.length; i += 3) tris.push([vert(idx[i]), vert(idx[i + 1]), vert(idx[i + 2])]);
-        for (const r of R) {
-          const next = [];
-          for (const t of tris) {
-            const xs = t.map(v => v[ip][0]), zs = t.map(v => v[ip][2]);
-            if (Math.max(...xs) <= r.x0 || Math.min(...xs) >= r.x1 || Math.max(...zs) <= r.z0 || Math.min(...zs) >= r.z1) { next.push(t); continue; }
-            let rest = t;
-            for (const f of [p => r.x0 - p[0], p => p[0] - r.x1, p => r.z0 - p[2], p => p[2] - r.z1]) { const o = cut(rest, f); for (let k = 1; k < o.length - 1; k++) next.push([o[0], o[k], o[k + 1]]); rest = cut(rest, p => -f(p)); if (rest.length < 3) break; }
+        const keep = [], made = [];
+        for (let i = 0; i < idx.length; i += 3) {
+          const A = idx[i] * 3, B = idx[i + 1] * 3, C = idx[i + 2] * 3;
+          const x0 = Math.min(P[A], P[B], P[C]), x1 = Math.max(P[A], P[B], P[C]), z0 = Math.min(P[A + 2], P[B + 2], P[C + 2]), z1 = Math.max(P[A + 2], P[B + 2], P[C + 2]);
+          if (!R.some(r => !(x1 <= r.x0 || x0 >= r.x1 || z1 <= r.z0 || z0 >= r.z1))) { keep.push(idx[i], idx[i + 1], idx[i + 2]); continue; }
+          let tris = [[vert(idx[i]), vert(idx[i + 1]), vert(idx[i + 2])]];
+          for (const r of R) {
+            const next = [];
+            for (const t of tris) {
+              const xs = t.map(v => v[ip][0]), zs = t.map(v => v[ip][2]);
+              if (Math.max(...xs) <= r.x0 || Math.min(...xs) >= r.x1 || Math.max(...zs) <= r.z0 || Math.min(...zs) >= r.z1) { next.push(t); continue; }
+              let rest = t;
+              for (const f of [p => r.x0 - p[0], p => p[0] - r.x1, p => r.z0 - p[2], p => p[2] - r.z1]) { const o = cut(rest, f); for (let k = 1; k < o.length - 1; k++) next.push([o[0], o[k], o[k + 1]]); rest = cut(rest, p => -f(p)); if (rest.length < 3) break; }
+            }
+            tris = next;
           }
-          tris = next;
+          made.push(...tris);
         }
-        const ng = new THREE.BufferGeometry();
-        names.forEach((n, j) => { const a = at[j], arr = new Float32Array(tris.length * 3 * a.itemSize); let k = 0; for (const t of tris) for (const v of t) for (const c of v[j]) arr[k++] = c; ng.setAttribute(n, new THREE.BufferAttribute(arr, a.itemSize)); });
+        const n0 = at[ip].count, n = n0 + made.length * 3, ng = new THREE.BufferGeometry();
+        names.forEach((name, j) => {
+          const a = at[j], arr = new a.array.constructor(n * a.itemSize), round = !(arr instanceof Float32Array || arr instanceof Float64Array);
+          arr.set(a.array.subarray(0, n0 * a.itemSize)); let k = n0 * a.itemSize;
+          for (const t of made) for (const v of t) for (const c of v[j]) arr[k++] = round ? Math.round(c) : c;
+          ng.setAttribute(name, new THREE.BufferAttribute(arr, a.itemSize, a.normalized));
+        });
+        const ix = new (n > 65535 ? Uint32Array : Uint16Array)(keep.length + made.length * 3); ix.set(keep);
+        for (let k = keep.length, v = n0; k < ix.length; k++) ix[k] = v++;
+        ng.setIndex(new THREE.BufferAttribute(ix, 1)); ng.userData.dug = true;
         ng.computeBoundingSphere(); ng.computeBoundingBox(); land.geometry = ng; g.dispose();
       } catch (e) { failed = true; console.warn('snow hall: the basement could not be dug', e); }
     });

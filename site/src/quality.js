@@ -19,16 +19,9 @@ export const TIERS = {
 };
 const ORDER = ['low', 'medium', 'high'];
 
-export function gpuName() {
-  try {
-    const c = document.createElement('canvas'), gl = c.getContext('webgl2') || c.getContext('webgl');
-    if (!gl) return '';
-    const ext = gl.getExtension('WEBGL_debug_renderer_info');
-    const name = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
-    gl.getExtension('WEBGL_lose_context')?.loseContext();
-    return String(name || '');
-  } catch { return ''; }
-}
+// The card's name is asked of a context that is then handed to the renderer (engine/load.js)
+import { gpuName, takeContext } from './engine/load.js';
+export { gpuName, takeContext };
 
 export function guessTier(name) {
   const n = name.toLowerCase();
@@ -50,7 +43,13 @@ export function chooseQuality(Q) {
   let tier = TIERS[forced] ? forced : guessTier(gpu);
   if (!TIERS[forced] && stored && ORDER.indexOf(stored) < ORDER.indexOf(tier)) tier = stored;
   if (typeof navigator !== 'undefined' && !TIERS[forced] && (navigator.deviceMemory ?? 8) <= 2) tier = 'low';
-  return { ...TIERS[tier], gpu, forced: !!TIERS[forced] };
+  // (for measuring one difference between the tiers at a time: ?aa=0|1, ?lamps=N, ?tex=full|detail|half, ?shadow=N)
+  const over = {};
+  if (Q.has('aa')) over.antialias = Q.get('aa') === '1';
+  if (Q.has('lamps')) over.lamps = Number(Q.get('lamps'));
+  if (Q.has('tex')) over.tex = Q.get('tex');
+  if (Q.has('shadow')) over.shadow = Number(Q.get('shadow'));
+  return { ...TIERS[tier], ...over, gpu, forced: !!TIERS[forced] };
 }
 
 // Called by the frame-rate watcher when even the lowest resolution is too slow: the next

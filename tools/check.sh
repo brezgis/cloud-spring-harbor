@@ -10,4 +10,5 @@ for f in $(find site/src -name '*.js'); do
     [ -f "$(dirname "$f")/$imp" ] || { ok=0; echo "$f: imports $imp, which does not exist"; }
   done
 done
+python3 "$(dirname "$0")/preload.py" --check || ok=0      # (the module list in index.html: tools/preload.py)
 rm -rf "$T"; [ $ok = 1 ] && echo "all modules parse, all imports resolve" || exit 1
