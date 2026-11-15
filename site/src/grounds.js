@@ -29,6 +29,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeKit, PAINT } from './grounds/tools.js';
 import { rng } from './grounds/cards.js';
+import { lineAt } from './airship/line.js';
 import { LAYOUT, LANDING, OAK, FORK, WALKS, PATHS, TREES, TERRACE_TABLES, SITES, TERRACE, RILL, groundAt, rimDist, outlineAt, RIM, POND, pondK } from './campus.js';
 import { plantGrounds } from './grounds/planting.js';
 import { layWalks } from './grounds/walks.js';
@@ -185,8 +186,8 @@ export function layGrounds(B, items) {
       m: o.m ?? new THREE.Matrix4().makeRotationY(S.yaw).setPosition(S.x, S.y, S.z).multiply(new THREE.Matrix4().makeRotationY(o.turn ?? 0).setPosition(lx, ly, lz)) });
 
     // ---- the oval: the walks' own brick, herringbone laid square to the tongue, inside a soldier course that stands a
-    // half-inch proud as the walks' edges do; at its middle a round of sawn stone cut with a compass. (The brick's and
-    // the stone's surface is 0.10 ft above the land; the soldier course's top 0.145.)
+    // half-inch proud as the walks' edges do; at its middle a round stone cut with a compass. (The brick's surface is 0.10 ft
+    // above the land, the stone's a tenth of an inch more; the soldier course's top 0.145.)
     const kerb = (inner, outer, closed) => {      // a soldier course between two lines of points, in step
       const ep = [], eu = [], ei = [], n = inner.length, m = closed ? n + 1 : n; let run = 0;
       const up = (i, j, k) => ((ep[j * 3 + 2] - ep[i * 3 + 2]) * (ep[k * 3] - ep[i * 3]) - (ep[j * 3] - ep[i * 3]) * (ep[k * 3 + 2] - ep[i * 3 + 2])) > 0;
@@ -202,16 +203,16 @@ export function layGrounds(B, items) {
     };
     {
       const N = 72, RC = 2.5, ring = (a, b) => Array.from({ length: N }, (_, i) => { const t = i / N * Math.PI * 2; return [Math.cos(t) * a, Math.sin(t) * b]; });
-      const hub = ring(RC, RC), inner = ring(A, Bq), outer = ring(A + E, Bq + E), pos = [], uv = [], idx = [];
+      const hub = ring(RC - 0.08, RC - 0.08), inner = ring(A, Bq), outer = ring(A + E, Bq + E), pos = [], uv = [], idx = [];
       for (const q of [...hub, ...inner]) { const [x, z] = at(...q); pos.push(x, groundAt(x, z) + 0.1, z); uv.push(q[1], q[0]); }
       const tri = (i, j, k) => (((pos[j * 3 + 2] - pos[i * 3 + 2]) * (pos[k * 3] - pos[i * 3]) - (pos[j * 3] - pos[i * 3]) * (pos[k * 3 + 2] - pos[i * 3 + 2])) > 0 ? idx.push(i, j, k) : idx.push(i, k, j));
       for (let i = 0; i < N; i++) { const j = (i + 1) % N; tri(i, N + i, N + j); tri(i, N + j, j); }
       G.strip('brick', pos, uv, idx);
       kerb(inner.map(q => at(...q)), outer.map(q => at(...q)), true);
-      G.poly('tileLight', hub.map(q => at(...q)), { y: 0.1 });
-      // the compass: north is +x. (Painted with nothing behind it, so it reads as cut in the stone.)
+      // the compass stone: north is +x. (A painted round laid a hair above the brick, which runs a little way in under its edge.)
       letter(null, RC * 2, RC * 2, 0, 0, 0, (g, w) => {
-        const c = w / 2, R = w / 2 - 6, ink = '#4d463a', circle = (rad, lw) => { g.lineWidth = lw; g.beginPath(); g.arc(c, c, rad, 0, Math.PI * 2); g.stroke(); };
+        const c = w / 2, R = w / 2 - 14, ink = '#4d463a'; g.fillStyle = '#c9bea4'; g.beginPath(); g.arc(c, c, w / 2 - 1, 0, 7); g.fill(); g.save(); g.clip(); for (let i = 0; i < 2600; i++) { g.fillStyle = `rgba(${i % 2 ? '255,250,235' : '70,60,45'},${0.04 + (i % 7) * 0.012})`; g.fillRect((i * 7919) % w, (i * 104729) % w, 1 + i % 4, 1 + i % 3); } g.restore();
+        const circle = (rad, lw) => { g.lineWidth = lw; g.beginPath(); g.arc(c, c, rad, 0, Math.PI * 2); g.stroke(); };
         g.strokeStyle = ink; g.fillStyle = ink; circle(R, 6); circle(R * 0.76, 3);
         const str = `${SCHOOL.toUpperCase()}  ·  THE LANDING  ·  LINE 6  ·  `, rb = R * 0.88; let px = w * 0.07; g.textAlign = 'center'; g.textBaseline = 'middle';
         g.font = `${Math.round(px)}px ${FACE.goudy}`; let ws = [...str].map(ch => g.measureText(ch).width), tot = ws.reduce((a, b) => a + b, 0); const circ = Math.PI * 2 * rb;
@@ -223,7 +224,7 @@ export function layGrounds(B, items) {
           g.lineWidth = 2.5; g.beginPath(); g.moveTo(...P(a, len)); g.lineTo(...P(a + Math.PI / (i % 2 ? 8 : 4), s)); g.lineTo(c, c); g.stroke();
         }
         g.font = `${Math.round(w * 0.085)}px ${FACE.goudy}`; g.fillText('N', c, c - R * 0.66);
-      }, { cw: 448, cut: true, m: new THREE.Matrix4().makeBasis(new THREE.Vector3(0, 0, 1), new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0)).setPosition(CX, groundAt(CX, CZ) + 0.125, CZ) });
+      }, { cw: 448, cut: true, m: new THREE.Matrix4().makeBasis(new THREE.Vector3(0, 0, 1), new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0)).setPosition(CX, groundAt(CX, CZ) + 0.108, CZ) });
     }
 
     // ---- the stop, as on Vesper Street. The line's post beside the oval: a bell with its cord, an enamel plate, a windsock.
@@ -237,7 +238,7 @@ export function layGrounds(B, items) {
       const [bx, by, bz] = pt(P, 0, 6.88, 0.9);
       K.tube(IRON, [bx, by, bz], [bx, by + 0.12, bz], 0.02, 5);
       K.lathe(PAINT.brass, bx, by, bz, [[0.02, -0.12], [0.13, -0.2], [0.2, -0.38], [0.27, -0.52], [0.33, -0.56], [0.345, -0.51], [0.28, -0.43], [0.215, -0.28], [0.175, -0.1], [0.1, -0.02], [0.02, 0]], 16);      // (hollow: seen from below too)
-      K.sphere(PAINT.brass, bx, by - 0.56, bz, 0.065); K.tube(PAINT.rope, [bx, by - 0.2, bz], [bx, by - 2.2, bz], 0.018, 5); K.sphere('c#6b4a32/0.8', bx, by - 2.24, bz, 0.07, 1.5);      // the clapper, and a cord to ring it by
+      K.sphere(PAINT.brass, bx, by - 0.56, bz, 0.065); K.tube(PAINT.rope, [bx, by - 0.2, bz], [bx, by - 1.02, bz], 0.018, 5); K.sphere('c#6b4a32/0.8', bx, by - 1.06, bz, 0.07, 1.5);      // the clapper, and a cord to ring it by
       P.box('c#24382f/0.5', -0.79, 0.79, 4.66, 5.74, 0.125, 0.165);      // the plate: enamel on iron, clipped to the post
       for (const y of [4.86, 5.5]) P.box(IRON, -0.16, 0.16, y, y + 0.06, -0.16, 0.127);
       letter(P, 1.5, 1.0, 0, 5.2, 0.171, (g, w, h) => { g.fillStyle = BOARD; g.fillRect(0, 0, w, h); g.strokeStyle = INK; g.lineWidth = 4; g.strokeRect(8, 8, w - 16, h - 16); T(g, 'AIRSHIP', w / 2, h * 0.34, h * 0.27, INK, { ls: 6 }); T(g, 'Line 6 · ring the bell', w / 2, h * 0.7, h * 0.15, INK, { it: 1 }); }, { cw: 270 });
@@ -266,13 +267,13 @@ export function layGrounds(B, items) {
     {
       const S = stand(...at(-12, Bq + 9), facing), GREEN2 = 'c#263c34/0.6', WOOD = 'c#8a6a48/0.8', ROOF = 'c#b98f7c/0.8';      // +z toward the oval; +x inland, toward the gate
       G.poly('flagstone', [[-9.4, -4], [6.2, -4], [6.2, 4], [-9.4, 4]].map(([a, b]) => S.at(a, b)));
-      // a short brick path from the oval's edge to the shelter's floor: the walks' brick in running bond, between soldier courses
+      // a short brick path from the oval's edge to the shelter's floor: the oval's own herringbone, between soldier courses
       {
         const p0 = -14.6, p1 = -9.4, qe = p => (Bq + E) * Math.sqrt(1 - (p / (A + E)) ** 2), M = 6, pos = [], uv = [], idx = [];
         for (let i = 0; i <= M; i++) { const p = p0 + (p1 - p0) * i / M; for (const q of [qe(p), Bq + 5]) { const [x, z] = at(p, q); pos.push(x, groundAt(x, z) + 0.1, z); uv.push(p, q); } }
         const tri = (i, j, k) => (((pos[j * 3 + 2] - pos[i * 3 + 2]) * (pos[k * 3] - pos[i * 3]) - (pos[j * 3] - pos[i * 3]) * (pos[k * 3 + 2] - pos[i * 3 + 2])) > 0 ? idx.push(i, j, k) : idx.push(i, k, j));
         for (let i = 0; i < M; i++) { const a = i * 2; tri(a, a + 1, a + 3); tri(a, a + 3, a + 2); }
-        G.strip('brickRun', pos, uv, idx);
+        G.strip('brick', pos, uv, idx);
         for (const [p, sd] of [[p0, -1], [p1, 1]]) kerb([at(p, qe(p)), at(p, Bq + 5)], [at(p + sd * E, qe(p + sd * E)), at(p + sd * E, Bq + 5)], false);
       }
       for (const [lx, lz] of [[-5, -3], [5, -3], [-5, 3], [5, 3]]) {
@@ -284,7 +285,7 @@ export function layGrounds(B, items) {
       S.box(PAINT.cream, -5.9, 5.9, 7.94, 8.0, -3.7, 3.7); S.box(GREEN, -6.1, 6.1, 7.96, 8.09, -3.9, 3.9);      // the boarded ceiling, and the eaves
       { const a = [-6.1, 8.09, -3.9], b = [6.1, 8.09, -3.9], c = [6.1, 8.09, 3.9], d = [-6.1, 8.09, 3.9], r1 = [-2.2, 8.76, 0], r2 = [2.2, 8.76, 0];      // (its ridge is as high as the flat roof was, and its eaves lower)
         const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([d, c, r2, d, r2, r1, b, a, r1, b, r1, r2, c, b, r2, a, d, r1].flat(), 3)); g.computeVertexNormals(); S.geo(ROOF, g); }
-      S.geo('glass', new THREE.BoxGeometry(9.74, 6.7, 0.04).translate(0, 4.35, -3)); S.box(GREEN, -5, 5, 0.85, 1.0, -3.07, -2.93);
+      S.geo('glass', new THREE.BoxGeometry(9.74, 6.78, 0.04).translate(0, 4.33, -3)); S.box(GREEN, -5, 5, 0.85, 1.0, -3.07, -2.93);
       for (const lx of [-1.75, 1.75]) S.box(GREEN, lx - 0.05, lx + 0.05, 1.0, 7.7, -3.06, -2.94);
       for (let lx = -4.2; lx <= 4.21; lx += 1.2) S.block(lx, -3, 0.3, 8);      // (nobody walks through the glass)
       const [bx, bz] = S.at(0.45, -1.6); K.bench(bx, bz, facing, { w: 5, mat: 'c#7d8a72/0.8', y: S.y }); K.seat(bx, S.y + 1.4, bz, facing + Math.PI, 'sit and wait for the airship');
@@ -295,8 +296,8 @@ export function layGrounds(B, items) {
       letter(S, 2.4, 3.2, 3.33, 4.9, -2.864, (g, w, h) => {
         g.fillStyle = INK; g.fillRect(0, 0, w, h); g.fillStyle = '#2f4a40'; g.fillRect(0, 0, w, h * 0.17); T(g, 'AIRSHIP', w / 2, h * 0.09, h * 0.09, INK, { ls: 6 });
         T(g, 'LINE 6  ·  ' + GATE.toUpperCase(), w / 2, h * 0.24, h * 0.047, '#2f4a40', { ls: 2 });
-        const rows = [['to', 'Anna’s House'], ['and', 'Vesper Street'], ['arrives', 'when rung'], ['departs', 'when aboard'], ['fare', 'a nice thought']];
-        rows.forEach(([a, b], i) => { const y = h * (0.36 + i * 0.1); T(g, a, w * 0.1, y, h * 0.052, '#2a1c13', { a: 'left', it: 1 }); T(g, b, w * 0.9, y, h * 0.052, '#2a1c13', { a: 'right' }); g.fillStyle = 'rgba(42,28,19,.25)'; g.fillRect(w * 0.1, y + h * 0.04, w * 0.8, 1); });
+        const rows = lineAt('harbor').rows, step = rows.length > 5 ? 0.079 : 0.1;      // the same rows as at the other two stops (airship/line.js)
+        rows.forEach(([a, b], i) => { const y = h * (0.36 + i * step); T(g, a, w * 0.1, y, h * 0.052, '#2a1c13', { a: 'left', it: 1 }); T(g, b, w * 0.9, y, h * 0.052, '#2a1c13', { a: 'right' }); g.fillStyle = 'rgba(42,28,19,.25)'; g.fillRect(w * 0.1, y + h * 0.04, w * 0.8, 1); });
         T(g, 'Please keep your hands inside the sky.', w / 2, h * 0.92, h * 0.045, '#a8361f', { it: 1 });
       }, { cw: 336 });
       // the harbor master's end: a boarded screen between the two outer posts, the desk against it, a stool
@@ -325,7 +326,7 @@ export function layGrounds(B, items) {
         S.box(C1, lx - s, lx + s, 0, h, lz - s, lz + s); for (const sx of [-1, 1]) for (const yy of [0.02, h - 0.24]) { S.box(C2, lx + sx * s - 0.06, lx + sx * s + 0.06, yy, yy + 0.22, lz - s - 0.03, lz + s + 0.03); S.box(C2, lx - s - 0.03, lx + s + 0.03, yy + 0.004, yy + 0.216, lz + sx * s - 0.06, lz + sx * s + 0.06); }
         S.geo('c#a98a62/0.9', new THREE.BoxGeometry(0.95, 0.5, 0.7).rotateY(0.3).translate(lx + 0.15, h + 0.25, lz - 0.1)); S.geo(PAINT.rope, new THREE.BoxGeometry(0.97, 0.52, 0.03).rotateY(0.3).translate(lx + 0.15, h + 0.25, lz - 0.1)); S.geo(PAINT.rope, new THREE.BoxGeometry(0.03, 0.52, 0.72).rotateY(0.3).translate(lx + 0.15, h + 0.25, lz - 0.1));
         S.block(lx, lz, 1.1, 2.6);
-        letter(S, 1.5, 0.75, lx, 0.98, lz + s + 0.012, (g, w, h2) => { T(g, 'LINE 6', w / 2, h2 * 0.3, h2 * 0.4, '#2a241c', { ls: 6 }); T(g, GATE.toUpperCase(), w / 2, h2 * 0.74, h2 * 0.2, '#2a241c', { ls: 2 }); }, { cw: 300, cut: true });
+        letter(S, 1.5, 0.75, lx, 0.98, lz + s + 0.012, (g, w, h2) => { T(g, 'LINE 6', w / 2, h2 * 0.3, h2 * 0.4, '#2a241c', { ls: 6 }); T(g, GATE.toUpperCase(), w / 2, h2 * 0.76, h2 * 0.17, '#2a241c', { ls: 1 }); }, { cw: 420, cut: true });
         S.geo('c#b3a78c/0.95', new THREE.IcosahedronGeometry(0.8, 2).scale(1.25, 0.62, 0.85).rotateY(0.35).translate(lx + 0.3, 0.52, lz + s + 0.95)); S.geo('c#b3a78c/0.95', new THREE.ConeGeometry(0.3, 0.5, 8).rotateZ(-Math.PI / 2).rotateY(0.35).translate(lx + 1.33, 0.56, lz + s + 0.58)); S.geo(PAINT.rope, new THREE.TorusGeometry(0.15, 0.035, 5, 10).rotateY(Math.PI / 2 + 0.35).translate(lx + 1.26, 0.56, lz + s + 0.61)); }      // (the mail: a sack lying on its side, tied at the neck)
       // a little low planting behind the glass: lavender and catmint in a strip of earth
       { const strip = [[-5.7, -5.8], [5.7, -5.8], [5.7, -4.3], [-5.7, -4.3]].map(([a, b]) => S.at(a, b));
@@ -675,7 +676,7 @@ export function layGrounds(B, items) {
           q.applyMatrix4(s.m); parts.push(q);
         }
         const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
-        const m = new THREE.Mesh(mergeGeometries(parts), new THREE.MeshStandardMaterial({ map: t, roughness: 0.7, metalness: 0, alphaTest: 0.5, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 }));
+        const m = new THREE.Mesh(mergeGeometries(parts), new THREE.MeshStandardMaterial({ map: t, roughness: 0.7, metalness: 0, alphaTest: 0.5, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 }));
         m.name = 'landing lettering'; m.receiveShadow = true; scene.add(m);
       }
     }

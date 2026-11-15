@@ -11,16 +11,17 @@ export default function (f) {
     f.researcher({ at: [...P(92.4, 84.9), F3 + 1.5], facing: P(92.4, 82.5), pose: 'read', seat: 1.5, top: 2.5, seed: 3111, group: 'mind', make: 'tall',
       lines: ['The box marked "Things we were wrong about" is the fullest. I am on the second folder.', 'Pencil only. Bare hands for paper. I have neither a pencil nor, strictly, hands.'] });
     // the east plan chest stands against the north wall, X 99.5 to 105.5, its front at Y 77.65 and its top 3.28
-    f.researcher({ at: [...P(103.6, 78.85), F3], facing: P(103.6, 76.5), pose: 'stand', top: 3.28, seed: 3112, group: 'morpho', make: 'drum',
+    f.researcher({ at: [...P(101, 78.85), F3], facing: P(101, 76.5), pose: 'stand', top: 3.28, seed: 3112, group: 'morpho', make: 'drum',
       lines: ['Haskell and Wood, 1886. I am looking for the sheet with the attic on it, to see where I am standing.', 'Seven drawers, and what I want is always in the one I open last. There may be a theorem in that.'] });
   }
 
   // ---- The Museum Attic (no file of its own; its cases, ropes and benches are in ../exhibits_snow_museum.js) ----
   if (f.rooms['Museum Attic']) { const F = f.rooms['Museum Attic'].floor;
-    // a pair before the mammoth: just south of its rope (the rope's south side is at Y 50.3), off the middle of the floor
-    f.researcher({ at: [93.6, 48.4, F], facing: [96.6, 48.4], pose: 'talk', seed: 3121, group: 'morpho', make: 'neck',
+    // a pair before the mammoth: six feet south of its rope (the rope's south side is at Y 50.3; nearer, the strip between them and
+    // the rope counts as an aisle and the console warns), a little east of the axis
+    f.researcher({ at: [96.4, 44.3, F], facing: [99.4, 44.3], pose: 'talk', seed: 3121, group: 'morpho', make: 'neck',
       lines: ['Weight goes as the cube, bone as the square. Look at its legs and then at ours. We have none; that is my point.', 'Eleven feet. A few inches more and they would have had to choose between the mammoth and the roof.'] });
-    f.researcher({ at: [96.6, 48.4, F], facing: [93.6, 48.4], pose: 'talk', seed: 3122, group: 'collective', make: 'round',
+    f.researcher({ at: [99.4, 44.3, F], facing: [96.4, 44.3], pose: 'talk', seed: 3122, group: 'collective', make: 'round',
       lines: ['He has been explaining scaling to me since the Triceratops. I let him. It is his field.', 'The brass plate says the emeritus bench is at present the mammoth\'s. It has seniority.'] });
     // one at the second case of the west row (the case is X 79.6 to 81.8, Y 12.6 to 17.8), reading its label
     f.researcher({ at: [83.0, 14.2, F], facing: [80.7, 14.2], pose: 'stand', top: 3.5, seed: 3123, group: 'machine', make: 'box',

@@ -4,8 +4,9 @@
 export default function (f) {
   const R0 = f.rooms['Room 202']; if (!R0 || !f.rooms['Room 203']) return;
   const XO = R0.X1 - 31.25, YO = R0.Y1 - 85, F2 = R0.floor, P = (X, Y) => [X + XO, Y + YO];
-  // at the rig (its table is X 6.7 to 9.7, Y 48.3 to 52.7, top 2.85): standing on its open east side, clear of the label
-  f.researcher({ at: [...P(10.9, 51.4), F2], facing: P(8.2, 51.4), pose: 'stand', top: 2.85, seed: 3031, group: 'neural', make: 'neck',
+  // at the rig (its table is X 6.7 to 9.7, Y 48.3 to 52.7, top 2.85): standing off its open east side, clear of the label. It is 1.8 ft back,
+  // not 1.2: nearer than that the floor beside the cage counts as an aisle and the console warns.
+  f.researcher({ at: [...P(11.5, 51.4), F2], facing: P(8.2, 51.4), pose: 'stand', top: 2.85, seed: 3031, group: 'neural', make: 'neck',
     lines: ['I am not leaning on it. I am hovering near it, which the sign does not cover.', 'Slice four, cell two. It held its seal for an hour and then thought better of it.'] });
   // on the east stool of the electronics bench (stool at X 30, Y 40.25, seat 2.05; the bench's edge is at Y 39.45, its top 3.0)
   f.researcher({ at: [...P(30, 39.95), F2 + 2.05], facing: P(30, 37.5), pose: 'type', seat: 2.05, top: 3.0, seed: 3032, group: 'neural', make: 'drum', role: 'tech',

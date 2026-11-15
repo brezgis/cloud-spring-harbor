@@ -252,7 +252,6 @@ export default function (f) {
       while (x + 0.2 < x1) { const w = Math.min(x1 - x, 0.22 + rnd() * 0.07); p.box(PW(cloth), x, x + w - 0.014, 0.2, 0.9, z, z + tall - (rnd() < 0.2 ? 0.02 : 0)); x += w; }
       for (const u of [0.86, 0.66, 0.2]) p.box(BR, x0 + 0.004, x - 0.016, 0.9, 0.925, z + tall * u, z + tall * u + 0.018);
     }
-    for (const [x, z] of [[-4.4, 5.85 + 0.8], [1.7, 4.74 + 0.78], [-1.9, 3.63 + 0.84], [4.3, 2.52 + 0.8]]) p.box(CARD, x + 0.05, x + 0.062, 0.5, 0.78, z + 0.004, z + 0.17);      // slips left in four volumes
     p.block(-6.08, 6.08, 0, 1.06, 0, 7.08);
     f.plate(p, 0, 7.34, 'PERIODICALS, BOUND', { style: 'painted', w: 3.4, tall: 0.4 });
     f.label(p, 0, 1.3, 4.2, { label: 'look at the bound periodicals', title: 'Periodicals, bound', kicker: 'Deck 2, south wall',

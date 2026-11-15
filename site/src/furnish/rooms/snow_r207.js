@@ -6,7 +6,7 @@ export default function (f) {
   const XO = R0.X1 - 31.25, YO = R0.Y1 - 85, F2 = R0.floor, P = (X, Y) => [X + XO, Y + YO], STAND = P(98.4, 31.6);
   // a pew (snow_up.js pew(), facing -Y): the bench runs from row - 0.05 to row + 1.15, the desk's near edge is at row - 0.7.
   // Places are at X 91.975, 95.225 (west pews) and 101.275, 104.525 (east pews), rows 42, 47.5 and 53.
-  const sit = (X, row, pose, o) => { const work = pose !== 'listen', Y = row + (work ? -0.1 : 0.35);
+  const sit = (X, row, pose, o) => { const work = pose !== 'listen', Y = row + (work ? 0 : 0.35);
     f.researcher({ at: [...P(X, Y), F2 + 1.5], facing: work ? P(X, row - 3) : STAND, pose, seat: 1.5, top: 2.5, ...o }); };
   // near the front: one with the notebook that is already there, one writing in the other pew
   sit(95.225, 42, 'listen', { seed: 3071, group: 'neural', make: 'round', lines: ['All or none. I have written it down four times, which is not in the spirit of it.', 'She gives this one at night as well. A neuron does not know what time it is. Mine do.'] });

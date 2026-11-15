@@ -150,6 +150,7 @@ export function indoorLit(m) {
 // lampOn: 0 by day, rising through the golden hour, 1 after dark.
 export function lampOn(day) { return 1 - smooth(day.light, 0.42, 0.97); }
 
+const NIGHT_AMB = Number(new URLSearchParams(globalThis.location?.search ?? '').get('amb') ?? 0.5);      // the rooms' own even light after dark (?amb= to try another)
 const AMB_DAY = new THREE.Color(0.95, 0.86, 0.72), AMB_NIGHT = new THREE.Color(1.0, 0.74, 0.46), amb = new THREE.Color();
 export function setHourLight(day, materials) {
   const on = lampOn(day), L = day.light;
@@ -162,7 +163,7 @@ export function setHourLight(day, materials) {
   // little after dark (white about a third, mid-tones hardly at all); by day nothing changes.
   HL.k.w = 0.7 * on;
   // (shops keep their lights on: after dark they are as bright inside as by day, only warmer)
-  amb.copy(AMB_NIGHT).multiplyScalar(0.5).lerp(amb.clone().copy(AMB_DAY).multiplyScalar(0.56), L);
+  amb.copy(AMB_NIGHT).multiplyScalar(NIGHT_AMB).lerp(amb.clone().copy(AMB_DAY).multiplyScalar(0.56), L);
   HL.amb.x = amb.r; HL.amb.y = amb.g; HL.amb.z = amb.b;
   // emissive glows: lamps and their shades
   for (const m of materials.glows ?? []) m.emissiveIntensity = m.userData.e0 * lerp(m.userData.day ?? 0.06, 1, on);

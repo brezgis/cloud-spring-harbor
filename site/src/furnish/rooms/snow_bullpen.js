@@ -156,7 +156,7 @@ export default function (f) {
     c.block(-0.7, 0.7, -0.8, 0.7, 0, 2.4);
   };
   let people = 0;
-  const person = (c, facing, who) => { people++; f.researcher({ at: [...c.map(0, 0), FL + 1.55], facing, pose: who.pose ?? 'type', seed: who.seed ?? 300 + people * 17, group: who.group, name: who.name, lines: who.lines }); };
+  const person = (c, facing, who) => { people++; f.researcher({ at: [...c.map(0, 0), FL + 1.55], facing, pose: who.pose ?? 'type', seed: who.seed ?? 300 + people * 17, group: who.group, name: who.name, lines: who.lines, top: TOP + 0.02 }); };
   const standing = (x, y, facing, who) => { people++; f.researcher({ at: [...P(x, y), FL], facing: P(...facing), pose: who.pose ?? 'talk', seed: who.seed ?? 300 + people * 17, group: who.group, name: who.name, lines: who.lines, top: who.top }); };
   // a flat screen on a desk top (or any top at z), turned da; draw paints it; it glows
   const monitor = (q, x, y, da, draw, o = {}) => {
@@ -176,7 +176,7 @@ export default function (f) {
     if (b2) b2.box(WHITE, -0.35, 0.35, -0.45, 0.45, 0, 0.03);
     if (top) K.sign(b2 ?? b, 0, 0, b2 ? 0.042 : hgt + 0.012, 0.66, 0.86, top, { flat: true, cw: 100, ch: 130 });
   };
-  const sheet = (q, x, y, turn, draw, w = 0.71, d = 0.92, z = 2.5, px = 150) => { const b = q.sub(x, y, z, turn); b.box(CARD, -w / 2, w / 2, -d / 2, d / 2, 0, 0.022); K.sign(b, 0, 0, 0.034, w - 0.03, d - 0.03, draw, { flat: true, cw: Math.round(w * px), ch: Math.round(d * px) }); };
+  const sheet = (q, x, y, turn, draw, w = 0.71, d = 0.92, z = 2.5, px = 150) => { const b = q.sub(x, y, z, turn); b.box(CARD, -w / 2, w / 2, -d / 2, d / 2, 0, 0.045); K.sign(b, 0, 0, 0.057, w - 0.03, d - 0.03, draw, { flat: true, cw: Math.round(w * px), ch: Math.round(d * px) }); };
   const keyboard = (q, x, y, turn = 0) => { const b = q.sub(x, y, 2.5, turn); b.box(CHAR, -0.62, 0.62, -0.2, 0.2, 0, 0.055); b.box(PW('5a5d62'), -0.57, 0.57, -0.16, 0.16, 0.03, 0.075); };
   const pack = (q, x, y, col, turn = 0) => { const b = q.sub(x, y, 0, turn); b.box(col, -0.5, 0.5, -0.3, 0.3, 0, 1.4); b.box(col, -0.38, 0.38, 0.26, 0.42, 0.15, 0.8); b.box(CHAR, -0.3, 0.3, -0.36, -0.28, 0.4, 1.35); };
   const bin = (q, x, y) => { q.cyl(CHAR, x, y, 0, 0.95, 0.34, 0.42, 8); q.cyl(CARD, x, y, 0.9, 0.99, 0.3, 0.3, 6); };

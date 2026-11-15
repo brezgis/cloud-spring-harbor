@@ -567,7 +567,7 @@ export default function (f) {
       pinboard(s, 88, 5.6, 5.6, 3, [
         [-1.9, 0.1, 1.3, 1.9, { kind: 'notice', title: 'ONE BOOK, THREE CARDS', px: 17, lines: ['1. Author: surname first.', '2. Title: as the title page has it.', '3. Subject: what the book is about, not what it is called.'], foot: 'Alder' }],
         [-0.3, 0.45, 1.5, 1.2, { kind: 'notice', hand: true, lines: ['Truck by the door: NOT yet cataloged.', 'Truck by the window: done, to be shelved.'], foot: 'A.' }],
-        [-0.3, -0.85, 1.5, 1.1, { kind: 'timetable', title: 'ROTA', cols: ['', 'M', 'Tu', 'W', 'Th', 'F'], rows: [['Receiving', 'asst.', 'asst.', 'asst.', 'asst.', 'asst.'], ['Filing above the rod', 'asst.', 'asst.', 'asst.', 'asst.', 'asst.'], ['Revising; dropping the cards', 'A.', 'A.', 'A.', 'A.', 'A.'], ['Classifying', 'A.', 'A.', 'A.', 'A.', 'A.'], ['Kettle', 'A.', 'asst.', 'A.', 'asst.', 'Linnet']] }],
+        [-0.3, -0.85, 1.5, 1.1, { kind: 'timetable', title: 'ROTA', cols: ['', 'M', 'Tu', 'W', 'Th', 'F'], rows: [['Receive', 'asst.', 'asst.', 'asst.', 'asst.', 'asst.'], ['File', 'asst.', 'asst.', 'asst.', 'asst.', 'asst.'], ['Revise', 'A.', 'A.', 'A.', 'A.', 'A.'], ['Class', 'A.', 'A.', 'A.', 'A.', 'A.'], ['Kettle', 'A.', 'asst.', 'A.', 'asst.', 'L.']] }],
         [1.6, 0.0, 1.5, 2.2, { kind: 'poster', title: 'A PLACE\nFOR EVERY\nBOOK', sub: 'and every book in its place', lines: ['Please do not reshelve: leave books on the tables'], foot: 'THE LIBRARIAN' }]]);
       hang(s, 82.2, 5.7, 'cpl_gore_hall_1876', 1.9);
       sideTable(s, 113.4, 1.15, 3.2, 1.6, 2.6); kettle(s, 112.6, 1.1, 2.6); K.pottedPlant(s, 114.55, 1.2, 2.6, 'fern', { size: 0.8, block: false });      // (in the south-east corner, beyond the catalog cabinets)

@@ -6,7 +6,7 @@ export default function (f) {
   const XO = R0.X1 - 31.25, YO = R0.Y1 - 85, F2 = R0.floor, P = (X, Y) => [X + XO, Y + YO], STAND = P(100.3, 25.2);
   // a pew (snow_up.js pew(), facing +Y): the bench runs from row - 1.15 to row + 0.05, the desk's near edge is at row + 0.7.
   // Places are at X 93.975, 97.225 (west pews) and 103.275, 106.525 (east pews), rows 15 (front) and 9.5.
-  const sit = (X, row, pose, o) => { const work = pose !== 'listen', Y = row + (work ? 0.1 : -0.35);
+  const sit = (X, row, pose, o) => { const work = pose !== 'listen', Y = row + (work ? 0 : -0.35);
     f.researcher({ at: [...P(X, Y), F2 + 1.5], facing: work ? P(X, row + 3) : STAND, pose, seat: 1.5, top: 2.5, ...o }); };
   // front row: one each side, with the things already on the desk for theirs (the problem set with the red query; a notebook and a cup)
   sit(97.225, 15, 'listen', { seed: 3061, group: 'machine', make: 'neck', lines: ['He put a question mark on my chain rule. It is a fair question mark.', 'Blame flows backwards. I have known that since my first group meeting.'] });

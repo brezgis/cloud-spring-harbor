@@ -96,7 +96,7 @@ export default function (f) {
   }
   const AUTH = ['A – Am', 'An – Az', 'Ba – Bek', 'Bel – Bo', 'Br – By', 'C – Ch', 'Ci – Cr', 'Cu – Di', 'Do – E', 'F', 'G – Gl', 'Go – Gy', 'H – He', 'Hi – Hy', 'I – J', 'K', 'L', 'M – Me', 'Mi – My', 'N – O', 'P', 'Q – R', 'S – Sm', 'Sn – T', 'U – Z'];
   const TITL = ['A – Ad', 'Ae – An', 'Ap – At', 'Au – Be', 'Bi – By', 'C – Ch', 'Ci – Com', 'Con – Cy', 'D', 'E', 'F', 'G', 'H', 'I – In', 'Io – K', 'L', 'M – Me', 'Mi – My', 'N', 'O', 'P', 'Q – R', 'S – So', 'Sp – Th', 'Ti – Z'];
-  const SUBJ = ['Abstraction – Analogy', 'Animal behavior – Automata', 'Bifurcation – Brain', 'Cellular automata – Chaos', 'Cognition – Complexity', 'Computation – Consciousness', 'Critical phenomena – Cybernetics', 'Decision – Dynamics', 'Ecology – Entropy', 'Evolution – Fractals', 'Game theory – Gödel', 'Graph theory – Induction', 'Information theory – Intellect', 'Knowledge – Logic', 'Machine learning – Memory', 'Metamathematics – Morphogenesis', 'Neural networks – Neurons', 'Nonlinear – Pattern formation', 'Perception – Phase transitions', 'Philosophy of mind – Probability', 'Recursion – Self-organization', 'Self-reference – Statistical mechanics', 'Swarms – Symmetry', 'Systems – Thermodynamics', 'Turing machines – Z'];
+  const SUBJ = ['Abstraction – Analogy', 'Animals – Automata', 'Bifurcation – Brain', 'Cells – Chaos', 'Cognition – Complexity', 'Computation – Control', 'Criticality – Cybernetics', 'Decision – Dynamics', 'Ecology – Entropy', 'Evolution – Fractals', 'Game theory – Gödel', 'Graph theory – Induction', 'Information – Intellect', 'Knowledge – Logic', 'Machines – Memory', 'Metamathematics – Morphology', 'Neural networks – Neurons', 'Nonlinear – Pattern', 'Perception – Phase', 'Philosophy – Probability', 'Recursion – Self-org.', 'Self-reference – Statistics', 'Swarms – Symmetry', 'Systems – Topology', 'Turing – Z'];
   const SHLF = ['000 – 003', '003.7', '003.8 – 005', '006 – 006.2', '006.3', '006.31 – 006.4', '010 – 099', '100 – 119', '120 – 129', '130 – 152', '153', '154 – 199', '200 – 499', '500 – 509', '510 – 511', '511.3', '512 – 519', '520 – 529', '530 – 530.12', '530.13', '530.14 – 569', '570 – 571', '572 – 599', '600 – 699', '700 – 999'];
   const cSh = catalog(91.3, 'SHELF-LIST', SHLF); catalog(100.75, 'SUBJECTS', SUBJ, { out: 8 }); catalog(104.15, 'TITLES', TITL); catalog(107.55, 'AUTHORS', AUTH);
   f.label(S, 105.8, 2.2, 3.3, { label: 'look at the catalog', title: 'The official catalog', kicker: 'Authors, titles, subjects: seventy-five drawers',
@@ -176,15 +176,15 @@ export default function (f) {
       D.paper(g, W, H, '#ece3cc', 21); const m = W * 0.065;
       Tf(g, 'WHERE EMERGENCE GOES', W / 2, H * 0.055, H * 0.043, INK, { ls: 1.5, max: W - 2 * m });
       Tf(g, 'The Decimal Classification, as extended for this Laboratory', W / 2, H * 0.1, H * 0.026, INK, { it: true, max: W - 2 * m }); rule(g, m, W - m, H * 0.125, INK, 2);
-      const y0 = H * 0.15, lh = H * 0.047;
-      ROWS.forEach(([s, n, note], i) => {
-        const y = y0 + i * lh;
-        Tf(g, s, m, y, H * 0.0255, INK, { a: 'left', max: W * 0.56 }); Tf(g, n, W - m, y, H * 0.027, INK, { a: 'right', w: 600, f: D.F.fraunces });
-        if (note) Tf(g, note, m + W * 0.03, y + lh * 0.46, H * 0.0235, RED, { ...HAND, a: 'left', max: W * 0.84 });
+      let y = H * 0.155;
+      ROWS.forEach(([s, n, note]) => {
+        Tf(g, s, m, y, H * 0.025, INK, { a: 'left', max: W * 0.6 }); Tf(g, n, W - m, y, H * 0.026, INK, { a: 'right', w: 600, f: D.F.fraunces });
+        if (note) { Tf(g, note, m + W * 0.04, y + H * 0.03, H * 0.0235, RED, { ...HAND, a: 'left', max: W * 0.82 }); y += H * 0.031; }
+        y += H * 0.0375;
       });
-      const yc = y0 + ROWS.length * lh + H * 0.012; rule(g, m, W - m, yc - H * 0.012, INK, 1);
+      const yc = y - H * 0.004; rule(g, m, W - m, yc - H * 0.012, INK, 1);
       Tf(g, 'COMPLAINT', m, yc + H * 0.02, H * 0.03, RED, { ...HAND, a: 'left' });
-      D.para(g, 'Parapsychology and the occult have a whole division, 130 to 139. Emergence has not one decimal place of its own. I have written to the editors. Twice.  A.', m, yc + H * 0.04, H * 0.027, RED, W - 2 * m, { ...HAND, lh: 1.12 });
+      D.para(g, 'Parapsychology and the occult have a whole division, 130 to 139. Emergence has not one decimal place of its own. I have written to the editors. Twice.  A.', m, yc + H * 0.038, H * 0.0255, RED, W - 2 * m, { ...HAND, lh: 1.1 });
     }, { res: 200 });
     f.label(S, 92.95, 0.3, 6.3, { label: 'read the chart', title: 'Where emergence goes', kicker: 'The Decimal Classification, as extended for this Laboratory by Alder', reach: 7,
       text: 'Dewey’s scheme divides knowledge into ten classes, and a book can stand in only one place. This Laboratory studies things that belong in five of them at once, so Alder keeps a chart of where each has been put, and why.\n' + ROWS.map(([s, n, note]) => n + '   ' + s + (note ? '  (' + note + ')' : '')).join('\n') +

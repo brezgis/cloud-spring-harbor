@@ -25,10 +25,18 @@ says why each is where it is), gravel walks, iron lamps. What is laid and plante
 
 - gravel walks from door to door by way of a fork, and up the tongue to the fork; small paths to the Stone
   Library's door and to the hall's side door; a lamp every fifty feet or so and one at each door;
-- the gate where the walk leaves the Landing: two stone piers and an iron arch with the name;
-- the Landing: an oval of gravel in a stone kerb where the airship will set down (she is 45 ft long; the
-  oval is 46), and beside it the stop as on Vesper Street: the line's post (bell, plate, windsock) and a
-  waiting shelter with a bench and the timetable. The airship calls here when the bell is rung (see "The airship", below);
+- the gate where the walk leaves the Landing (the Lewis Fry Richardson Gate): two piers of rock-faced limestone with
+  moulded caps and ball finials, a slate tablet on each face (the Laboratory and the gate's dedication as you arrive;
+  the motto and Richardson's rhyme as you leave), an iron overthrow between them (a round arch let into the piers, a
+  band above it with the name in raised gilt letters on both faces, a lantern at the crown), and a low quadrant of
+  wall curving forward from each pier with lavender at its foot;
+- the Landing: an oval of the walks' brick, herringbone inside a soldier course (46 by 21 ft; the airship is 45 ft
+  long), with a compass stone at its middle; beside it the stop as on Vesper Street: the line's post (bell and cord,
+  enamel plate, windsock) and a waiting shelter with a bench, the timetable and the harbor master's desk (logbook,
+  lamp, thermos, a barometer on the wall; his stool looks out along the tongue); a crate and a mail sack for the next
+  flight; two bollards, a coil of rope and the harbor light at the outer end. Everything lettered there is one mesh
+  (`landing lettering`, built with the windsock in `grounds.js`). The airship calls here when the bell is rung (see
+  "The airship", below);
 - an eight-sided seat round the old oak; three benches; two picnic tables under a maple; a name board by
   each building's door;
 - planting: ferns along the library's front, hydrangeas by the hall's steps and rhododendrons along its west

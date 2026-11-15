@@ -11,6 +11,7 @@ const CSS = `
 .staff-bubble .card::after { content: ''; position: absolute; left: 50%; bottom: -7px; margin-left: -7px; border: 7px solid transparent;
   border-bottom: 0; border-top-color: rgba(24, 17, 12, .74); }
 .staff-bubble.moved .card::after { display: none; }
+.staff-bubble.cut .card { transition: opacity .12s linear; transform: none; }
 .staff-bubble .who { display: block; font-style: italic; font-size: 13px; color: #d9a77c; margin-bottom: 1px; }
 @media (prefers-reduced-motion: reduce) { .staff-bubble .card, .staff-bubble.on .card { transition: opacity .3s ease; transform: none; } }
 /* a lecture: larger, wider, to be read from a seat half way back; set beside the speaker, on the side away from the board */
@@ -23,7 +24,14 @@ const CSS = `
 #staff-toast.on { opacity: .95; }
 `;
 
-export function makeBubbles(THREE, camera, headless = false) {
+// A bubble belongs to its speaker. Each frame it is put where the speaker's head is on the screen NOW (the
+// camera's matrices are brought up to date first, once a frame: placed before the frame is drawn, it would
+// otherwise use last frame's view and swim as you turn), and it is shown only while the speaker could be seen
+// and heard: in front of the camera, on the screen, within earshot, with no wall between. When the speaker is
+// lost it is cut at once, not left to fade where it hung. (As the staff of Anna's House are placed: staff.js
+// placeBubbles there asks for the same floor, 34 ft and a line of sight.)
+//   makeBubbles(THREE, camera, headless, { colliders })     colliders: the walls (default: the page's own, window.__house.colliders)
+export function makeBubbles(THREE, camera, headless = false, opts = {}) {
   const v = new THREE.Vector3(), v2 = new THREE.Vector3();
   let root = null, toastEl = null, toastUntil = 0;
   if (!headless && typeof document !== 'undefined') {
@@ -63,18 +71,39 @@ export function makeBubbles(THREE, camera, headless = false) {
     return b;
   }
 
+  // Is there a wall between the eye and the speaker's head? (Tall things only, and none that either stands in or against.)
+  function walled(eye, p) {
+    const cs = opts.colliders ?? (typeof window !== 'undefined' ? window.__house?.colliders : null); if (!cs) return false;
+    const dx = p.x - eye.x, dy = p.y - eye.y, dz = p.z - eye.z;
+    for (let i = 0; i < cs.length; i++) {
+      const c = cs[i]; if (c.off || c.staff || c.y1 - c.y0 < 5.5) continue;
+      if (p.x > c.x0 - 0.9 && p.x < c.x1 + 0.9 && p.z > c.z0 - 0.9 && p.z < c.z1 + 0.9) continue;
+      if (eye.x > c.x0 - 0.1 && eye.x < c.x1 + 0.1 && eye.z > c.z0 - 0.1 && eye.z < c.z1 + 0.1) continue;
+      let t0 = 0, t1 = 0.97, hit = true;
+      for (const [o, d, lo, hi] of [[eye.x, dx, c.x0, c.x1], [eye.z, dz, c.z0, c.z1], [eye.y, dy, c.y0, c.y1]]) {
+        if (Math.abs(d) < 1e-6) { if (o < lo || o > hi) { hit = false; break; } continue; }
+        let a = (lo - o) / d, b = (hi - o) / d; if (a > b) [a, b] = [b, a];
+        t0 = Math.max(t0, a); t1 = Math.min(t1, b); if (t0 > t1) { hit = false; break; }
+      }
+      if (hit) return true;
+    }
+    return false;
+  }
   // Bubbles placed this frame, so that a later one can step up clear of an earlier one
   const rects = []; let clearing = false;
   // pos: world point above the head. visible(): can the camera see the speaker at all?
   function place(b, pos, now, visible) {
     if (!b.el) return;
     b.tick(now);
-    if (!clearing) { clearing = true; queueMicrotask(() => { rects.length = 0; clearing = false; }); }      // forgotten once this frame's work is done
-    let on = now < b.until && visible;
+    if (!clearing) { clearing = true; camera.updateMatrixWorld(); queueMicrotask(() => { rects.length = 0; clearing = false; }); }      // (the view as it is now; forgotten once this frame's work is done)
+    const wanted = now < b.until; let on = wanted && visible;
     if (on) {
       v.copy(pos).project(camera);
-      if (v.z > 1 || v.z < -1 || Math.abs(v.x) > 1.3 || Math.abs(v.y) > 1.3) on = false;
+      if (v.z > 1 || v.z < -1 || Math.abs(v.x) > 1.04 || v.y > 1.25 || v.y < -1.05) on = false;                        // behind you, or off the screen: no bubble pinned to the edge
+      else if (camera.position.distanceTo(pos) > (b.far ?? (b.style === 'lecture' ? 80 : 36))) on = false;             // out of earshot
+      else { if (now - (b.seenAt ?? -9) > 0.2) { b.seenAt = now; b.blocked = walled(camera.position, pos); } if (b.blocked) on = false; }      // a wall between (looked at five times a second)
     }
+    const cut = wanted && !on; if (cut !== b.cut) { b.cut = cut; b.el.classList.toggle('cut', cut); }                     // lost, not finished: gone at once
     if (on) {
       const d = camera.position.distanceTo(pos), lec = b.style === 'lecture', s = lec ? Math.max(0.92, Math.min(1.12, 16 / Math.max(d, 1))) : Math.max(0.78, Math.min(1.05, 11 / Math.max(d, 1)));
       const hw = (b.w ??= b.el.offsetWidth || 220) * s / 2, h = (b.h ??= b.el.offsetHeight || 60) * s;
@@ -83,12 +112,15 @@ export function makeBubbles(THREE, camera, headless = false) {
       if (lec) {
         // beside the speaker, on the side away from the board (b.avoid: a point of it), and hung below the board's lower edge,
         // so that what is written there can still be read from the back of the room
-        const sx = (v.x + 1) / 2 * W, sy = (1 - v.y) / 2 * H, body = Math.min(190, 1100 / Math.max(d, 1));      // about how wide the speaker is on screen
+        const sx = (v.x + 1) / 2 * W, sy = (1 - v.y) / 2 * H, gap = Math.max(26, Math.min(170, (b.radius ?? 0.9) * H / (2 * d * Math.tan(camera.fov * Math.PI / 360)))) + 14;      // the speaker's own half-width on screen, and a little
         let top = sy - h * 0.3;
         if (b.avoid) { v2.copy(b.avoid).project(camera); const ax = (v2.x + 1) / 2 * W; if (Math.abs(sx - ax) > 30) b.side = sx > ax ? 1 : -1; v2.set(pos.x, b.avoid.y - 2.1, pos.z).project(camera); top = Math.max(top, (1 - v2.y) / 2 * H); }
-        if (!b.avoid && (sx + b.side * (body + 2 * hw) > W - 8 || sx + b.side * (body + 2 * hw) < 8)) b.side = -b.side;      // (with a board to keep clear of it stays on its side, and is pushed in over the speaker's own middle if the screen is short of room)
-        x = Math.max(hw + 10, Math.min(W - hw - 10, sx + b.side * (body + hw)));
-        y = Math.min(floor - h / 2, Math.max(h / 2 + 12, top + h / 2));
+        // rigidly beside the speaker: on its own side if the screen has room there, else on the other; never slid along the screen's edge
+        const fits = (sd, m) => { const left = sd > 0 ? sx + gap : sx - gap - 2 * hw; return left > 8 + m && left + 2 * hw < W - 8 - m; };
+        if (b.flip ? fits(b.side, 40) : !fits(b.side, 0)) b.flip = !b.flip && fits(-b.side, 0);
+        const sd = b.flip ? -b.side : b.side;
+        if (fits(sd, 0)) { x = sx + sd * (gap + hw); y = Math.min(floor - h / 2, Math.max(h / 2 + 12, top + h / 2)); }
+        else { x = Math.max(hw + 10, Math.min(W - hw - 10, sx)); y = Math.min(floor - h / 2, Math.max(h / 2 + 12, sy - h / 2 - 10)); }      // (a screen too narrow for either: over the head, as any bubble)
       } else {
         x = Math.max(hw + 10, Math.min(W - hw - 10, (v.x + 1) / 2 * W));
         y = Math.min(floor, Math.max(h + 12, (1 - v.y) / 2 * H - 10));

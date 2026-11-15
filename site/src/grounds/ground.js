@@ -158,7 +158,7 @@ export class Ground {
     let g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); g = g.toNonIndexed();
     this.parts[kind].push(g);
     // sprays of leaf standing out of the top and the shoulders, so that the outline is leaves and not a line
-    if (this.fringe) for (let i = 0; i < n; i++) { const [x, z] = P[i], a = P[Math.max(0, i - 1)], b = P[Math.min(n - 1, i + 1)], l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, nx = -(b[1] - a[1]) / l, nz = (b[0] - a[0]) / l, k = wob(x, 1, z, 7.7); for (const [f, y] of [[0.36 * (i % 2 ? 1 : -1), h * 0.6], [0.08 * k, h * 0.78]]) this.fringe(x + nx * f * w + k * 0.2, L(x, z) + y, z + nz * f * w - k * 0.2, 0.62 + 0.25 * Math.abs(k)); }
+    if (this.fringe) for (let i = 0; i < n; i++) { const [x, z] = P[i], a = P[Math.max(0, i - 1)], b = P[Math.min(n - 1, i + 1)], l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, nx = -(b[1] - a[1]) / l, nz = (b[0] - a[0]) / l, k = wob(x, 1, z, 7.7); for (const [f, y] of i % 2 ? [[0.36 * (i % 4 === 1 ? 1 : -1), h * 0.6]] : [[0.08 * k, h * 0.78]]) this.fringe(x + nx * f * w + k * 0.2, L(x, z) + y, z + nz * f * w - k * 0.2, 0.62 + 0.25 * Math.abs(k)); }
   }
   hedge(kind, pts, w, h, o = {}) { this.sweep(kind, pts, w, h, o); }      // (a straight run is a sweep too: there are no boxes of hedge any more)
   // A strip made elsewhere (walks.js): positions, its own texture coordinates in feet, triangles. It lies on the land already.
@@ -173,8 +173,8 @@ export class Ground {
     for (let i = 0; i < p.count; i++) { const l = Math.hypot(p.getX(i), p.getY(i), p.getZ(i)) || 1; nm.setXYZ(i, p.getX(i) / l, p.getY(i) / l, p.getZ(i) / l); }      // (shaded as a round thing, not as facets)
     g.translate(x, y + r * sy * q * 0.72, z); this.mesh(kind, g);
     // leaf sprays all over it, and a skirt of them where it meets the ground
-    if (this.fringe) { const cy = y + r * sy * q * 0.72, N = 15; for (let i = 0; i < N; i++) { const t = (i + 0.5) / N, phi = Math.acos(1 - t * 1.15), th = i * 2.39996 + k, rr = r * 0.82; this.fringe(x + Math.sin(phi) * Math.cos(th) * rr, cy + Math.cos(phi) * rr * sy * q - 0.25, z + Math.sin(phi) * Math.sin(th) * rr, 0.55 + 0.3 * ((i * 7) % 5) / 5); }
-      for (let i = 0; i < 7; i++) { const th = i / 7 * 6.2832 + k; this.fringe(x + Math.cos(th) * r * 0.86, y - 0.1, z + Math.sin(th) * r * 0.86, 0.6); } }
+    if (this.fringe) { const cy = y + r * sy * q * 0.72, N = 10; for (let i = 0; i < N; i++) { const t = (i + 0.5) / N, phi = Math.acos(1 - t * 1.15), th = i * 2.39996 + k, rr = r * 0.82; this.fringe(x + Math.sin(phi) * Math.cos(th) * rr, cy + Math.cos(phi) * rr * sy * q - 0.25, z + Math.sin(phi) * Math.sin(th) * rr, 0.55 + 0.3 * ((i * 7) % 5) / 5); }
+      for (let i = 0; i < 5; i++) { const th = i / 5 * 6.2832 + k; this.fringe(x + Math.cos(th) * r * 0.86, y - 0.1, z + Math.sin(th) * r * 0.86, 0.6); } }
   }
   cone(kind, x, y, z, r, h) {
     const g = new THREE.ConeGeometry(r, h, 12, 6), p = g.attributes.position, k = x * 0.9 + z * 0.6;
