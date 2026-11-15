@@ -1,0 +1,762 @@
+[
+ {
+  "slug": "stone_habs_sheet3",
+  "title": "Adams Stone Library: east and north elevations",
+  "source": "Historic American Buildings Survey, survey MA-841, sheet 3 of 7, drawn by Frederic C. Detwiller; Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/ma0435/",
+  "licence": "Public domain (a work of the U.S. Government; no known restrictions)",
+  "width_px": 1024,
+  "height_px": 804
+ },
+ {
+  "slug": "snow_front_elevation",
+  "title": "Old Snow Hall: front elevation of the Natural History Building",
+  "source": "Haskell & Wood, architects; blueprint, undated (the building opened in 1886); University Archives, Kenneth Spencer Research Library, University of Kansas, Architectural drawings of Snow Hall (ku-uarecords:860), https://digital.lib.ku.edu/ku-uarecords/860",
+  "licence": "Believed public domain in the United States by age; the library's own rights statement is Copyright Not Evaluated",
+  "width_px": 1200,
+  "height_px": 813
+ },
+ {
+  "slug": "snow_long_section",
+  "title": "Old Snow Hall: longitudinal section of the Natural History Building",
+  "source": "Haskell & Wood, architects; blueprint, undated (the building opened in 1886); University Archives, Kenneth Spencer Research Library, University of Kansas, Architectural drawings of Snow Hall (ku-uarecords:860), https://digital.lib.ku.edu/ku-uarecords/860",
+  "licence": "Believed public domain in the United States by age; the library's own rights statement is Copyright Not Evaluated",
+  "width_px": 1200,
+  "height_px": 908
+ },
+ {
+  "slug": "stone_death_of_socrates",
+  "title": "The Death of Socrates, Jacques-Louis David, 1787 (oil on canvas, 51 x 77 1/4 in.)",
+  "source": "The Metropolitan Museum of Art, New York, accession 31.45, Catharine Lorillard Wolfe Collection, Wolfe Fund, 1931; Met Open Access, https://www.metmuseum.org/art/collection/search/436105 (photograph trimmed to the canvas)",
+  "licence": "Public domain (Met Open Access, CC0)",
+  "width_px": 1200,
+  "height_px": 795
+ },
+ {
+  "slug": "stone_habs_sheet5",
+  "title": "Adams Stone Library: sections A-A and B-B",
+  "source": "Historic American Buildings Survey, survey MA-841, sheet 5 of 7, drawn by Frederic C. Detwiller; Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/ma0435/",
+  "licence": "Public domain (a work of the U.S. Government; no known restrictions)",
+  "width_px": 1024,
+  "height_px": 805
+ },
+ {
+  "slug": "cpl_plan_1887",
+  "title": "Cambridge Public Library: the original floor plan, 1887",
+  "source": "Van Brunt & Howe, architects; first published in the Cambridge Chronicle, 1887; reproduced in Ann Beha Architects, Existing Conditions Report and Preservation Recommendations, Main Library Expansion Project, Cambridge, Massachusetts (2003), p. 6",
+  "licence": "Public domain in the United States by age (published 1887)",
+  "width_px": 1089,
+  "height_px": 1078
+ },
+ {
+  "slug": "cpl_exterior_1889",
+  "title": "Cambridge Public Library, 1889",
+  "source": "Photograph of 1889, photographer not recorded; reproduced in Ann Beha Architects, Existing Conditions Report and Preservation Recommendations, Main Library Expansion Project, Cambridge, Massachusetts (2003), p. 5",
+  "licence": "Public domain in the United States by age (a photograph of 1889)",
+  "width_px": 392,
+  "height_px": 323
+ },
+ {
+  "slug": "cpl_reading_room_1889",
+  "title": "Cambridge Public Library: the Reading Room, 1889",
+  "source": "Photograph of 1889, photographer not recorded; reproduced in Ann Beha Architects, Existing Conditions Report and Preservation Recommendations, Main Library Expansion Project, Cambridge, Massachusetts (2003), p. 7",
+  "licence": "Public domain in the United States by age (a photograph of 1889)",
+  "width_px": 392,
+  "height_px": 290
+ },
+ {
+  "slug": "snow_rear_elevation",
+  "title": "Old Snow Hall: rear elevation of the Natural History Building",
+  "source": "Haskell & Wood, architects; blueprint, undated (the building opened in 1886); University Archives, Kenneth Spencer Research Library, University of Kansas, Architectural drawings of Snow Hall (ku-uarecords:860), https://digital.lib.ku.edu/ku-uarecords/860",
+  "licence": "Public domain in the United States by age; the library's own rights statement is Copyright Not Evaluated",
+  "width_px": 1200,
+  "height_px": 798
+ },
+ {
+  "slug": "snow_west_elevation",
+  "title": "Old Snow Hall: west elevation of the Natural History Building",
+  "source": "Haskell & Wood, architects; blueprint, undated (the building opened in 1886); University Archives, Kenneth Spencer Research Library, University of Kansas, Architectural drawings of Snow Hall (ku-uarecords:860), https://digital.lib.ku.edu/ku-uarecords/860",
+  "licence": "Public domain in the United States by age; the library's own rights statement is Copyright Not Evaluated",
+  "width_px": 1200,
+  "height_px": 766
+ },
+ {
+  "slug": "snow_east_elevation",
+  "title": "Old Snow Hall: east elevation of the Natural History Building",
+  "source": "Haskell & Wood, architects; blueprint, undated (the building opened in 1886); University Archives, Kenneth Spencer Research Library, University of Kansas, Architectural drawings of Snow Hall (ku-uarecords:860), https://digital.lib.ku.edu/ku-uarecords/860",
+  "licence": "Public domain in the United States by age; the library's own rights statement is Copyright Not Evaluated",
+  "width_px": 1200,
+  "height_px": 777
+ },
+ {
+  "slug": "cpl_delivery_room_1889",
+  "title": "Cambridge Public Library: the Delivery Room, 1889",
+  "source": "Photograph, photographer not recorded; reproduced in Ann Beha Architects, Existing Conditions Report and Preservation Recommendations, Main Library Expansion Project, Cambridge, Massachusetts (2003), p. 7",
+  "licence": "Public domain in the United States by age",
+  "width_px": 392,
+  "height_px": 249
+ },
+ {
+  "slug": "cpl_cambridge_room_1889",
+  "title": "Cambridge Public Library: the Cambridge Room, 1889",
+  "source": "Photograph, photographer not recorded; reproduced in Ann Beha Architects, Existing Conditions Report and Preservation Recommendations, Main Library Expansion Project, Cambridge, Massachusetts (2003), p. 7",
+  "licence": "Public domain in the United States by age",
+  "width_px": 386,
+  "height_px": 317
+ },
+ {
+  "slug": "cpl_memorial_hall_1870",
+  "title": "Memorial Hall, Harvard (Ware & Van Brunt), view of 1870",
+  "source": "Photograph, photographer not recorded; reproduced in Ann Beha Architects, Existing Conditions Report and Preservation Recommendations, Main Library Expansion Project, Cambridge, Massachusetts (2003), p. 4",
+  "licence": "Public domain in the United States by age",
+  "width_px": 302,
+  "height_px": 332
+ },
+ {
+  "slug": "cpl_dedham_1886",
+  "title": "Dedham Public Library (Van Brunt & Howe), 1886",
+  "source": "Photograph, photographer not recorded; reproduced in Ann Beha Architects, Existing Conditions Report and Preservation Recommendations, Main Library Expansion Project, Cambridge, Massachusetts (2003), p. 4",
+  "licence": "Public domain in the United States by age",
+  "width_px": 392,
+  "height_px": 253
+ },
+ {
+  "slug": "cpl_gore_hall_1876",
+  "title": "Gore Hall, Harvard, showing the book stack addition of 1876",
+  "source": "Photograph, photographer not recorded; reproduced in Ann Beha Architects, Existing Conditions Report and Preservation Recommendations, Main Library Expansion Project, Cambridge, Massachusetts (2003), p. 4",
+  "licence": "Public domain in the United States by age",
+  "width_px": 302,
+  "height_px": 300
+ },
+ {
+  "slug": "p_wpa_march_read",
+  "title": "In March read the books you've always meant to read",
+  "source": "Illinois WPA Art Project, Chicago, for the Statewide Library Project, between 1936 and 1941 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .01 .I5531, no. 1, https://www.loc.gov/pictures/item/98507722/ (the film-copy border trimmed)",
+  "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
+  "width_px": 603,
+  "height_px": 947
+ },
+ {
+  "slug": "p_wpa_september_books",
+  "title": "September: back to work, back to school, back to books",
+  "source": "Illinois WPA Art Project, Chicago, 1940 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .D63, no. 2, https://www.loc.gov/pictures/item/98509757/ (the film-copy border trimmed)",
+  "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
+  "width_px": 619,
+  "height_px": 969
+ },
+ {
+  "slug": "p_wpa_january_reading",
+  "title": "January: a year of good reading ahead",
+  "source": "Illinois WPA Art Project, Chicago, for the Statewide WPA Library Project, between 1936 and 1941 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .H385, no. 2, https://www.loc.gov/pictures/item/98510133/ (the film-copy border trimmed)",
+  "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
+  "width_px": 624,
+  "height_px": 974
+ },
+ {
+  "slug": "p_wpa_october_read",
+  "title": "October's \"bright blue weather\": a good time to read!",
+  "source": "Albert M. Bender for the Illinois WPA Art Project, Chicago, between 1936 and 1940 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .B46, no. 5, https://www.loc.gov/pictures/item/98509532/ (the film-copy border trimmed)",
+  "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
+  "width_px": 518,
+  "height_px": 816
+ },
+ {
+  "slug": "p_wpa_knowledge_library",
+  "title": "For greater knowledge on more subjects, use your library often!",
+  "source": "Illinois WPA Art Project, Chicago, 1940 (silkscreen poster, after Rodin's Thinker); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .D63, no. 1, https://www.loc.gov/pictures/item/98509756/ (the film-copy border trimmed)",
+  "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
+  "width_px": 621,
+  "height_px": 965
+ },
+ {
+  "slug": "p_wpa_ignorant_subjects",
+  "title": "We are all ignorant on some subjects: what is yours?",
+  "source": "Fred Rentschler for the Federal Art Project, WPA, Ohio, 1938 (silkscreen poster for the Federal adult schools); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - OH .R458, no. 4, https://www.loc.gov/pictures/item/98517063/ (the film-copy border trimmed)",
+  "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
+  "width_px": 604,
+  "height_px": 941
+ },
+ {
+  "slug": "p_wpa_library_parkway",
+  "title": "Young and old: visit the library on the Parkway",
+  "source": "Nathan Sherman for the Federal Art Project, WPA, Pennsylvania, 1936 or 1937 (silkscreen poster for the Free Library of Philadelphia); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - PA .S56, no. 3, https://www.loc.gov/pictures/item/98518436/ (the film-copy border trimmed)",
+  "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
+  "width_px": 625,
+  "height_px": 759
+ },
+ {
+  "slug": "p_wpa_keeping_up_science",
+  "title": "Keeping up with science",
+  "source": "Shari Weisberg for the Federal Art Project, WPA, Illinois, between 1936 and 1939 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .W43, no. 2, https://www.loc.gov/pictures/item/98518267/ (the film-copy border trimmed)",
+  "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
+  "width_px": 669,
+  "height_px": 999
+ },
+ {
+  "slug": "p_cheret_librairie_sagot",
+  "title": "Librairie Ed. Sagot: Affiches, Estampes",
+  "source": "Jules Chéret, 1891 (colour lithograph poster for Edmond Sagot's book and print shop, Paris); The Cleveland Museum of Art, accession 1976.1072, https://clevelandart.org/art/1976.1072",
+  "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
+  "width_px": 427,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_solis_seven_liberal_arts",
+  "title": "The Seven Liberal Arts",
+  "source": "Virgil Solis, between 1530 and 1562 (engraving); The Cleveland Museum of Art, accession 1924.680, https://clevelandart.org/art/1924.680",
+  "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
+  "width_px": 1200,
+  "height_px": 357
+ },
+ {
+  "slug": "p_haeckel_orchids",
+  "title": "Orchidae (orchids), plate 74 of Kunstformen der Natur",
+  "source": "Ernst Haeckel, lithographed by Adolf Giltsch; Kunstformen der Natur (Leipzig and Vienna: Bibliographisches Institut, 1904), plate 74; scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Haeckel_Orchidae.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 852,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_haeckel_hummingbirds",
+  "title": "Trochilidae (hummingbirds), plate 99 of Kunstformen der Natur",
+  "source": "Ernst Haeckel, lithographed by Adolf Giltsch; Kunstformen der Natur (Leipzig and Vienna: Bibliographisches Institut, 1904), plate 99; scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Haeckel_Trochilidae.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 856,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_haeckel_jellyfish",
+  "title": "Discomedusae (jellyfish), plate 8 of Kunstformen der Natur",
+  "source": "Ernst Haeckel, lithographed by Adolf Giltsch; Kunstformen der Natur (Leipzig and Vienna: Bibliographisches Institut, 1904), plate 8; scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Haeckel_Discomedusae_8.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 837,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_kohler_coffee",
+  "title": "Coffea arabica (coffee), from Köhler's Medizinal-Pflanzen",
+  "source": "Köhler's Medizinal-Pflanzen in naturgetreuen Abbildungen (Gera-Untermhaus: Fr. Eugen Köhler, 1887-98), chromolithograph; scan by Kurt Stüber, Max-Planck-Institut für Züchtungsforschung, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Coffea_arabica_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-189.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 870,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_kohler_poppy",
+  "title": "Papaver somniferum (opium poppy), plate 37 of Köhler's Medizinal-Pflanzen",
+  "source": "Köhler's Medizinal-Pflanzen in naturgetreuen Abbildungen (Gera-Untermhaus: Fr. Eugen Köhler, 1887), plate 37; Biodiversity Heritage Library, https://www.biodiversitylibrary.org/pageimage/303636 (via Wikimedia Commons)",
+  "licence": "Public domain (by age; Biodiversity Heritage Library scan)",
+  "width_px": 881,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_redoute_lily",
+  "title": "Lilium pomponium (turban lily), plate 7 of Les Liliacées",
+  "source": "Pierre-Joseph Redouté, engraved by De Gouy; Les Liliacées (Paris, 1802-16), stipple engraving printed in colour and finished by hand; The Cleveland Museum of Art, accession 2020.164, https://clevelandart.org/art/2020.164",
+  "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
+  "width_px": 824,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_redoute_rose",
+  "title": "Rosa indica vulgaris (China or Bengal rose), from Les Roses",
+  "source": "Pierre-Joseph Redouté, engraved by Bessin; Les Roses (Paris, 1817-24), stipple engraving printed in colour and finished by hand; The Cleveland Museum of Art, accession 1943.138, https://clevelandart.org/art/1943.138",
+  "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
+  "width_px": 887,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_curtis_cape_lily",
+  "title": "White Cape-coast lily, from Curtis's Botanical Magazine",
+  "source": "Sydenham Edwards for The Botanical Magazine, or Flower-Garden Displayed (London, 1806), hand-coloured engraving (a fold-out plate); The Cleveland Museum of Art, accession 1955.142, https://clevelandart.org/art/1955.142",
+  "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
+  "width_px": 1200,
+  "height_px": 972
+ },
+ {
+  "slug": "p_audubon_flamingo",
+  "title": "American Flamingo, plate 431 of The Birds of America",
+  "source": "John James Audubon, engraved and coloured by Robert Havell, London, 1838 (The Birds of America, double elephant folio); copy of the University of Pittsburgh Library System, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:431_American_Flamingo.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 838,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_mendeleev_1869",
+  "title": "An attempt at a system of the elements (Opyt sistemy elementov), 1869",
+  "source": "D. I. Mendeleev, single printed sheet, St Petersburg, 17 February (1 March) 1869: the first periodic table; reproduction via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Periyodik_Tablo_1_Mart_1869.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 976,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_spectra_stars",
+  "title": "Spectra of the Sun and stars",
+  "source": "Colour process print, London: Cassell & Company, late 19th century (plate XIII); Wellcome Collection, London, no. 47496i, https://wellcomecollection.org/works/sp3v2s2s",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 1200,
+  "height_px": 692
+ },
+ {
+  "slug": "p_spectra_flames",
+  "title": "Spectra of various substances",
+  "source": "R. H. Digeon, colour print, Paris, c. 1868 (plate IV of Les phénomènes de la physique); Wellcome Collection, London, no. 47054i, https://wellcomecollection.org/works/g62v5g5r",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 1200,
+  "height_px": 800
+ },
+ {
+  "slug": "p_optics_reflection",
+  "title": "Optics: reflection and inflection of light",
+  "source": "J. Pass, engraving coloured by hand, London, 1819 (plate I of an encyclopaedia's article on Optics); Wellcome Collection, London, no. 47045i, https://wellcomecollection.org/works/tbj3bxbu",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 915,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_optics_allegory",
+  "title": "Optics: an eye in a star of the colours",
+  "source": "J. Chapman after A. D. Macquin, engraving coloured by hand, London: G. Jones, January 1820 (the allegorical plate to an encyclopaedia's article on Optics); Wellcome Collection, London, no. 25681i, https://wellcomecollection.org/works/c8ws28pa",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 918,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_theory_of_seasons",
+  "title": "The Theory of the Seasons and Signs of the Zodiac",
+  "source": "John Emslie, engraving coloured by hand, London: James Reynolds, 174 Strand, 1851; Wellcome Collection, London, no. 46553i, https://wellcomecollection.org/works/cuq9r6wn",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 1200,
+  "height_px": 925
+ },
+ {
+  "slug": "p_earth_annual_revolution",
+  "title": "The Earth's Annual Revolution round the Sun",
+  "source": "John Emslie, engraving coloured by hand, London: James Reynolds, 174 Strand, 1851; Wellcome Collection, London, no. 46552i, https://wellcomecollection.org/works/yg3zd78u",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 1200,
+  "height_px": 956
+ },
+ {
+  "slug": "p_plan_solar_system",
+  "title": "A Plan of the Solar System, exhibiting its relative magnitudes and distances",
+  "source": "Engraved by Seale, London, 18th century; Wellcome Collection, London, no. 46217i, https://wellcomecollection.org/works/kgm2vwt2",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 1200,
+  "height_px": 942
+ },
+ {
+  "slug": "p_cellarius_copernican",
+  "title": "Planisphaerium Copernicanum: the system of the world after Copernicus",
+  "source": "From Andreas Cellarius, Harmonia Macrocosmica (Amsterdam: Johannes Janssonius, 1660), engraving; Rijksmuseum, Amsterdam, RP-P-AO-29-1-6, http://hdl.handle.net/10934/RM0001.COLLECT.702215 (via Wikimedia Commons)",
+  "licence": "CC0 1.0 (Rijksmuseum open data)",
+  "width_px": 1200,
+  "height_px": 1018
+ },
+ {
+  "slug": "p_trouvelot_saturn",
+  "title": "The Planet Saturn, 1874",
+  "source": "Étienne Léopold Trouvelot, chromolithograph, from The Trouvelot Astronomical Drawings (New York: Charles Scribner's Sons, 1881-82); The New York Public Library, Rare Book Division, digital id TROUVELOT_010 (via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Trouvelot_-_The_planet_Saturn_-_1874.jpg)",
+  "licence": "Public domain (by age; The New York Public Library marks it free to use without restriction)",
+  "width_px": 1200,
+  "height_px": 938
+ },
+ {
+  "slug": "p_chymie_table_des_rapports",
+  "title": "Chymie: Laboratoire et Table des Rapports",
+  "source": "Engraved by Robert Bénard for the Encyclopédie of Diderot and d'Alembert, Recueil de planches (Paris, 1763); Wellcome Collection, London, no. 47851i, https://wellcomecollection.org/works/qs8kztwu",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 1200,
+  "height_px": 802
+ },
+ {
+  "slug": "p_byrne_euclid_pythagoras",
+  "title": "Euclid, Book I, Proposition 47 (the theorem of Pythagoras), in Byrne's colours",
+  "source": "Oliver Byrne, The First Six Books of the Elements of Euclid, in which coloured diagrams and symbols are used instead of letters (London: William Pickering, 1847), the two pages of I.47 set side by side; scan by Mirko Junge via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Byrne_1847_Pythagoras_Querformat.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 1200,
+  "height_px": 814
+ },
+ {
+  "slug": "p_lovelace_note_g",
+  "title": "Diagram for the computation by the Engine of the Numbers of Bernoulli",
+  "source": "Ada Lovelace, Note G to her translation of L. F. Menabrea, Sketch of the Analytical Engine invented by Charles Babbage, in Taylor's Scientific Memoirs, vol. 3 (London, 1843), folding table; photograph via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Diagram_for_the_computation_of_Bernoulli_numbers.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 1200,
+  "height_px": 840
+ },
+ {
+  "slug": "p_babbage_analytical_engine_plan",
+  "title": "The General Plan of Mr. Babbage's Great Calculating Engine (Plan 25, 6 August 1840)",
+  "source": "Charles Babbage, plan of the Analytical Engine, 6 August 1840 (a lithographed copy, shown at the Computer History Museum); photograph by ArnoldReinhold, Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Babbage_Analytical_Engine_Plan_1840_CHM.agr.jpg (trimmed)",
+  "licence": "CC BY 4.0 (photograph (c) ArnoldReinhold, https://creativecommons.org/licenses/by/4.0/; the plan itself is in the public domain)",
+  "width_px": 1200,
+  "height_px": 817
+ },
+ {
+  "slug": "p_jacquard_loom",
+  "title": "Smith Brothers' patent Jacquard loom",
+  "source": "Engraving, c. 1862 (lettered: Smith Brothers patent Jacquard loom, obtained the prize medal 1862); Wellcome Collection, London, no. 43865i, https://wellcomecollection.org/works/rrqs9wgs",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 820,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_pascal_machine_arithmetique",
+  "title": "Machine arithmétique de Pascal",
+  "source": "Engraved by Robert Bénard for the Encyclopédie of Diderot and d'Alembert, Recueil de planches: Mathématiques, Algèbre, plate 2 (Paris, 1767); Wellcome Collection, London, no. 47855i, https://wellcomecollection.org/works/g3kp5a89",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 841,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_durer_melencolia",
+  "title": "Melencolia I",
+  "source": "Albrecht Dürer, 1514 (engraving); The Cleveland Museum of Art, accession 1926.211, https://clevelandart.org/art/1926.211",
+  "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
+  "width_px": 950,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_cajal_retina",
+  "title": "The retina of vertebrates: cells stained by the Golgi method (plate III)",
+  "source": "Santiago Ramón y Cajal, Die Retina der Wirbelthiere, translated and arranged by Richard Greeff (Wiesbaden: J. F. Bergmann, 1894), plate III; Wellcome Collection, London, https://wellcomecollection.org/works/jubhkcy7",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 1200,
+  "height_px": 967
+ },
+ {
+  "slug": "p_cajal_nerve_cells",
+  "title": "Nerve cells and their fibres, drawn in ink",
+  "source": "Santiago Ramón y Cajal, ink drawing, c. 1900 (Instituto Cajal, Madrid; the museum stamp shows at the right); reproduction via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Santiago_Ramon_y_Cajal_nerve_cells_in_the_brain.jpg",
+  "licence": "Public domain (the artist died in 1934); the reproduction's own source is a newspaper feature",
+  "width_px": 1200,
+  "height_px": 792
+ },
+ {
+  "slug": "p_vesalius_brain",
+  "title": "The base of the brain, from De humani corporis fabrica",
+  "source": "Andreas Vesalius, De humani corporis fabrica (Basel: Johannes Oporinus, 1543), Book VII, woodcut; copy of the Universitätsbibliothek Basel, e-rara, https://www.e-rara.ch/bau_1/content/zoom/6299471 (via Wikimedia Commons)",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 1072,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_vesalius_title_page",
+  "title": "Vesalius teaching at a public dissection: title page of the Fabrica",
+  "source": "Andreas Vesalius, De humani corporis fabrica (Basel: Johannes Oporinus, June 1543), woodcut title page; Wellcome Collection, London, no. 24285i, https://wellcomecollection.org/works/f3ucftum",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 842,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_phrenology_symbolical_head",
+  "title": "Symbolical Head and Phrenological Chart, by Drs Gall and Spurzheim",
+  "source": "Wood engraving with letterpress, c. 1845, after O. S. Fowler (?); Wellcome Collection, London, no. 27755i, https://wellcomecollection.org/works/e8yefcpj",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 708,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_descartes_lhomme",
+  "title": "How seeing guides the hand: a figure from L'Homme de René Descartes",
+  "source": "L'Homme de René Descartes (Paris, 1664), woodcut figure of the eyes, the pineal gland and the pointing arm, with its text; Bibliothèque nationale de France (Gallica), via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Figure_33_de_L%27Homme.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 897,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_istomin_primer_az",
+  "title": "The letter A (Az), from Karion Istomin's illustrated primer",
+  "source": "Karion Istomin, Bukvar' (Primer), engraved throughout by Leonty Bunin, Moscow, 1694; reproduction via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Karion_Istomin%27s_alphabet_A.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 768,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_lubok_birds_of_paradise",
+  "title": "Birds of Paradise and the Lyre-tailed Menura (Raiskiya ptitsy; Lirokhvosty menyur): a Russian popular print",
+  "source": "Lubok (popular print, lithographed and coloured by hand), lithography of I. Golyshev, Golyshevka, Russia, 1870s (dated 1879 on its file page); reproduced from Lubok (Leningrad: Aurora, 1984), via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Birds_of_Paradise_Russian_copperplate.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 871,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_cary_russian_empire_1799",
+  "title": "A New Map of the Russian Empire, Divided into its Governments",
+  "source": "John Cary, London, 1799 (two sheets, engraved and coloured in outline, from Cary's New Universal Atlas); image from Geographicus Rare Antique Maps via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:1799_Cary_Map_of_the_Russian_Empire_-_Geographicus_-_Russia-cary-1799.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 1200,
+  "height_px": 532
+ },
+ {
+  "slug": "p_shepherd_growth_of_russia",
+  "title": "The Growth of Russia in Europe, 1300-1796",
+  "source": "William R. Shepherd, Historical Atlas (New York: Henry Holt, 1911), pp. 138-139; scan from the Perry-Castañeda Library Map Collection, University of Texas at Austin, https://maps.lib.utexas.edu/maps/historical/shepherd_1911/shepherd-c-138-139.jpg",
+  "licence": "Public domain (published in the United States in 1911)",
+  "width_px": 964,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_schleicher_language_tree",
+  "title": "The family tree of the Indo-European languages",
+  "source": "August Schleicher, Compendium der vergleichenden Grammatik der indogermanischen Sprachen (Weimar: Hermann Böhlau, 1861); scan from the Internet Archive via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Schleicher_Tree.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 1200,
+  "height_px": 770
+ },
+ {
+  "slug": "p_encyclopedie_alphabets",
+  "title": "Alphabets anciens et modernes: Grantha and Old Persian",
+  "source": "Encyclopédie of Diderot and d'Alembert, Recueil de planches, vol. 2 (Paris, 1763), Caractères et Alphabets; Bibliothèque nationale de France (Gallica), via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Encyclopedie_volume_2-183.png",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 887,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_virgil_aeneid_1502",
+  "title": "Aeneid, Book VIII: a page of the Strasbourg Virgil of 1502",
+  "source": "Publii Virgilii Maronis Opera, edited by Sebastian Brant (Strasbourg: Johann Grüninger, 1502), woodcut and text with commentary; via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Opera_Book_8_woodcut_1502.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 767,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_wettinger_gradual_leaf",
+  "title": "Leaf from the Wettinger Gradual: initial I with scenes from the life of St Augustine",
+  "source": "Second Master of the Wettinger Gradual (German), c. 1330; ink, tempera and gold on parchment; The Cleveland Museum of Art, accession 1949.203, https://clevelandart.org/art/1949.203",
+  "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
+  "width_px": 811,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_shepherd_expansion_of_rome",
+  "title": "Territorial Expansion of Rome",
+  "source": "William R. Shepherd, Historical Atlas (New York: Henry Holt, 1911), pp. 34-35; scan from the Perry-Castañeda Library Map Collection, University of Texas at Austin, https://maps.lib.utexas.edu/maps/historical/shepherd_1911/shepherd-c-034-035.jpg",
+  "licence": "Public domain (published in the United States in 1911)",
+  "width_px": 1200,
+  "height_px": 963
+ },
+ {
+  "slug": "p_raphael_school_of_athens",
+  "title": "The School of Athens",
+  "source": "Raphael, fresco, 1509-11, Stanza della Segnatura, Vatican Palace; photograph assembled from vatican.va, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:%22The_School_of_Athens%22_by_Raffaello_Sanzio_da_Urbino.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 1200,
+  "height_px": 931
+ },
+ {
+  "slug": "p_shepherd_plans_rome_athens",
+  "title": "Plans of Imperial Rome, Republican Rome, Athens and the Acropolis",
+  "source": "William R. Shepherd, Historical Atlas (New York: Henry Holt, 1911), pp. 22-23; scan from the Perry-Castañeda Library Map Collection, University of Texas at Austin, https://maps.lib.utexas.edu/maps/historical/shepherd_1911/shepherd-c-022-023.jpg",
+  "licence": "Public domain (published in the United States in 1911)",
+  "width_px": 963,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_shepherd_ancient_greece",
+  "title": "Reference Map of Ancient Greece: Southern Part",
+  "source": "William R. Shepherd, Historical Atlas (New York: Henry Holt, 1911), pp. 14-15; scan from the Perry-Castañeda Library Map Collection, University of Texas at Austin, https://maps.lib.utexas.edu/maps/historical/shepherd_1911/shepherd-c-014-015.jpg",
+  "licence": "Public domain (published in the United States in 1911)",
+  "width_px": 1200,
+  "height_px": 962
+ },
+ {
+  "slug": "p_attic_amphora",
+  "title": "Attic black-figure amphora: Dionysos among satyrs",
+  "source": "The Bateman Group, attributed to the Lysippides Painter, Athens, c. 530-520 BC; ceramic, 49.5 cm high (museum photograph); The Cleveland Museum of Art, accession 1927.433, https://clevelandart.org/art/1927.433",
+  "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
+  "width_px": 751,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_piranesi_pantheon",
+  "title": "Veduta del Pantheon d'Agrippa, from the Vedute di Roma",
+  "source": "Giovanni Battista Piranesi, 1761 (etching and engraving); The Cleveland Museum of Art, accession 1922.5, https://clevelandart.org/art/1922.5",
+  "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
+  "width_px": 1200,
+  "height_px": 834
+ },
+ {
+  "slug": "p_wpa_see_america_parks",
+  "title": "See America: visit the national parks",
+  "source": "Harry Herzog for the NYC Art Project, WPA, for the United States Travel Bureau, between 1936 and 1940 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - NY .H47, no. 13, https://www.loc.gov/pictures/item/98518589/ (the film-copy border trimmed)",
+  "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
+  "width_px": 609,
+  "height_px": 783
+ },
+ {
+  "slug": "p_uranias_mirror_taurus",
+  "title": "Taurus, from Urania's Mirror",
+  "source": "Engraved by Sidney Hall, London: Samuel Leigh, 1825 (one of a boxed set of constellation cards); Library of Congress, Prints and Photographs Division, digital id cph.3g10065; restored copy via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Sidney_Hall_-_Urania%27s_Mirror_-_Taurus.jpg",
+  "licence": "Public domain (by age; Library of Congress: no known restrictions)",
+  "width_px": 1200,
+  "height_px": 844
+ },
+ {
+  "slug": "p_hiroshige_sudden_shower",
+  "title": "Sudden Shower over Shin-Ohashi Bridge and Atake",
+  "source": "Utagawa Hiroshige, 1857 (colour woodblock print, from One Hundred Famous Views of Edo); The Cleveland Museum of Art, accession 1921.318, https://clevelandart.org/art/1921.318",
+  "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
+  "width_px": 806,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_haeckel_radiolaria_cyrtoidea",
+  "title": "Cyrtoidea (radiolarians), plate 31 of Kunstformen der Natur",
+  "source": "Ernst Haeckel, lithographed by Adolf Giltsch; Kunstformen der Natur (Leipzig and Vienna: Bibliographisches Institut, 1904), plate 31: Cyrtoidea; scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Haeckel_Cyrtoidea.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 847,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_haeckel_radiolaria_stephoidea",
+  "title": "Stephoidea (radiolarians), plate 71 of Kunstformen der Natur",
+  "source": "Ernst Haeckel, lithographed by Adolf Giltsch; Kunstformen der Natur (Leipzig and Vienna: Bibliographisches Institut, 1904), plate 71: Stephoidea; scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Haeckel_Stephoidea.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 846,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_haeckel_diatoms",
+  "title": "Diatomea (diatoms), plate 4 of Kunstformen der Natur",
+  "source": "Ernst Haeckel, lithographed by Adolf Giltsch; Kunstformen der Natur (Leipzig and Vienna: Bibliographisches Institut, 1904), plate 4: Diatomea; scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Haeckel_Diatomea_4.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 846,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_hooke_cork_cells",
+  "title": "Cork under the microscope: the first 'cells' (Micrographia, Schem. XI)",
+  "source": "Robert Hooke, Micrographia: or some physiological descriptions of minute bodies made by magnifying glasses (London: J. Martyn and J. Allestry, 1665), Schem. XI; Wellcome Collection, London, https://wellcomecollection.org/works/y5tm56u5",
+  "licence": "CC BY 4.0 (credit: Wellcome Collection, https://creativecommons.org/licenses/by/4.0/; the engraving itself is in the public domain)",
+  "width_px": 834,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_hooke_seeds",
+  "title": "Seeds under the microscope, netted with polygons (Micrographia, Schem. XIX)",
+  "source": "Robert Hooke, Micrographia: or some physiological descriptions of minute bodies made by magnifying glasses (London: J. Martyn and J. Allestry, 1665), Schem. XIX; Wellcome Collection, London, https://wellcomecollection.org/works/ru2ass77",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 784,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_hooke_flea",
+  "title": "The flea (Micrographia, Schem. XXXIV)",
+  "source": "Robert Hooke, Micrographia: or some physiological descriptions of minute bodies made by magnifying glasses (London: J. Martyn and J. Allestry, 1665), Schem. XXXIV, a folding plate; Wellcome Collection, London, https://wellcomecollection.org/works/ajveb66y",
+  "licence": "CC BY 4.0 (credit: Wellcome Collection, https://creativecommons.org/licenses/by/4.0/; the engraving itself is in the public domain)",
+  "width_px": 1200,
+  "height_px": 927
+ },
+ {
+  "slug": "p_termites_forms",
+  "title": "Termes: the forms of the termite, labourers, soldiers, male and queen",
+  "source": "Etching by Moses Griffith, London (Fleet Street): G. Kearsley, 1 October 1805; Wellcome Collection, London, https://wellcomecollection.org/works/he9ujyx8",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 735,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_orsted_sound_figures",
+  "title": "Sound figures (Klangfigurer) on vibrating plates",
+  "source": "Hans Christian Ørsted, Forsög over Klangfigurerne, in Det kongelige danske Videnskabernes Selskabs Skrivter for 1807 og 1808, vol. 5 (Copenhagen, 1810), plate II; scan by the Royal Danish Academy of Sciences and Letters, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Hans_Christian_%C3%98rsted_Fors%C3%B6g_over_Klangfigurerne_Tab_2.png",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 846,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_bentley_snow_crystal_stellar",
+  "title": "Snow crystal (a stellar dendrite)",
+  "source": "Wilson A. Bentley, photomicrograph, Jericho, Vermont, c. 1910; The Metropolitan Museum of Art, New York (Open Access; image DT259027), via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:-Snow_Crystal-_MET_DT259027.jpg",
+  "licence": "Public domain (Met Open Access, CC0)",
+  "width_px": 1008,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_bentley_snow_crystal_plate",
+  "title": "Snow crystal (a hexagonal plate)",
+  "source": "Wilson A. Bentley, photomicrograph, Jericho, Vermont, 1890s; The Metropolitan Museum of Art, New York (Open Access; image DP351879), via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:-Snow_Crystal-_MET_DP351879.jpg",
+  "licence": "Public domain (Met Open Access, CC0)",
+  "width_px": 1200,
+  "height_px": 928
+ },
+ {
+  "slug": "p_kelvin_tide_predictor",
+  "title": "Sir William Thomson's third tide-predicting machine: design drawing",
+  "source": "William Thomson (Lord Kelvin), design of 1879-81, as published in Minutes of Proceedings of the Institution of Civil Engineers, vol. 65 (1881); scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:099-tpm3-sk.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 1200,
+  "height_px": 1161
+ },
+ {
+  "slug": "p_kepler_nested_solids",
+  "title": "The planetary spheres nested in the five regular solids (Mysterium Cosmographicum)",
+  "source": "Johannes Kepler, Prodromus dissertationum cosmographicarum, continens Mysterium cosmographicum (Tübingen, 1596), folding plate engraved by Christoph Leibfried, dated 1597; copy of the L. Tom Perry Special Collections, Harold B. Lee Library, Brigham Young University, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Kepler_Platonic_Solids.tif",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 1129,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_leonardo_icosahedron",
+  "title": "Icosaedron elevatum solidum: a stellated icosahedron after Leonardo",
+  "source": "Woodcut after Leonardo da Vinci, in Luca Pacioli, Divina proportione (Venice: Paganino Paganini, 1509); Internet Archive scan divinaproportion00paci, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:De_divina_proportione_-_Icosaedron_Elevatum_Solidum.jpg",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 1200,
+  "height_px": 1181
+ },
+ {
+  "slug": "p_jacquard_woven_portrait",
+  "title": "À la mémoire de J. M. Jacquard: a portrait woven in silk",
+  "source": "Woven by Didier Petit et Cie, Lyon, 1839, after the painting by Claude Bonnefond (silk, woven on a Jacquard loom); Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/2002737214/ (via Wikimedia Commons)",
+  "licence": "No known restrictions on publication (Library of Congress); public domain by age",
+  "width_px": 837,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_mark_i_perceptron",
+  "title": "The Mark I Perceptron being shown the letter C",
+  "source": "U.S. Navy photograph, c. 1960 (released with the announcement of the Mark I Perceptron, built at Cornell Aeronautical Laboratory, Buffalo, under Frank Rosenblatt); National Archives, 330-PSA-80-60 (USN 710739), via the National Museum of the U.S. Navy and Wikimedia Commons, https://commons.wikimedia.org/wiki/File:330-PSA-80-60_(USN_710739)_(20897323365).jpg",
+  "licence": "Public domain (a work of the U.S. Government: U.S. Navy photograph)",
+  "width_px": 1200,
+  "height_px": 939
+ },
+ {
+  "slug": "p_golgi_pyramidal_cells",
+  "title": "Nerve cells of the hippocampus, stained black (plate XIII)",
+  "source": "Camillo Golgi, Sulla fina anatomia degli organi centrali del sistema nervoso (Reggio Emilia: S. Calderini e Figlio, 1885), plate XIII; reproduction via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Golgi_1885_Plate_XIII.JPG",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 916,
+  "height_px": 1200
+ },
+ {
+  "slug": "p_golgi_hippocampus",
+  "title": "Section through the hippocampus (plate XX)",
+  "source": "Camillo Golgi, Sulla fina anatomia degli organi centrali del sistema nervoso (Reggio Emilia: S. Calderini e Figlio, 1885), plate XX; reproduction via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Golgi_1885_Plate_XX.JPG",
+  "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
+  "width_px": 1200,
+  "height_px": 907
+ },
+ {
+  "slug": "p_galvani_frogs",
+  "title": "Experiments on animal electricity (Tab. II)",
+  "source": "Luigi Galvani, De viribus electricitatis in motu musculari commentarius, with Giovanni Aldini's dissertation and notes (Modena: Società Tipografica, 1792), folding plate II; Wellcome Collection, London, https://wellcomecollection.org/works/rnbddkf5",
+  "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
+  "width_px": 1200,
+  "height_px": 885
+ },
+ {
+  "slug": "p_poincare_portrait",
+  "title": "Henri Poincaré (1854-1912), with his signature",
+  "source": "Unidentified photographer, before 1912; Smithsonian Institution Libraries, Dibner Library of the History of Science and Technology (Scientific Identity: Portraits from the Dibner Library), via Wikimedia Commons, File:Portrait of Henri Poincaré (1854-1912), Mathematician (2551042945).jpg",
+  "licence": "No known copyright restrictions (Smithsonian Institution, Flickr Commons)",
+  "width_px": 721,
+  "height_px": 900
+ },
+ {
+  "slug": "p_signal_service_weather_1888",
+  "title": "Daily weather map, 20 August 1888: a hurricane coming ashore in Louisiana (detail)",
+  "source": "United States Army Signal Service, 1888; NOAA Central Library, U.S. Daily Weather Maps, https://library.noaa.gov/weather-climate/daily-weather-maps, via Wikimedia Commons, File:1888 August 20 weather map 1.jpg",
+  "licence": "Public domain (a work of the U.S. Government)",
+  "width_px": 777,
+  "height_px": 700
+ }
+]
