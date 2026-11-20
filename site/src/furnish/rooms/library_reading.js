@@ -410,14 +410,13 @@ export default function (f) {
   // =================================================================================================================
   {
     const SC = 0.8, m = N.sub(-94.2, 0.72, 3.6, 0), T = D.T;
-    f.model('imac_g3_tangerine', m, 0, 0, 0, 0, { turn: Math.PI / 2, scale: SC });
-    f.sign(m, 0.18 * SC, 0.79 * SC, 0.94 * SC, 0.7 * SC, (g, W, H) => {
+    f.computer('imac_g3_tangerine', m, (g, W, H) => {      // (the picture is on the tube's own glass, as the house's iMac: it was a card standing in front of it)
       g.fillStyle = '#dfe6ea'; g.fillRect(0, 0, W, H); g.fillStyle = '#33445a'; g.fillRect(0, 0, W, H * 0.13); T(g, 'HOFSTADTER LIBRARY  ·  CATALOG', W / 2, H * 0.07, H * 0.062, '#f1ece0', { ls: 1 });
       g.fillStyle = '#ffffff'; g.fillRect(W * 0.06, H * 0.19, W * 0.66, H * 0.11); g.strokeStyle = '#33445a'; g.lineWidth = 2; g.strokeRect(W * 0.06, H * 0.19, W * 0.66, H * 0.11); T(g, 'analogy|', W * 0.08, H * 0.248, H * 0.068, '#1d1a17', { a: 'left' });
       g.fillStyle = '#33445a'; g.fillRect(W * 0.75, H * 0.19, W * 0.19, H * 0.11); T(g, 'Search', W * 0.845, H * 0.248, H * 0.06, '#f1ece0');
       T(g, 'Results', W * 0.06, H * 0.365, H * 0.045, '#5b6570', { a: 'left', it: true });
       [['Hofstadter, D. R., and E. Sander', 'Surfaces and Essences'], ['Hofstadter, Douglas R.', 'Fluid Concepts and Creative Analogies'], ['Pólya, George', 'Mathematics and Plausible Reasoning'], ['Mitchell, Melanie', 'Analogy-Making as Perception']].forEach(([au, ti], i) => { const y = H * (0.45 + i * 0.135); T(g, au, W * 0.06, y, H * 0.05, '#5b6570', { a: 'left' }); T(g, ti, W * 0.06, y + H * 0.06, H * 0.062, '#1b3a6a', { a: 'left', max: W * 0.88 }); });
-    }, { y: 0.47 * SC, res: 420, rough: 0.3 });
+    }, { scale: SC });
     f.label(m, 0, 0.7, 0.6, { label: 'look at the catalog', note: 'The catalog, on a tangerine computer older than most of the doctoral school. Somebody has searched for “analogy”.' });
   }
 

@@ -36,7 +36,7 @@ the trees, the island, the sky.
     by isabelle123, from Trimble 3D Warehouse
     (https://3dwarehouse.sketchup.com/model/78b88a1bb2a9faf1e4b68d3b17c43658/iMac-G3), used under the 3D Warehouse
     Terms of Use as one part of this larger work; the copy prepared for Anna's House (my_house assets/models/imac_g3),
-    recoloured to blueberry and to tangerine and flattened to one mesh with vertex colours. The model is its author's;
+    recoloured to blueberry and to tangerine (its materials kept apart, so that the catalog is drawn on the tube's own glass). The model is its author's;
     iMac is a trademark of Apple Inc., with which this laboratory has no connection.
   - `chess_set`: chess board with a full set of pieces. CC0 (Poly Haven), https://polyhaven.com/a/chess_set.
     The chess rules and the opponent's play (src/chess_rules.js) were written for Anna's House.
@@ -286,6 +286,13 @@ the trees, the island, the sky.
     instead of letters (London: William Pickering, 1847), the two pages of I.47 set side by side; scan by Mirko
     Junge via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Byrne_1847_Pythagoras_Querformat.jpg.
     Public domain (by age; a faithful reproduction of a two-dimensional work).
+  - `p_muybridge_horse_in_motion_1878`: The Horse in Motion: "Sallie Gardner," owned by Leland Stanford, running at a
+    1:40 gait over the Palo Alto track, 19th June 1878. Eadweard Muybridge, albumen print on card (Morse's Gallery, San
+    Francisco, 1878); Library of Congress, Prints and Photographs Division, LOT 3081, https://www.loc.gov/item/97502309/.
+    Public domain (the Library: no known restrictions on publication).
+  - `p_mandeville_fable_of_the_bees_1725`: The Fable of the Bees: or, Private Vices, Publick Benefits, the fourth
+    edition's title page. Bernard Mandeville (London: printed for J. Tonson, 1725); Wellcome Collection, London,
+    https://wellcomecollection.org/works/jv2hn9s5. Public domain (Public Domain Mark; Wellcome Collection).
   - `p_lovelace_note_g`: Diagram for the computation by the Engine of the Numbers of Bernoulli. Ada Lovelace, Note G
     to her translation of L. F. Menabrea, Sketch of the Analytical Engine invented by Charles Babbage, in Taylor's
     Scientific Memoirs, vol. 3 (London, 1843), folding table; photograph via Wikimedia Commons,
@@ -304,7 +311,8 @@ the trees, the island, the sky.
     of Diderot and d'Alembert, Recueil de planches: Mathématiques, Algèbre, plate 2 (Paris, 1767); Wellcome
     Collection, London, no. 47855i, https://wellcomecollection.org/works/g3kp5a89. Public domain (Public Domain
     Mark; Wellcome Collection).
-  - `p_hollerith_tabulator_1890`: The Hollerith electric tabulating machine at the 1890 United States census.
+  - `p_hollerith_tabulator_1890`: "Electrical counting machines" at the 1890 United States census: a clerk at a
+    keyboard of dials, keying figures from the schedules (the middle vignette of the cover, not the card tabulator).
     Scientific American, 30 August 1890 (wood engraving, artist not credited); scan via Wikimedia Commons,
     https://commons.wikimedia.org/wiki/File:1890_Census_Hollerith_Electrical_Counting_Machines_Sci_Amer.jpg.
     Public domain (published in the United States in 1890).
@@ -327,6 +335,18 @@ the trees, the island, the sky.
     (Instituto Cajal, Madrid; the museum stamp shows at the right); reproduction via Wikimedia Commons,
     https://commons.wikimedia.org/wiki/File:Santiago_Ramon_y_Cajal_nerve_cells_in_the_brain.jpg. Public domain (the
     artist died in 1934); the reproduction's own source is a newspaper feature.
+  - `p_verrill_loligo_pealei`: The long-finned squid, Loligo pealei (now Doryteuthis pealeii): a plate of A. E.
+    Verrill, Report on the Cephalopods of the Northeastern Coast of America, in the Report of the U.S. Commissioner of
+    Fish and Fisheries for 1879 (Washington: G.P.O., 1882); Freshwater and Marine Image Bank, University of Washington,
+    no. 33645, via https://commons.wikimedia.org/wiki/File:FMIB_33645_Cephalopods.jpeg. Public domain (a work of the
+    U.S. Government). Hung in Room 208.
+  - `p_jastrow_duck_rabbit`: The duck-rabbit. Joseph Jastrow, "The Mind's Eye", Popular Science Monthly 54 (January
+    1899), 299-312; via https://commons.wikimedia.org/wiki/File:Duck-Rabbit_illusion.jpg. Public domain (published
+    1899; the author died in 1944). Hung in Room 208.
+  - `p_cajal_hippocampus_circuit`: The circuit of the hippocampus, with the direction of the currents marked by
+    arrows. Santiago Ramón y Cajal, Histologie du système nerveux de l'homme et des vertébrés, vols. 1 and 2 (A. Maloine,
+    Paris, 1911); scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:CajalHippocampus.jpeg. Public
+    domain (published 1911; the author died in 1934).
   - `p_vesalius_brain`: The base of the brain, from De humani corporis fabrica. Andreas Vesalius, De humani corporis
     fabrica (Basel: Johannes Oporinus, 1543), Book VII, woodcut; copy of the Universitätsbibliothek Basel, e-rara,
     https://www.e-rara.ch/bau_1/content/zoom/6299471 (via Wikimedia Commons). Public domain (by age; a faithful
@@ -533,6 +553,27 @@ the trees, the island, the sky.
     Collections Division, Printed Ephemera Collection, Portfolio 174, Folder 10, https://www.loc.gov/item/2020770848/.
     No known U.S. copyright: printed in the United States before 1930 (Library of Congress: "the Library is not aware
     of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection").
+  - `p_huygens_horologium_1673`: Christiaan Huygens, Horologium Oscillatorium (Paris: F. Muguet, 1673), title page.
+    Biblioteca Europea di Informazione e Cultura (BEIC), Milan, digital library item 869780; via Wikimedia Commons,
+    https://commons.wikimedia.org/wiki/File:Huygens_-_Horologium_oscillatorium,_sive_De_motu_pendulorum_ad_horologia_aptato_demonstrationes_geometricae,_1673_-_869780.jpeg.
+    Public domain (published 1673). Hung in Room 302.
+  - `p_bach_canones_diversi_1747`: Johann Sebastian Bach, Musicalisches Opfer (Leipzig: J. S. Bach, 1747), the page
+    "Canones diversi super Thema Regium" (Canons 1 to 5 and the Fuga canonica in Epidiapente), from a facsimile reprint of
+    the first edition: IMSLP file #984943, https://imslp.org/wiki/Musikalisches_Opfer,_BWV_1079_(Bach,_Johann_Sebastian).
+    Public domain. Hung in the Mall of the library.
+  - `p_newell_puzzle_the_end_1893`: Peter Newell, Topsys & Turvys (New York, 1893), p. 31: the word "puzzle" that reads
+    "The End" upside down (the page, and beside it the same page turned round; lithographed by the Gast Litho. & Eng. Co.).
+    Library of Congress, Rare Book and Special Collections, https://www.loc.gov/resource/rbc0001.2015juv05309/?sp=75; via
+    Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Ambigram_-_puzzle_-_the_end_-_by_Peter_Newell_1893_-_book_Topsys_and_turvys.jpg.
+    Public domain (published 1893). Hung in the Passage of the library.
+  - `p_carroll_tortoise_achilles_1895`: Lewis Carroll, "What the Tortoise Said to Achilles", Mind, new series, vol. 4,
+    no. 14 (April 1895), pp. 278-280: its first page (p. 278). Scan of the Internet Archive,
+    https://archive.org/details/sim_mind_1895-04_4_14. Public domain (published 1895). Hung in the Passage of the library.
+  - `p_weather_map_1963_10_07`: U.S. Weather Bureau, Daily Weather Map, Monday, October 7, 1963 (the surface map's
+    Gulf of Mexico sheet, with Hurricane Flora over Cuba). NOAA Central Library, Daily Weather Maps,
+    https://library.noaa.gov/weather-climate/daily-weather-maps; via Wikimedia Commons,
+    https://commons.wikimedia.org/wiki/File:Hurricane_Flora_weather_map_10-7-1963_(645921).jpg. Public domain (a
+    work of the U.S. Government). Hung in Room 302.
   - `p_harvard_quaestiones_1790`: Quaestiones sub reverendo Josepho Willard ... in comitiis publicis a laureae
     magistralis candidatis. Harvard University, Cambridge, Mass., 1790; Library of Congress, Rare Book and Special
     Collections Division, Printed Ephemera Collection, Portfolio 44, Folder 5b,

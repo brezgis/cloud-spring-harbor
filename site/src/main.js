@@ -24,6 +24,7 @@ import { makeShade } from './shade.js';
 
 import { loadFonts } from './fonts.js';
 import { makeFrameMeter } from './engine/frame.js';
+import { openStage } from './engine/stage.js';
 
 // Every label, leaf and painted stone on the island is painted on a 2D canvas and handed to the renderer as
 // a texture. Browsers keep such canvases on the graphics card unless told otherwise, and a card that is
@@ -80,7 +81,14 @@ const builder = new Builder();
 builder.zone = 'shell';                                   // a building's own fabric is always drawn (see visibility.js)
 const STAGE = {}, mark = k => { STAGE[k] = Math.round(performance.now()); };      // start-up timings, for perf.js
 mark('start');
-const house = buildCampus(builder, { only: Q.has('only') ? Q.get('only').split(',') : null, marks: Q.has('sites'), facing: Q.has('facing') ? Object.fromEntries(Q.get('facing').split(',').map(p => p.split(':'))) : null }); mark('house');
+const stage = openStage({ mark, onEarlyEnter: () => sound.start() });      // the place opens on a picture before it is furnished (engine/stage.js): the photos are counted from here
+// The furniture comes after the picture. A plain visit opens on the island seen from above, where no room can be
+// seen into: so the buildings are built bare, the island is drawn and the threshold lifts, and what stands in the
+// rooms is made behind that picture, a furnish file at a time (campus.js furnishRest), before anything else is set
+// going. Any address that asks for a particular view or test builds everything at once, as before (so does ?stream=0).
+const PLAIN = new Set(['fps', 'quality', 'time', 'stages', 'loadlog', 'welcome', 'stream', 'aa', 'lamps', 'tex', 'shadow', 'ratio']);
+const STREAM = Q.has('stream') ? Q.get('stream') !== '0' : [...Q.keys()].every(k => PLAIN.has(k));
+const house = buildCampus(builder, { defer: STREAM, only: Q.has('only') ? Q.get('only').split(',') : null, marks: Q.has('sites'), facing: Q.has('facing') ? Object.fromEntries(Q.get('facing').split(',').map(p => p.split(':'))) : null }); mark('house');
 installHouseLight(house.boxes);                                                // indoor light, patched into the shaders before anything compiles (lighting.js)
 const { surfaces, rooms, lamps, spawn, items } = house;
 const vis = makeVisibility({ rooms, portals: house.portals, footprints: house.footprints, quality: QUALITY });
@@ -101,6 +109,21 @@ mark('trees');
 buildIsland({ ISLAND, outlineAt, materials, outdoors, height: groundAt, wear: wearAt });
 
 mark('island');
+const ABOVE = [-250, 190, 250], ABOVE_AT = [10, 6, -10];      // the first view: from the south-east, over the open side of the green
+const exposure = makeExposure(Q);
+const winGlow = makeWindowGlow({ scene: outdoors, materials, windows: house.windows });
+if (house.furnishRest) {
+  camera.near = 2; camera.updateProjectionMatrix(); camera.position.set(...ABOVE); camera.lookAt(...ABOVE_AT);
+  sky.setHour(hour); setHourLight(sky.state, materials); sun.shadow.needsUpdate = true;
+  await stage.furnish(house.furnishRest(), {
+    picture: () => {
+      exposure.update(renderer, 'out', sky.state, 1, true);
+      winGlow.update(sky.state.night, true, 1 - THREE.MathUtils.smoothstep(sky.state.light, 0.42, 0.97));
+      sky.update(0, 0, camera); renderer.render(scene, camera);
+    },
+    each: step => { if (step === 'built') zoned.push(...builder.finalize(scene, materials)); },
+  });
+}
 const life = bringToLife({ scene, outdoors, vis, quality: QUALITY, renderer, camera, items, garden: null, materials, doors: house.doors, colliders: builder.colliders, onChange: () => { sun.shadow.needsUpdate = true; } });
 
 // What the parts that move and answer back are given (b.later in a building; the grounds).
@@ -123,11 +146,9 @@ import('./welcome.js').then(m => m.setupWelcome(ctx)).catch(e => console.warn('w
 // soft fills stand in for daylight bouncing round the rooms; from dusk the lamps, candles and
 // fire take over. Glows, indoor light and the window light are in lighting.js.
 const lampPool = makeLampPool({ scene, lamps, vis, size: QUALITY.lamps, day, camera });
-const winGlow = makeWindowGlow({ scene: outdoors, materials, windows: house.windows });
 const vignette = makeVignette();
 const halos = makeHalos({ scene, lamps, day });
 const shade = Q.get('shade') === '0' ? null : makeShade({ scene, rooms, colliders: builder.colliders, lampPool, camera });      // soft shade on the floor under the furniture (shade.js)
-const exposure = makeExposure(Q);
 const warmer = makeWarmer({ renderer, scene, camera, range: 60 });      // textures and shaders made ready a little ahead of the visitor (warm.js)
 
 // ---- Two ways of looking: circling outside, and walking -----------------------------
@@ -158,9 +179,8 @@ const lanternMesh = new THREE.Group();
 camera.add(lanternMesh);
 if (Q.has('lantern')) { lampPool.setLantern(true, { at: [0.62, -0.42, -1.25] }); lanternMesh.visible = true; }      // ?lantern: lit from the start (test shots)
 const orbit = new OrbitControls(camera, renderer.domElement);
-orbit.target.set(10, 6, -10); orbit.enableDamping = true; orbit.autoRotate = !matchMedia('(prefers-reduced-motion: reduce)').matches; orbit.autoRotateSpeed = 0.35;
+orbit.target.set(...ABOVE_AT); orbit.enableDamping = true; orbit.autoRotate = !matchMedia('(prefers-reduced-motion: reduce)').matches; orbit.autoRotateSpeed = 0.35;
 orbit.maxPolarAngle = Math.PI / 2 + 0.2; orbit.minDistance = 60; orbit.maxDistance = 1100;
-const ABOVE = [-250, 190, 250];                           // from the south-east, over the open side of the green
 camera.position.set(...ABOVE);
 
 if (Q.has('cam')) { camera.position.set(...Q.get('cam').split(',').map(Number)); orbit.autoRotate = false; }      // a fixed outside viewpoint, for test shots
@@ -192,7 +212,7 @@ function use() {
   if (aimed.seat) walker.sit(aimed.seat); else aimed.act();
 }
 const touch = 'ontouchstart' in window;
-$('enter').addEventListener('click', () => { walk(); sound.start(); if (!touch) renderer.domElement.requestPointerLock?.(); });
+$('enter').addEventListener('click', () => { walk(); sound.start(); if (!touch) renderer.domElement.requestPointerLock?.()?.catch?.(() => {}); });      // (refused when the press was made for the visitor a moment late: the next click on the picture asks again)
 renderer.domElement.addEventListener('click', () => {
   if (mode !== 'walk') return;
   if (!touch && document.pointerLockElement !== renderer.domElement) { renderer.domElement.requestPointerLock?.(); return; }
@@ -346,7 +366,7 @@ renderer.setAnimationLoop(() => {
 
 // ---- Measuring (perf.js): ?statsdump visits the test viewpoints and writes the numbers into the page
 let loading = 0;
-THREE.DefaultLoadingManager.onStart = () => { loading++; };
+THREE.DefaultLoadingManager.onStart = () => { loading++; stage.loading(); };
 THREE.DefaultLoadingManager.onProgress = (url, done, total) => { loading = total - done; };
 const perf = { quality: QUALITY.name, gpu: QUALITY.gpu, stages: STAGE, visTime: () => vis.visMs(), resetVisTime: () => vis.resetMs(), vis, frames: 0, items, renderer, scene, camera, setView, setHour: h => setHour(h), pending: () => loading + life.pending() };
 window.__house = perf; perf.light = { HL, lampPool, sun, exposure }; perf.campus = house; perf.walker = walker; perf.groundAt = groundAt; perf.life = life; perf.loading = () => loading; perf.colliders = builder.colliders; perf.surfaces = surfaces;      // for looking at one light at a time (tools/evaljs.sh)
@@ -375,7 +395,8 @@ perf.walkTo = (x, z, o = {}) => new Promise(done => {
 if (Q.has('statsdump')) statsDump(perf, Q.get('statsdump') || null, (Q.get('hours') ?? '13,22').split(',').map(Number));
 
 let sharpened = false;
-THREE.DefaultLoadingManager.onLoad = () => { perf.readyMs ??= Math.round(performance.now()); sun.shadow.needsUpdate = true; if (perf.frames) document.body.classList.add('ready'); window.__ready = true; markDressed(); if (!sharpened) { sharpened = true; setTimeout(() => sharpenTextures(), 2500); } };      // (the photos came at half size; now the full ones, one at a time)
+const allIn = THREE.DefaultLoadingManager.onLoad = () => { stage.loaded(); perf.readyMs ??= Math.round(performance.now()); sun.shadow.needsUpdate = true; if (perf.frames) document.body.classList.add('ready'); window.__ready = true; markDressed(); if (!sharpened) { sharpened = true; setTimeout(() => sharpenTextures(), 2500); } };      // (the photos came at half size; now the full ones, one at a time)
+if (stage.photosIn) allIn();      // (they came while the furniture was being made)
 if (Q.has('view') || Q.has('at') || Q.has('shot')) { renderer.domElement.style.transition = 'none'; document.body.classList.add('ready'); }
 if (Q.has('shot')) document.body.classList.add('shot');      // ?shot: the view from above with no invitation over it (test pictures)
 window.house = { ctx, setHour: h => { setHour(h); ctx.hourMoved = true; }, get hour() { return hour; } };
@@ -388,3 +409,4 @@ if (Q.has('keys')) for (const k of Q.get('keys').split(',')) { const [code, ms] 
 window.house.quality = { options: QUALITY_OPTIONS, get: () => storedChoice() ?? 'auto', set: v => { chooseTier(v); location.reload(); }, get current() { return QUALITY.name; } };
 
 await import('./ui.js');      // the interface reads window.house, so it comes after it
+stage.enterIfAsked();      // (Take a walk, pressed before the place was ready: engine/stage.js)

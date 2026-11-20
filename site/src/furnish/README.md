@@ -452,6 +452,11 @@ sizes, triangle counts, which way each faces and its licence, in
 `~/projects/my_house/site/assets/models/CATALOG.md` (230 of them) and the town's
 `~/projects/town_walk/site/assets/models/CATALOG.md`. The school has none until you copy one in:
 
+`f.computer(id, frame, (g, W, H) => { ... }, { scale, turn, glow })` stands a computer whose model has a glass named
+`screen...` (the iMac G3s: `imac_g3_blueberry`, `imac_g3_tangerine`) at the frame's origin and draws its picture on
+that curved glass itself, lit from within, as the house's iMac is. Do not stand an `f.sign` in front of a tube: it
+shows as a flat card floating before the glass from any angle but head on.
+
     cp -r ~/projects/my_house/site/assets/models/<id> ~/projects/school/site/assets/models/
 
 (make `site/assets/models/` if it is not there; the folder must hold `<id>.gltf`, its `.bin` and `textures/`)

@@ -378,7 +378,7 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
       mesh = new THREE.Mesh(new THREE.PlaneGeometry(e.w, e.d), new THREE.MeshStandardMaterial({ map, color: 0xb0aaa0, roughness: 1, envMapIntensity: 0.08 }));
       mesh.rotation.x = -Math.PI / 2; mesh.receiveShadow = true;
     } else {
-      map = e.canvas ? canvas(e.canvas === 'chalk' ? 1300 : 900, e.canvas === 'chalk' ? 766 : e.canvas === 'imac' ? 680 : 540, DRAW[e.canvas]) : late(`assets/art/${e.file}.jpg`, t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; });
+      map = e.canvas ? canvas(e.canvas === 'chalk' ? 1300 : 900, e.canvas === 'chalk' ? 766 : e.canvas === 'imac' || typeof e.canvas === 'function' ? 680 : 540, typeof e.canvas === 'function' ? e.canvas : DRAW[e.canvas]) :      /* (a function: a computer's own picture, f.computer) */ late(`assets/art/${e.file}.jpg`, t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; });
       if (!e.canvas) map.colorSpace = THREE.SRGBColorSpace;
       const mat = new THREE.MeshStandardMaterial({ map, roughness: e.canvas === 'chalk' ? 0.95 : 0.6, envMapIntensity: 0.15 });
       e.map = map;      // kept so that a screen can be redrawn (hands.js)

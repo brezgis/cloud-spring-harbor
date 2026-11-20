@@ -386,11 +386,11 @@ export default function (f) {
         D.T(g, a, W * 0.09, y, H * 0.048, CREAM, { a: 'left' }); D.T(g, b2, W * 0.09, y + H * 0.048, H * 0.039, '#d2cbae', { a: 'left', it: true });
       });
     }, { board: 'c#27382f/0.6', thick: 0.05, lip: 0.04 });
-    K.umbrellaStand(fr(3.5, 29.9, F, 0), 0, 0);
+    K.umbrellaStand(fr(5.6, 30.2, F, 0), 0, 0);      // (clear of the form's end: it stood inside the form)
 
     // the Mall: the building's own drawings on the north wall, a settee across from them, the notices by the far door
     const n = fr(0, 30.85, F, 2), SRC = 'Reproduced in Ann Beha Architects, Existing Conditions Report and Preservation Recommendations, 2003.';
-    f.framed(n, -23.6, 5.3, 2.3, 2.28, 'cpl_plan_1887', {
+    f.framed(n, -23.6, 5.65, 2.3, 2.28, 'cpl_plan_1887', {
       title: 'Cambridge Public Library', kicker: 'The original floor plan, 1887',
       text: 'This building is the Cambridge Public Library of Cambridge, Massachusetts, as first built in 1887–89: Van Brunt & Howe, architects; the gift of Frederick H. Rindge.\nThe plan was published in the Cambridge Chronicle in 1887 and altered a little in building. The rooms keep its names: the Mall, the Delivery Room, the Reading Room, the Book Room. It draws the Book Room at the length it reached in 1902; here it stands as it did in 1889.',
       foot: SRC });
@@ -412,7 +412,7 @@ export default function (f) {
     }
     // the cloak rooms: a rail of pegs and a form in each; an umbrella stand in the men's
     { const w = fr(9, 32.35, F, 0); pegs(w, -4.4, 4.4); form(w, -0.5, 6); }
-    { const w = fr(9, 43.35, F, 0); pegs(w, -5.2, 5.2); form(w, 0, 7); K.umbrellaStand(w, 6.6, 0.8); }
+    { const w = fr(9, 43.35, F, 0); pegs(w, -5.2, 5.2); form(w, 0, 7); K.umbrellaStand(w, 4.6, 0.8); }      // (3.6 ft from the door: it stood at the jamb)
   }
   // =================================================================================================================
   // SECOND PASS: the fullness of a library in use. (Anna: "Nothing should be so sparse.") Everything here is added to
@@ -622,14 +622,14 @@ export default function (f) {
     // ---- THE CLOAK ROOMS, and bins and benches where the halls lacked them ----
     {
       const wm = fr(9, 32.35, F, 0), mm = fr(9, 43.35, F, 0);
-      K.hat(wm, -3.6, 0.3, 5.32, 'cloche', 'wool#6a4a52'); K.scarf(wm, -1.4, 0.3, 5.25, 'wool#b08a45'); K.mirror(fr(2.5, 40.9, F, 3), 0, 5.2, 1.7, 2.8, { kind: 'arch' });
+      K.hat(wm, -3.6, 0.3, 5.32, 'cloche', 'wool#6a4a52'); K.scarf(wm, -1.4, 0.3, 5.25, 'wool#b08a45'); K.mirror(fr(2.5, 40.9, F, 3), 0, 5.65, 1.7, 2.8, { kind: 'arch' });      // (both mirrors hang clear above the dado rail: it ran into the foot of their frames)
       bins(fr(11.2, 41.6, F, 2), 0, 0); f.rug(4.5 + OX, 13 + OX, 35, 39.6, F, 'runner');
-      K.hat(mm, -4.0, 0.3, 5.32, 'fedora', 'wool#4a4038'); K.scarf(mm, -1.7, 0.3, 5.25, 'wool#3c4c6e'); K.mirror(fr(2.5, 44.65, F, 3), 0, 5.2, 1.5, 2.8, { kind: 'rect' });
-      form(fr(11, 52.8, F, 2), -4.2, 4.5); bins(fr(15.6, 52.0, F, 0), 0, 0); f.rug(5 + OX, 15 + OX, 46.2, 50.4, F, 'runner');
+      K.hat(mm, -4.0, 0.3, 5.32, 'fedora', 'wool#4a4038'); K.scarf(mm, -1.7, 0.3, 5.25, 'wool#3c4c6e'); K.mirror(fr(2.5, 44.65, F, 3), 0, 5.65, 1.5, 2.8, { kind: 'rect' });
+      form(fr(11, 52.8, F, 2), -4.2, 4.5); bins(fr(18.0, 51.9, F, 2), 0, 0);      /* (east of the form: they stood inside it) */ f.rug(5 + OX, 15 + OX, 46.2, 50.4, F, 'runner');
       // the halls: a mat and a form in the Vestibule, bins in the Vestibule and the Mall, plates on the cloak-room doors
       f.rug(5.6 + OX, 11.8 + OX, 19.4, 22.4, F, 'mat'); form(fr(2.5, 28.1, F, 3), 0, 4.2); bins(fr(13.6, 29.9, F, 2), 0, 0);
       bins(fr(40.3, 19.6, F, 2), 0, 0);
-      f.plate(fr(16.6, 34.4, F, 3), 0, 5.2, 'CLOAK ROOM', { sub: 'women' }); f.plate(fr(15.8, 42.35, F, 2), 0, 5.2, 'CLOAK ROOM', { sub: 'men' });
+      f.plate(fr(16.6, 34.4, F, 3), 0, 5.2, 'CLOAK ROOM', { sub: 'women' }); f.plate(fr(16.6, 40.5, F, 3), 0, 5.2, 'CLOAK ROOM', { sub: 'men', w: 1.0 });      // (on the Passage's west wall beside the door: it was buried in the wall)
     }
   }
 }

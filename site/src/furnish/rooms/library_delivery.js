@@ -173,8 +173,7 @@ export default function (f) {
     [[-1.7, 'imac_g3_blueberry', 'strange loop', [['Hofstadter, Douglas R.', 'Gödel, Escher, Bach: An Eternal Golden Braid'], ['Hofstadter, Douglas R.', 'I Am a Strange Loop'], ['Nagel, Ernest, and James R. Newman', 'Gödel’s Proof'], ['Hofstadter, D. R., and E. Sander', 'Surfaces and Essences']]],
       [1.7, 'imac_g3_tangerine', 'emergence', [['Anderson, P. W.', 'More Is Different (Science, 1972)'], ['Mitchell, Melanie', 'Complexity: A Guided Tour'], ['Kauffman, Stuart A.', 'The Origins of Order'], ['Thompson, D’Arcy Wentworth', 'On Growth and Form']]]].forEach(([x, id, query, hits]) => {
       const m = q.sub(x, 1.2, 3.6, 0);
-      f.model(id, m, 0, 0, 0, 0, { turn: Math.PI / 2, scale: SC });
-      f.sign(m, 0.18 * SC, 0.79 * SC, 0.94 * SC, 0.7 * SC, (g, Wd, H) => screen(g, Wd, H, query, hits), { y: 0.47 * SC, res: 420, rough: 0.3 });
+      f.computer(id, m, (g, Wd, H) => screen(g, Wd, H, query, hits), { scale: SC });      // (the picture is on the tube's own glass, as the house's iMac: it was a card standing in front of it)
     });
     K.mug(q, 0.35, 1.62, 3.6, 'c#7d8f86/0.5', true); q.box(CARD, -0.5, 0.0, 1.35, 1.75, 3.56, 3.64); q.box(PW('#c9a23a'), 0.03, 0.06, 1.3, 1.75, 3.6, 3.63);
     f.label(q, 0, 2.1, 4.4, { label: 'look at the catalog terminals', note: 'Two catalog terminals, one blueberry and one tangerine, both older than most of the doctoral school. Somebody has searched for “strange loop”; somebody else for “emergence”.' });

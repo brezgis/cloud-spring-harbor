@@ -611,19 +611,22 @@ export default function (b) {
     b.interior(H[0] - 0.5 + XO, H[1] + 0.5 + XO, H[2] - 0.5 + YO, H[3] + 0.5 + YO, lo - 1, hi + 2, { floor: fl, ceil: cl });
 
   // one plain lamp to a room (two in the great ones), and a daylight fill
-  const lampAt = (X, Y, fl, cl, drop) => {      // a plain globe on a rod (the kit's schoolhouse lamp is 700 triangles: too many for fifty rooms)
+  const lampAt = (X, Y, fl, cl, drop, power) => {      // a plain globe on a rod (the kit's schoolhouse lamp is 700 triangles: too many for fifty rooms)
     const g = new THREE.SphereGeometry(0.36, 10, 6); g.translate(X, cl - drop - 0.36, -Y); mesh('e#fbf3e4/1.4', g);
     cyl(IRON, X, Y, cl - drop, cl, 0.03, 0.03, 5); cyl(IRON, X, Y, cl - 0.08, cl, 0.2, 0.2, 8);
-    b.lamp(X + XO, Y + YO, cl - drop - 0.4, { power: cl - fl > 12 ? 1.1 : 0.8 });
+    b.lamp(X + XO, Y + YO, cl - drop - 0.4, { power: power ?? (cl - fl > 12 ? 1.1 : 0.8) });
   };
   const lit = new Set();
   for (const [n, X0, X1, Y0, Y1, fl, cl] of rooms) {
     if (lit.has(n + fl)) continue; lit.add(n + fl);
     const bigR = (X1 - X0) * (Y1 - Y0) > 1400, cx = (X0 + X1) / 2, cy = (Y0 + Y1) / 2;
-    const top = (X, Y) => (fl === F3 ? (X > BX1 ? underM(X, Y) : underB(X, Y)) : n === 'Lecture Room' ? C1 : cl), drop = h => (h - fl > 12 ? 5 : h - fl < 8 ? 0.6 : 1.5);
+    const top = (X, Y) => (fl === F3 ? (X > BX1 ? underM(X, Y) : underB(X, Y)) : n === 'Lecture Room' ? C1 : cl), drop = h => (h - fl > 12 ? 5 : h - fl < 8 ? 0.08 : 1.5);      // (under a low ceiling the globe sits up against it: on a rod it hung at the height of a face)
     if (/Hall/.test(n)) { const h = top(62, 24); lampAt(62, fl === F3 ? 34 : 24, fl, h, drop(h)); b.fill(62 + XO, 30 + YO, h - 0.8, 0.9); continue; }
     if (bigR && Y1 - Y0 > X1 - X0) { for (const f of [0.28, 0.72]) { const Y = Y0 + (Y1 - Y0) * f, h = top(cx - 9, Y); lampAt(cx - 9, Y, fl, h, drop(h)); b.fill(cx + XO, Y + YO, h - 0.8, 1); } }
-    else { const h = top(cx, cy), f0 = n === 'Lecture Room' ? F1 : fl; lampAt(cx, cy, f0, h, drop(h)); b.fill(cx + XO, cy + YO, h - 0.8, bigR ? 1 : 0.7); }
+    else { const h = top(cx, cy), f0 = n === 'Lecture Room' ? F1 : fl;
+      // (a corridor's globe hangs level with the row of pendants along it, rooms/snow_lights.js: its foot 7.6 ft up;
+      // and the two whitewashed basement spaces that one bare globe lit like a shop window are turned down)
+      lampAt(cx, cy, f0, h, /Corridor$/.test(n) && h - fl > 9.5 ? h - fl - 8.32 : drop(h), n === 'Basement Room 7' || n === 'Basement Corridor' ? 0.42 : undefined); b.fill(cx + XO, cy + YO, h - 0.8, bigR ? 1 : 0.7); }
   }
 
   // ---- the basement is 4 ft 6 in the ground --------------------------------------------------------------------

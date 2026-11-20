@@ -404,8 +404,7 @@ export default function (f) {
     const d = fr(116.55, 46.9, F, 1), SC = 0.92;
     K.desk(d, 4.2, 2.2);
     const m = d.sub(0.25, 0.95, 2.5, 0);
-    f.model('imac_g3_blueberry', m, 0, 0, 0, 0, { turn: Math.PI / 2, scale: SC });
-    f.sign(m, 0.18 * SC, 0.79 * SC, 0.94 * SC, 0.7 * SC, (g, W, H) => {
+    f.computer('imac_g3_blueberry', m, (g, W, H) => {      // (the picture is on the tube's own glass, as the house's iMac: it was a card standing in front of it)
       g.fillStyle = '#e4e8e6'; g.fillRect(0, 0, W, H); g.fillStyle = '#33445a'; g.fillRect(0, 0, W, H * 0.12); Tf(g, 'HOFSTADTER LIBRARY  ·  CATALOGING', W / 2, H * 0.065, H * 0.058, '#f1ece0', { ls: 1 });
       Tf(g, 'Bibliographic record  ·  editing', W * 0.04, H * 0.18, H * 0.045, '#5b6570', { a: 'left', it: true });
       [['100 1_', 'Thompson, D’Arcy Wentworth, 1860–1948.'], ['245 10', 'On growth and form / by D’Arcy Wentworth Thompson.'], ['260 __', 'Cambridge [Eng.] : University Press, 1917.'], ['300 __', 'xv, 793 p. : ill. ; 23 cm.'], ['650 _0', 'Growth.'], ['650 _0', 'Morphology.'], ['852 __', '571.8 Tho|']].forEach(([t, s], i) => {
@@ -413,7 +412,7 @@ export default function (f) {
         Tf(g, t, W * 0.045, y, H * 0.05, '#7a2f2a', { ...MONO, a: 'left' }); Tf(g, s, W * 0.22, y, H * 0.052, '#1d1a17', { a: 'left', max: W * 0.74 });
       });
       Tf(g, 'Record 3,208 of 41,322 converted from cards', W * 0.04, H * 0.945, H * 0.042, '#5b6570', { a: 'left' });
-    }, { y: 0.47 * SC, res: 420, rough: 0.3 });
+    }, { scale: SC });
     d.box(PW('#cfd6d8'), -0.55, 0.85, 1.55, 2.0, 2.5, 2.545); d.cyl(PW('#8fb3cf'), 1.25, 1.65, 2.5, 2.56, 0.13, 0.13, 10);      // the keyboard and the round mouse
     d.box(CARD, -1.75, -1.33, 1.2, 1.46, 2.5, 2.74); d.box(CARD, -1.2, -0.78, 1.5, 1.76, 2.5, 2.52);                              // cards waiting to be entered, and one out
     f.label(d, 0.25, 1.4, 3.4, { label: 'look at the screen', title: 'The online catalog', kicker: 'On probation since its arrival. A record being converted from its card',

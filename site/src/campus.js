@@ -26,7 +26,7 @@
 
 import { makeSite } from './building.js';
 import { BUILDINGS, ALTS } from './buildings/index.js';
-import { furnish } from './furnish.js';
+import { furnish, furnishSteps, furnishHook } from './furnish.js';
 import { wind } from './grounds/cards.js';
 import { VIEWS } from './perf.js';
 
@@ -348,7 +348,10 @@ doorViews();
 // marks: show every site's allowance and door on the ground (?sites).
 // facing: { stone: 'north' } turns a site about its origin (?facing=stone:north), to try a building the other ways
 // round: a test only (the paths and trees stay where they were).
-export function buildCampus(B, { only = null, marks = false, facing = null } = {}) {
+// defer: the buildings are built bare, and what stands in them is left for furnishRest (returned), which main.js
+// runs a file at a time once the island is on the screen.
+export function buildCampus(B, { only = null, marks = false, facing = null, defer = false } = {}) {
+  const pending = [];
   if (facing) { for (const s of SITES) if (facing[s.id]) { s.facing = facing[s.id]; s.rect = rectOf(s); } doorViews(); }
   const lists = { surfaces: [], rooms: [], lamps: [], doors: [], windows: [], portals: [], boxes: [], footprints: [], later: [], kits: [] };
   const built = {};
@@ -358,7 +361,7 @@ export function buildCampus(B, { only = null, marks = false, facing = null } = {
       const b = makeSite(B, s, lists), was = B.zone;
       B.zone = 'shell:' + s.id;                 // each building's fabric is merged by material into meshes of its own
       // (furnish: what stands in the building's rooms, src/furnish.js and src/furnish/)
-      try { make(b); furnish(B, s, b, lists); b.finish(); built[s.id] = true; } catch (e) { console.error('building ' + s.id + ' failed:', e); }
+      try { const T = (globalThis.__buildMs ??= {}), t0 = performance.now(); make(b); const t1 = performance.now(); if (defer) { furnishHook(lists); void b.kit; pending.push({ s, b }); }      /* (the kit is made now, as it would have been: shelves are given their titles in the order the kits were made) */ else furnish(B, s, b, lists); const t2 = performance.now(); b.finish(); built[s.id] = true; T[s.id + ' shell'] = Math.round(t1 - t0); T[s.id + ' furnish'] = Math.round(t2 - t1); T[s.id + ' finish'] = Math.round(performance.now() - t2); } catch (e) { console.error('building ' + s.id + ' failed:', e); }      // (T: start-up timings)
       B.zone = was;
     }
     if (marks) {      // the allowance, pegged out: a line on the ground, a post at each corner, a taller one at the door
@@ -370,10 +373,24 @@ export function buildCampus(B, { only = null, marks = false, facing = null } = {
   }
   // What the furnishing kit listed in each building (lamps, seats, candles, models ...), as one set for life.js
   const items = { lamps: [], seats: [], candles: [], models: [], extras: [], books: [], steam: [], hinged: [], spots: [], later: lists.later };
-  for (const k of lists.kits) for (const n of ['lamps', 'seats', 'candles', 'models', 'extras', 'books', 'steam', 'hinged']) items[n].push(...(k[n] ?? []));
+  const taken = new Map();      // (per kit and list, how many have been handed on: gather may be called again)
+  const gather = () => { for (const k of lists.kits) { const t = taken.get(k) ?? {}; taken.set(k, t); for (const n of ['lamps', 'seats', 'candles', 'models', 'extras', 'books', 'steam', 'hinged']) { const l = k[n] ?? []; for (let i = t[n] ?? 0; i < l.length; i++) items[n].push(l[i]); t[n] = l.length; } } };
+  gather();
+  // The furniture that was put off (defer), in steps: yields after each furnish file, and 'built' when a building is
+  // done (its geometry is then ready for Builder.finalize). The lists main.js already holds are added to in place.
+  function* furnishRest() {
+    for (const { s, b } of pending) {
+      const n0 = lists.lamps.length, t0 = performance.now();
+      yield* furnishSteps(B, s, b, lists);
+      for (let i = n0; i < lists.lamps.length; i++) { const l = lists.lamps[i]; l.kind = l.fire ? 'fire' : (l.kind ?? 'fill'); }      // (as main.js does for the buildings' own)
+      b.adopt(); gather(); (globalThis.__buildMs ??= {})[s.id + ' furnish'] = Math.round(performance.now() - t0);
+      yield 'built';
+    }
+    pending.length = 0;
+  }
   // You arrive at the Landing, looking up the tongue toward the oak (pair), or down the long walk.
   const spawn = { x: LANDING.x, y: groundAt(LANDING.x, LANDING.z), z: LANDING.z, yaw: PAIR ? yawTo(LANDING.x, LANDING.z, OAK.x, OAK.z) : RISE_LAYOUT ? yawTo(LANDING.x, LANDING.z, 40, 0) : 0.12 };
-  return { ...lists, items, built, spawn, sites: Object.fromEntries(SITES.map(s => [s.id, s])) };
+  return { ...lists, items, built, spawn, sites: Object.fromEntries(SITES.map(s => [s.id, s])), furnishRest: defer ? furnishRest : null };
 }
 
 // The breeze in the trees and the plants. (What is laid and planted on the grounds is in grounds.js.)

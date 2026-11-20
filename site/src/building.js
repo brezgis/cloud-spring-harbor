@@ -755,18 +755,21 @@ export function makeSite(B, site, lists) {
   // at the end (adopt, below).
   let kit = null;
   const getKit = () => (kit ??= makeKit(L));
+  // (Called again after furnishing that was put off: only what the kit has listed since the last time is moved.)
+  const adopted = {}; let kitListed = false;
+  const since = name => { const l = kit[name] ?? [], from = adopted[name] ?? 0; adopted[name] = l.length; return from ? l.slice(from) : l; };
   function adopt() {
     if (!kit) return;
     const mv = o => { const v = new THREE.Vector3(o.x, o.y ?? 0, o.z).applyMatrix4(M); o.x = v.x; o.z = v.z; if (o.y !== undefined) o.y = v.y; return o; };
-    for (const l of kit.lamps) mv(l);
-    for (const l of kit.candles) mv(l);
-    for (const l of kit.steam) mv(l);
-    for (const l of kit.seats) { mv(l); l.yaw += th; }
-    for (const l of kit.models) { mv(l); l.rotY = (l.rotY ?? 0) + th; }
-    for (const l of kit.extras) { mv(l); if (l.rug && k % 2) [l.w, l.d] = [l.d, l.w]; else if (!l.rug) l.rotY = (l.rotY ?? 0) + th; }
-    for (const l of kit.books) { mv(l); l.q = (l.q + k) % 4; if (k % 2) [l.sx, l.sz] = [l.sz, l.sx]; }
-    for (const l of kit.hinged) { const y0 = l.y0, y1 = l.y1, c = mv({ x: l.cx, z: l.cz }); mv(l); l.cx = c.x; l.cz = c.z; l.y0 = y0 + g0; l.y1 = y1 + g0; l.closed += th; l.open += th; }
-    lists.kits.push(kit);
+    for (const l of since('lamps')) mv(l);
+    for (const l of since('candles')) mv(l);
+    for (const l of since('steam')) mv(l);
+    for (const l of since('seats')) { mv(l); l.yaw += th; }
+    for (const l of since('models')) { mv(l); l.rotY = (l.rotY ?? 0) + th; }
+    for (const l of since('extras')) { mv(l); if (l.rug && k % 2) [l.w, l.d] = [l.d, l.w]; else if (!l.rug) l.rotY = (l.rotY ?? 0) + th; }
+    for (const l of since('books')) { mv(l); l.q = (l.q + k) % 4; if (k % 2) [l.sx, l.sz] = [l.sz, l.sx]; }
+    for (const l of since('hinged')) { const y0 = l.y0, y1 = l.y1, c = mv({ x: l.cx, z: l.cz }); mv(l); l.cx = c.x; l.cz = c.z; l.y0 = y0 + g0; l.y1 = y1 + g0; l.closed += th; l.open += th; }
+    if (!kitListed) { kitListed = true; lists.kits.push(kit); }
   }
 
   // ---- the end: walls are built, the outline is recorded, the kit's things are moved into place ---------------
@@ -783,7 +786,7 @@ export function makeSite(B, site, lists) {
     wall, arcWall, floor, floorArc, arcRects, room, roomArc, ceiling, finishes, stair, steps, rail, surface, ramp, interior, portal, lamp, fill, roof, world,
     get kit() { return getKit(); }, fr: (X, Y, h = 0, q = 0) => getKit().fr(X, Y, h, q),
     later: f => lists.later.push(f),
-    finish,
+    finish, adopt,
   };
   return b;
 }

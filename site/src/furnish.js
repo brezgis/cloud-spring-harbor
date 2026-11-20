@@ -18,7 +18,7 @@
 //    not know about them). ?furnish=0 leaves every room bare; ?faculty=0 leaves the robots out; ?lineup stands
 //    the whole roster at the Landing.
 
-import { FURNISH } from './furnish/index.js';
+import { FURNISH, START } from './furnish/index.js';
 import * as boards from './boards.js';
 import { byId } from './faculty/roster.js';
 import { recordPlayerBody, PLATTER } from './record.js';
@@ -31,8 +31,13 @@ let hooked = false;
 const plans = {};                                         // per site: { rooms, world(X, Y, h), yaw(deg) }, for ?room= and ?stand= (below)
 
 // Called by buildCampus for each building, between the building's own function and its finish().
-export function furnish(B, site, b, lists) {
-  if (!hooked) { hooked = true; lists.later.push(start); }
+export function furnish(B, site, b, lists) { for (const _ of furnishSteps(B, site, b, lists)); }
+// What is set going once the scene exists is listed at the first building, whenever its furniture comes.
+export function furnishHook(lists) { if (!hooked) { hooked = true; lists.later.push(start); } }
+// The same in steps, one furnish file at a time: when the furniture is put off until the island is on the screen
+// (main.js, campus.js furnishRest), a frame can be drawn between one file and the next.
+export function* furnishSteps(B, site, b, lists) {
+  furnishHook(lists);
   const files = site.alt || Q.get('furnish') === '0' ? [] : FURNISH[site.id] ?? [];
 
   // ---- this building's rooms, in its own plan coordinates -----------------------------------------------
@@ -96,6 +101,15 @@ export function furnish(B, site, b, lists) {
     // a collected model from assets/models/<id>/ with its lowest point at height z: o { scale, turn, seat, collide, hang }
     model: (id, fr, x, y, z = 0, dq = 0, o = {}) => b.kit.model(id, fr, x, y, z, dq, o),
     rug: (X0, X1, Y0, Y1, h, style) => b.kit.rug(X0, X1, Y0, Y1, h, style),
+    // a computer (a model with a glass named screen: the iMac G3s) standing at a frame's origin, its picture drawn by
+    // draw(g, W, H) on the model's own curved glass and lit from within, as the house's iMac is (life.js: onModel).
+    // Nothing hangs in front of the tube. o: { scale, turn (a quarter turn), glow (1) }
+    computer(id, fr, draw, o = {}) {
+      const K = b.kit, pic = { canvas: draw, glow: o.glow ?? 1.0, onModel: true, x: 0, y: fr.h, z: 0, rotY: 0, w: 1, h: 0.74 };
+      { const [a, c] = K.world(fr, 0, 0); pic.x = a; pic.z = c; }
+      K.extras.push(pic);
+      K.model(id, fr, 0, 0, 0, 0, { turn: o.turn ?? Math.PI / 2, scale: o.scale, screen: pic });
+    },
     // things that move or answer: ctx => { ... } once the scene exists (ctx as b.later's)
     later: b.later, world: b.world,
     // boards and lettering (boards.js): on a wall frame, by the CENTRE of the thing (x along the wall, z above the frame)
@@ -148,9 +162,14 @@ export function furnish(B, site, b, lists) {
     },
   };
 
-  const was = [B.zone, B.zoner]; B.zone = null; B.zoner = zoner;
-  for (const fn of files) { try { fn(f); } catch (e) { console.error(`furnishing ${site.id} failed:`, e); } }
-  [B.zone, B.zoner] = was;
+  const T = (globalThis.__furnishMs ??= {});      // (how long each file took: start-up timings)
+  for (let i = 0; i < files.length; i++) {
+    const was = [B.zone, B.zoner], t0 = performance.now(); B.zone = null; B.zoner = zoner;
+    b.kit.reseed(START.get(files[i])?.[site.id] ?? (20261110 + 104729 * (i + 1)) % 2147483647);      // each file's own run of chance (furnish/index.js START)
+    try { files[i](f); } catch (e) { console.error(`furnishing ${site.id} failed:`, e); }
+    [B.zone, B.zoner] = was; T[site.id + ':' + i] = Math.round(performance.now() - t0);
+    yield site.id;
+  }
 }
 
 // Standing somewhere by the building's own plan, for looking and for test pictures (add &shot to hide the welcome):
