@@ -139,12 +139,17 @@ export function follies(env) {
 // Behind Schwab Academy (the little stone library), out of its back door: a gravelled court between two yew hedges,
 // open to the east over a low box hedge, where the island ends and the sky begins. A bench against the wall, an iron
 // table with a chess study left on it, a birdbath, wisteria over the door, and Chrysippos on a pillar among the ferns.
-// A step is added at the back door and at the door in the north end; campus.js has the path round to both.
+// A step is added at the back door, at the door in the north end and at the French window on the front; campus.js has
+// the path round to the first two.
 export function philosophersCourt(env) {
   const { K, G, F, B, stand, stake } = env, Y = groundAt(-2, 128), X0 = -12, X1 = 8.5, Z0 = 121, Z1 = 135.6, WALL = 120.7;
-  // the two doorsteps
-  K.box(STONE, -4.6, 1.1, Y - 0.5, Y + 0.66, 121.02, 122.5); K.surface(-4.6, 1.1, 121, 122.5, Y + 0.66);
-  K.box(STONE, 17.52, 19.1, Y - 0.5, Y + 0.66, 106, 110.6); K.surface(17.5, 19.1, 106, 110.6, Y + 0.66);
+  // the three doorsteps: at the back door, at the door in the north end, and at the French window on the front. Each runs
+  // back under the sill to the granite base course (they stood a third of a foot off it, and the grass showed in the
+  // slot under the sill); the front one stands on the flags laid before that window, which lie half a foot short of the
+  // wall: it closes that strip too, and halves the rise of more than a foot from the flags to the sill
+  K.box(STONE, -4.6, 1.1, Y - 0.5, Y + 0.66, 120.77, 122.5); K.surface(-4.6, 1.1, 120.75, 122.5, Y + 0.66);
+  K.box(STONE, 17.22, 19.1, Y - 0.5, Y + 0.66, 106, 110.6); K.surface(17.2, 19.1, 106, 110.6, Y + 0.66);
+  { const y = groundAt(8.6, 95.3); K.box(STONE, 6.4, 10.8, y - 0.5, y + 0.66, 94.75, 95.83); K.surface(6.4, 10.8, 94.75, 95.85, y + 0.66); }
   // the floor: gravel in a brick border
   G.rect('hoggin', X0, X1, Z0, Z1);
   for (const [x0, x1, z0, z1] of [[X0, X1, Z1 - 0.55, Z1], [X0, X0 + 0.55, Z0, Z1 - 0.55], [X1 - 0.55, X1, Z0, Z1 - 0.55]]) G.rect('edging', x0, x1, z0, z1);

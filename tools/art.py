@@ -13,7 +13,8 @@ im = Image.open(src).convert('RGB'); k = min(1, mx / max(im.size))
 if k < 1: im = im.resize((round(im.size[0] * k), round(im.size[1] * k)), Image.LANCZOS)
 im.save(os.path.join(root, slug + '.jpg'), quality=86, optimize=True)
 mf = os.path.join(root, 'manifest.json'); m = json.load(open(mf)) if os.path.exists(mf) else []
-m = [e for e in m if e.get('slug') != slug] + [{'slug': slug, 'title': title, 'source': source, 'licence': licence, 'width_px': im.size[0], 'height_px': im.size[1]}]
+old = next((e for e in m if e.get('slug') == slug), {})      # (re-making a picture keeps its artist and year: engine/picinfo.js shows them)
+m = [e for e in m if e.get('slug') != slug] + [{'slug': slug, 'title': title, **{k: old[k] for k in ('short', 'artist', 'year') if k in old}, 'source': source, 'licence': licence, 'width_px': im.size[0], 'height_px': im.size[1]}]
 json.dump(m, open(mf, 'w'), indent=1, ensure_ascii=False)
 print('site/assets/art/%s.jpg  %d x %d px  (width : height = %.3f : 1; e.g. f.framed(wall, x, z, %.2f, %.2f, %r))' % (slug, im.size[0], im.size[1], im.size[0] / im.size[1], 2.4, 2.4 * im.size[1] / im.size[0], slug))
 print('CREDITS line:  - `%s`: %s. %s. %s.' % (slug, title, source, licence))

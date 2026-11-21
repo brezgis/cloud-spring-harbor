@@ -30,7 +30,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeKit, PAINT } from './grounds/tools.js';
 import { rng } from './grounds/cards.js';
 import { lineAt } from './airship/line.js';
-import { LAYOUT, LANDING, OAK, FORK, WALKS, PATHS, TREES, TERRACE_TABLES, SITES, TERRACE, RILL, groundAt, rimDist, outlineAt, RIM, POND, pondK } from './campus.js';
+import { LAYOUT, LANDING, OAK, FORK, WALKS, PATHS, TREES, TERRACE_TABLES, SITES, TERRACE, RILL, groundAt, rimDist, outlineAt, RIM, POND, pondK, sitePoint } from './campus.js';
 import { plantGrounds } from './grounds/planting.js';
 import { layWalks } from './grounds/walks.js';
 import { follies, philosophersCourt, shed, petals } from './grounds/follies.js';
@@ -77,7 +77,7 @@ export function layGrounds(B, items) {
   const LU = Math.hypot(LANDING.x + 70, LANDING.z - 38), lux = (LANDING.x + 70) / LU, luz = (LANDING.z - 38) / LU;
   const APRONS = [[-100.75, -72.2, -86, -74.8], [46.5, 55.3, 22.5, 41], [-15.9, -8.1, 88.2, 92.7], [122, 130, -48.6, -44.4], [19.1, 23.4, 105.4, 111.2], [6.2, 10.9, 93.3, 95.5]];
   const paved = (x, z, pad) => APRONS.some(([x0, x1, z0, z1]) => x > x0 - pad && x < x1 + pad && z > z0 - pad && z < z1 + pad) || (() => { const dx = x - (LANDING.x - lux * 7), dz = z - (LANDING.z - luz * 7), p = dx * lux + dz * luz, q = -dx * luz + dz * lux; return (p / (23.67 + pad)) ** 2 + (q / (11.17 + pad)) ** 2 < 1; })();
-  layWalks(G, paved);
+  layWalks(G, (x, z, pad) => paved(x, z, pad) || (x > -12 - pad && x < 8.5 + pad && z > 121 - pad && z < 135.6 + pad));      // (and the gravel of the philosophers' court, follies.js, which the path round the academy runs into)
   // A flagged forecourt at each door: sawn stone in courses, level (campus.js levels the land under each), inside a
   // soldier course of the walks' brick on its open sides. The brick walk runs in under the border. [x0, x1, z0, z1,
   // level, which sides have the border: s (-x), n (+x), w (-z), e (+z)]. (The library's is Rule 30: whimsy.js.)
@@ -495,8 +495,14 @@ export function layGrounds(B, items) {
     K.model('socrates_herm', x, z, Math.PI, { y: S.y + 4.4 });
     S.sign(1.1, 0.4, 0, 3.3, 0.635, (g, w, h) => { g.fillStyle = '#b7b0a0'; g.fillRect(0, 0, w, h); g.font = `${Math.round(h * 0.5)}px Georgia, 'Times New Roman', serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#4f493d'; g.fillText('ΣΩΚΡΑΤΗΣ', w / 2, h * 0.54); }, { cw: 330, ch: 120 });
   }
-  // Pots by the doors
-  for (const [x, z, plants] of [[55.2, 20.6, [['lavender', 1.1], ['catmint', 0.7, 0.35, 0.2]]], [56.6, 43.5, [['lavender', 1.1], ['catmint', 0.7, -0.35, 0.2]]], [-73, -84.5, [['hosta', 1.2], ['fern', 0.6, 0.3, -0.2]]], [-7.5, 94.4, [['rose', 0.5], ['catmint', 0.7, 0.3, 0.3]]], [-16.5, 94.4, [['rose', 0.5], ['catmint', 0.7, -0.3, 0.3]]]]) K.pot(x, groundAt(x, z), z, 1.35, plants);
+  // Pots by the doors (five, in this order: each draws its clay and its plants from the kit's numbers, so they are moved,
+  // not taken away or added to). [x, z, plants, size, y: where it stands, if not on the land]
+  //   two small ones on the stoop at the top of the hall's side steps, either side of the door, inside the rails
+  //   one at the north end of the step under the academy's door in its north end, on the side away from the path
+  //   two flanking the academy's front steps, outside the cheeks of the hood (they stood half in the cheeks' pedestals)
+  // (The hall's front and the library's porch have urns and great pots of their own, at the end of all this.)
+  { const hall = SITES.find(s => s.id === 'snow'), side = (X, Y) => sitePoint(hall, X, Y), stoop = hall.ground + 5.5 + 0.005;      // (snow.js: the stoop's top is the first floor, 5.5 ft up)
+    for (const [x, z, plants, size = 1.35, y = groundAt(x, z)] of [[...side(-0.3, 61.62), [['lavender', 1.1], ['catmint', 0.7, 0.35, 0.2]], 0.42, stoop], [...side(-0.3, 66.415), [['lavender', 1.1], ['catmint', 0.7, -0.35, 0.2]], 0.42, stoop], [18.4, 111.6, [['hosta', 1.2], ['fern', 0.6, 0.3, -0.2]], 0.9], [-7.2, 94.5, [['rose', 0.5], ['catmint', 0.7, 0.3, 0.3]]], [-16.8, 94.5, [['rose', 0.5], ['catmint', 0.7, -0.3, 0.3]]]]) K.pot(x, y, z, size, plants); }
 
   // ---- small things the planting and the pieces of whimsy are given ---------------------------------------------
   // a plate on an iron stake, tilted to be read standing: a title and two lines (all the plates are one painted sheet)
@@ -602,6 +608,31 @@ export function layGrounds(B, items) {
     // the rack, on a little gravel beside the path to the hall's side door: five iron hoops
     G.ribbon('hoggin', [[105.6, -57.2], [111, -56.6], [116.4, -56]], 4.6, { wobble: 0.05 });
     for (let i = 0; i < 5; i++) { const x = 107 + i * 2, z = -57.05 + i * 0.22, y = groundAt(x, z) - 0.2, pts = [[z - 1, y], [z - 1, y + 2.3], [z - 0.7, y + 2.72], [z, y + 2.9], [z + 0.7, y + 2.72], [z + 1, y + 2.3], [z + 1, groundAt(x, z + 1) - 0.2]]; for (let k = 0; k < pts.length - 1; k++) K.tube(IRON, [x, pts[k][1], pts[k][0]], [x, pts[k + 1][1], pts[k + 1][0]], 0.045, 5); }
+  }
+
+  // ---- at the two great doors: urns and pots, as a college building of the 1880s had them ---------------------------
+  // Anderson Hall: a pair of cast-stone urns on the lower cheek blocks at the foot of its steps, the place the Victorians
+  // gave a pair of garden vases at a public door up a flight (the campana shape on a square plinth, the commonest garden
+  // vase of the time), each with a clipped box ball in it, green all year, and catmint falling over the lip. The
+  // Hofstadter Library: its porch is deep and shaded, so a pair of great terracotta pots on the porch floor either side of
+  // the doors, with ferns, as a Victorian porch kept them. They stand clear of the doorways and the flights, on what is
+  // there to stand on, and stop the walker; their stone and clay are given, not drawn, and they are made after everything
+  // else that is planted, so that no plant set out before them draws a different number.
+  {
+    const CAST = 'c#cfc6b2/0.9', hall = SITES.find(s => s.id === 'snow'), lib = SITES.find(s => s.id === 'library');
+    const URN = [[0.01, 0], [0.6, 0], [0.6, 0.1], [0.52, 0.14], [0.5, 0.2], [0.34, 0.3], [0.24, 0.42], [0.22, 0.55], [0.3, 0.6], [0.3, 0.66], [0.42, 0.7], [0.55, 0.82], [0.7, 1.02], [0.82, 1.3], [0.9, 1.58], [0.95, 1.74], [1.05, 1.8], [1.08, 1.88], [1.02, 1.94], [0.92, 1.88]];
+    for (const X of [59.09, 76.04]) {      // (snow.js: the middles of the two lower cheek blocks, whose coped tops are 3 ft above the hall's ground)
+      const [x, z] = sitePoint(hall, X, -3.85), y = hall.ground + 3.0 + 0.005, b = y + 0.24, soil = b + 1.84;
+      K.box(CAST, x - 0.7, x + 0.7, y, b, z - 0.7, z + 0.7); K.box(CAST, x - 0.62, x + 0.62, b, b + 0.06, z - 0.62, z + 0.62);
+      K.lathe(CAST, x, b + 0.06, z, URN, 20); K.cyl('soil', x, soil, soil + 0.04, z, 0.9, 0.91, 16);
+      G.ball('boxwood', x, soil, z, 0.74, 0.92);
+      for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.6; F.add('catmint', x + Math.cos(a) * 0.78, z + Math.sin(a) * 0.78, 0.42, { y: soil - 0.05 }); }
+      K.collide(x - 1.1, x + 1.1, z - 1.1, z + 1.1, soil + 1.3, y);
+    }
+    for (const X of [6.5, 15.7]) {      // (library.js: either side of the doors, 4.6 ft from their middle, clear of the jambs and of the porch's side wall; the porch floor is 5 ft up)
+      const [x, z] = sitePoint(lib, X, 14.8);
+      K.pot(x, lib.ground + 5 + 0.005, z, 1.5, [['fern', 1.2], ['fern', 0.9, 0.32, -0.25], ['fern', 0.85, -0.3, 0.22], ['fern', 0.75, 0.05, 0.36]], { mat: PAINT.terracottaOld });
+    }
   }
 
   // ---- built once the materials exist; and the one thing that moves ------------------------------------------

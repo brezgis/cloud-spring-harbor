@@ -16,10 +16,21 @@ import { rng } from './cards.js';
 import { trefoilGarden } from './whimsy.js';
 import { WALKS, PATHS, TREES, POND, pondK, RILL, TERRACE, OAK, LANDING, groundAt, rimDist } from '../campus.js';
 
+// The lines four of the walks had when this planting was set out (campus.js has moved them since). The planting keeps
+// clear of these, not of the walks as they now run: whether a plant is left out decides how many numbers it draws, so a
+// walk moved by a yard would otherwise change the size, the turn and the place of every plant set out after it. Whatever
+// stands where a walk now runs is taken out by the weeding (grounds.js), which draws nothing.
+const SET_OUT = {
+  'to the court': [[-15.6, 70], [-8, 72.6], [3, 76], [12, 82.5], [14.6, 90], [21.6, 100], [22, 112.5], [17.6, 124], [10.3, 128.7]],
+  'round the library': [[-109.1, -113.6], [-109.1, -146], [-107.5, -158], [-101, -173], [-93, -186], [-80, -193.5], [-62, -196.8], [-42, -197.6], [-22, -196.6], [-9, -187], [1, -173], [13, -160], [24, -151.5], [35, -141], [41, -125], [41.5, -110], [36, -97], [25, -86], [12, -81.2], [-20, -80.8], [-57, -80.8], [-70, -73.2], [-79.4, -66.6]],
+  'to the shed': [[112, -49.6], [125, -55.4], [141, -54], [153, -45.5], [159.8, -31], [160.3, -15], [162, -7.4], [166, -7.2]],
+  'to the terrace': [[45.5, 33.5], [53, 45], [55.6, 60], [56.5, 76], [62, 88.5], [76, 93], [91, 91.5]],
+};
+
 export function plantGrounds(env) {
   const { K, G, F, bench, lampPost } = env, r = rng(2026);
   const gy = groundAt, jit = (k = 1) => (r() - 0.5) * k;
-  const onWalk = (x, z, pad = 1.6) => [...WALKS.map(p => ({ ...p, w: p.w + 1.4 })), ...PATHS.slice(WALKS.length)].some(p => p.pts.some((a, i) => { const b = p.pts[i + 1]; if (!b) return false; const dx = b[0] - a[0], dz = b[1] - a[1], t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz))); return Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t) < p.w / 2 + pad; }));      // (every walk, with its brick edges, and the worn paths after them in PATHS)
+  const onWalk = (x, z, pad = 1.6) => [...WALKS.map(p => ({ ...p, pts: SET_OUT[p.name] ?? p.pts, w: p.w + 1.4 })), ...PATHS.slice(WALKS.length)].some(p => p.pts.some((a, i) => { const b = p.pts[i + 1]; if (!b) return false; const dx = b[0] - a[0], dz = b[1] - a[1], t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz))); return Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t) < p.w / 2 + pad; }));      // (every walk, with its brick edges, and the worn paths after them in PATHS)
   const plant = (kind, x, z, s = 1, o = {}) => { if (onWalk(x, z, o.pad ?? 1.3) || rimDist(x, z) < 4) return; F.add(kind, x, z, s, { y: gy(x, z) + (o.up ?? 0.04), ...o }); };
   // a mass of one kind: n plants in an ellipse (turned), thickest in the middle
   const mass = (kind, cx, cz, rx, rz, n, s = 1, turn = 0) => { const c = Math.cos(turn), sn = Math.sin(turn); for (let i = 0; i < n; i++) { const a = r() * 6.2832, d = Math.pow((i + r()) / n, 0.62), p = Math.cos(a) * rx * d, q = Math.sin(a) * rz * d; plant(kind, cx + p * c - q * sn, cz + p * sn + q * c, s * (0.82 + r() * 0.36)); } };
@@ -71,7 +82,7 @@ export function plantGrounds(env) {
   for (const [x, z, s] of [[67.6, 21.8, 1.05], [63.8, 22.3, 1], [60.4, 22.4, 0.9]]) plant('hydrangea', x, z, s);
   for (const [x, z] of [[66.2, 19.6], [62.6, 19.4], [59.6, 20.1]]) plant('peony', x, z, 0.95);
   frontRow(69.4, 18.5, 58.6, 18.9, [['catmint', 0.85], ['tulipW', 1]], 1.4, [0, 1]);
-  ball(56.4, 23.4, 1.25); ball(56.4, 39.9, 1.25);
+  ball(56.6, 19.6, 1.25); ball(57.2, 43.5, 1.25);      // (outside the lower cheek blocks: they stood inside them, and only their leaf sprays showed, growing out of the stone)
   // the east wing's front, along the path to the terrace
   foundation([62.1, 39.9], [62.1, 79.6], [-1, 0], 4.1, [[1.2, 6.8], [11.7, 25.4], [30.2, 35.8]], { ...SUNNY, mid: [['peony', 0.95], ['allium', 0.95]] });
   // the west wall (the windows here are a storey up: hydrangeas may stand under them); the pier at x 97 to 106 is the pear's

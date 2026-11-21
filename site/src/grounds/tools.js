@@ -128,7 +128,7 @@ export function makeKit(B, items, TREES) {
       K.cyl('soil', x, y + 1.0 * s, y + 1.06 * s, z, 0.82 * s, 0.84 * s, 14);
       const top = y + 1.06 * s;
       for (const [kind, k = 1, dx = 0, dz = 0] of plants) K.F.add(kind, x + dx * s, z + dz * s, k * s, { y: top - 0.05 });
-      if (o.collide !== false && s > 0.9) K.collide(x - 0.8 * s, x + 0.8 * s, z - 0.8 * s, z + 0.8 * s, 3, y);
+      if (o.collide !== false && s > 0.9) K.collide(x - 0.8 * s, x + 0.8 * s, z - 0.8 * s, z + 0.8 * s, y + 1.25 * s, y);      // (its top was given as 3 ft above the island's datum, not above the pot's foot: a pot standing higher than that, on the hall's hill or the academy's ground, stopped nobody)
       return top;
     },
   };

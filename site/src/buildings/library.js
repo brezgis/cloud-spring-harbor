@@ -37,6 +37,7 @@ export default function (b) {
     steps: w => b.steps(w.ax === 'X' ? { ...w, from: sx(w.from), to: sx(w.to) } : { ...w, lo: sx(w.lo), hi: sx(w.hi) }),
     rail: w => b.rail(w.ax === 'X' ? { ...w, from: sx(w.from), to: sx(w.to) } : { ...w, at: sx(w.at) }),
     surface: (X0, X1, ...r) => b.surface(sx(X0), sx(X1), ...r),
+    ramp: (ax, u0, u1, lo, hi, h0, h1) => ax === 'X' ? b.ramp('X', sx(u0), sx(u1), lo, hi, h0, h1) : b.ramp('Y', u0, u1, sx(lo), sx(hi), h0, h1),
     room: (n, X0, X1, ...r) => b.room(n, sx(X0), sx(X1), ...r),
     roomArc: (n, w) => b.roomArc(n, { ...w, X: sx(w.X) }),
     interior: (X0, X1, ...r) => b.interior(sx(X0), sx(X1), ...r),
@@ -284,7 +285,24 @@ export default function (b) {
     for (let i = 1; i < N; i++) {
       const d0 = A0 + (i - 1) * dA, d1 = d0 + dA, h = F + i * rise, base = i <= 8 ? F : h - rise - 0.25;      // (the first eight stand on a solid base)
       planSlab(WOOD, wedge(d0, d1), h - 0.12, h); planSlab(PLAIN, wedge(d0, d1), base, h - 0.12);
-      stand(d0, d1, h, [1.6, 2.2, 2.8, 3.4, 4, 4.6, 5.2, 5.8]);      // (rings 0.6 apart: with four, a walker crossing from one ring to the next at 2.45, 3.5 or 4.6 ft found no tread under them and dropped to the floor)
+    }
+    // What the walker stands on: the pitch of the flight, as every b.stair has (a ramp from the foot of the first riser to
+    // the landing), here wound round: a grid of small ramps 0.3 ft square over the treads, each running the way the
+    // stair climbs there, at the height of the helix from F at 120° to F2 at 420°. (It had been a square standing
+    // surface on each tread at eight rings: the squares of the next treads overlapped each one, the walker was lifted
+    // one or two treads at a time in jerks going up and dropped a foot or more in free fall at every second tread
+    // coming down, and the view lurched all the way round.)
+    {
+      const C = 0.3, R0 = 0.75, R1 = 6.42, H = q => F + (F2 - F) * Math.min(1, Math.max(0, (q - A0) / 300));
+      const ang = (x, y, near) => { let q = Math.atan2(y - TY, x - TX) / rad; while (q < near - 180) q += 360; while (q > near + 180) q -= 360; return q; };
+      for (let x = TX - R1; x < TX + R1; x += C) for (let y = TY - R1; y < TY + R1; y += C) {
+        const xc = x + C / 2, yc = y + C / 2, r = Math.hypot(xc - TX, yc - TY); if (r < R0 || r > R1) continue;
+        let q = ang(xc, yc, 240); if (q < 60) q += 360; if (q < A0 - 1) continue;      // (60° to 119°: under the landing, the floor; over it, the landing's own)
+        const alongX = Math.abs(Math.sin(q * rad)) >= Math.abs(Math.cos(q * rad)), h0 = alongX ? H(ang(x, yc, q)) : H(ang(xc, y, q)), h1 = alongX ? H(ang(x + C, yc, q)) : H(ang(xc, y + C, q));      // (alongX: climbing mostly along X here)
+        if (Math.min(h0, h1) < F + 0.55 || Math.max(h0, h1) > F2 - 0.55) s.surface(x, x + C, y, y + C, (h0 + h1) / 2);      // (flat within half a foot of either floor: a ramp there is taken by the researchers for the head or foot of a flight, a way off their floor: faculty/researcher_life.js)
+        else if (alongX) s.ramp('X', x, x + C, y, y + C, h0, h1);
+        else s.ramp('Y', y, y + C, x, x + C, h0, h1);
+      }
     }
     // the landing at the top, over the door below, and through the wall to the upper room
     const land = [at(0.8, 60), ...[60, 75, 90, 105, 120].map(d => at(6.3, d)), at(0.8, 120)];
@@ -307,8 +325,11 @@ export default function (b) {
   s.box(WOOD, T, T + 0.055, T, YB - T, F2, F2 + 0.6, b.G); s.box(WOOD, 26.45 - 0.055, 26.45, T, YP + T, F2, F2 + 0.6, b.G); s.box(WOOD, 26.45 - 0.055, 27.9, YP + T, YP + T + 0.055, F2, F2 + 0.6, b.G); s.box(WOOD, DX0 - 0.75 - 0.055, DX0 - 0.75, YP + T, YB - T, F2, F2 + 0.6, b.G);
 
   // ---- the upper room's east end (against the Delivery Room's roof space) ---------------------------------------------
-  plate(PLAIN, 'Y', [[YF + T, F2], [YB - T, F2], [YB - T, UPL], [YF + T, UPL]], DX0 - 0.75, DX0 + 1.2); s.block(DX0 - 0.75, DX0 + 1.2, YF + T, YB - T, F2, WTOP);
-  upperBoards('Y', [[YF + T, UPL], [YB - T, UPL], [YB - T, westRoof(YB - T) - 0.35], [WYC, WTOP - 0.4], [YF + T, westRoof(YF + T) - 0.35]], DX0 - 0.75, DX0 + 1.2);      // (into the roof's underside, as the west gable's: at 0.5 below the slates a slit of daylight ran along its head)
+  // (from just inside the wall behind the porch, YP + 0.1, not in its face: begun at the front wall, YF + T, its first 1.5 ft ran inside the
+  // tower's drum, a pier of plaster and boards hanging from the tower's ceiling to the Upper Room's floor level over
+  // the head of the stair, and on up through the belfry storey)
+  plate(PLAIN, 'Y', [[YP + 0.1, F2], [YB - T, F2], [YB - T, UPL], [YP + 0.1, UPL]], DX0 - 0.75, DX0 + 1.2); s.block(DX0 - 0.75, DX0 + 1.2, YF + T, YB - T, F2, WTOP);
+  upperBoards('Y', [[YP + 0.1, UPL], [YB - T, UPL], [YB - T, westRoof(YB - T) - 0.35], [WYC, WTOP - 0.4], [YP + 0.1, westRoof(YP + 0.1) - 0.35]], DX0 - 0.75, DX0 + 1.2);      // (into the roof's underside, as the west gable's: at 0.5 below the slates a slit of daylight ran along its head)
   s.box(PLASTER, DX0 + 1.25, DX0 + T, YF + T, YB - T, F2, 23.5);                                                              // (the same wall, seen from the Delivery Room, up to its ceiling)
 
   // =================================================================================================================
@@ -515,7 +536,10 @@ export default function (b) {
   // ---- Delivery Room and Book Room -------------------------------------------------------------------------------------
   // (by hand, not b.roof.gable: its east eave overhangs only where it is out of doors, north of the Reading Room.
   // Run the whole length, the overhang came through the wall and showed inside the Reading Room.)
-  { const ya = YF + T / 2, yb = YB - T / 2, ym = RY1 - 0.1, xw = DX0 - 0.6, xi = DX1 - 0.2, xo = DX1 + 0.6, hr = x => ED + PD * Math.min(x - DX0, DX1 - x);
+  // (Nor does its west eave overhang: all along it the west slope runs under the tower or under the west wing's roof,
+  // nowhere out of doors, and inside the tower's drum the overhang showed as a wedge of slate hanging in the air
+  // over the stair, 0.5 ft in front of the plaster, at the height of the eye two thirds of the way up.)
+  { const ya = YF + T / 2, yb = YB - T / 2, ym = RY1 - 0.1, xw = DX0 + 0.05, xi = DX1 - 0.2, xo = DX1 + 0.6, hr = x => ED + PD * Math.min(x - DX0, DX1 - x);
     s.face(SLATE, [[xw, ya, hr(xw)], [DXC, ya, DTOP], [DXC, yb, DTOP], [xw, yb, hr(xw)]]);
     s.face(SLATE, [[xi, ya, hr(xi)], [DXC, ya, DTOP], [DXC, ym, DTOP], [xi, ym, hr(xi)]]);
     s.face(SLATE, [[xo, ym, hr(xo)], [DXC, ym, DTOP], [DXC, yb, DTOP], [xo, yb, hr(xo)]]); }
@@ -544,12 +568,20 @@ export default function (b) {
   const off = { light: false };
   // the west wing's ground floor is lit as one volume
   s.interior(T - 0.3, DX0 + T - 0.25, YP + T - 0.3, YB - T + 0.3, F - 0.6, C1 + 0.45, { floor: F, ceil: C1 });      // (through the wall to the Delivery Room, so that the arch's own reveals are indoors)
-  s.interior(TX - 3.3, TX + 3.3, TY + 5.9, YP + T - 0.3, F - 0.6, TOP1, { floor: F, ceil: C1 });                         // (the doorway to the tower)
-  s.interior(TX - 6.5, TX - 6, TY - 2.2, TY + 2.2, F - 0.6, TOP1, { floor: F, ceil: TOP1 }); s.interior(TX - 2.2, TX + 2.2, TY - 6.5, TY - 6, F - 0.6, TOP1, { floor: F, ceil: TOP1 });      // (the round drum bulges 0.4 ft past the square of the Tower Stair's light on the west and south: those slivers of its plaster were lit as out of doors, pale strips from floor to ceiling)
+  s.interior(TX - 3.3, TX + 3.3, TY + 5.9, YP + T - 0.3, F - 0.6, TOP1 + 0.45, { floor: F, ceil: C1 });                  // (the doorway to the tower. Its top had been at TOP1, in the plane of the stone over the passage to the upper door and of the rim of the tower's ceiling: lit as indoors or out of doors pixel by pixel, a patch overhead flickered as you climbed to the landing)
+  s.interior(TX - 6.5, TX - 6, TY - 2.2, TY + 2.2, F - 0.6, TOP1 + 0.45, { floor: F, ceil: TOP1 }); s.interior(TX - 2.2, TX + 2.2, TY - 6.5, TY - 6, F - 0.6, TOP1 + 0.45, { floor: F, ceil: TOP1 });      // (the round drum bulges 0.4 ft past the square of the Tower Stair's light on the west and south: those slivers of its plaster were lit as out of doors, pale strips from floor to ceiling)
   s.room('Vestibule', T, 14.75, YM0, YM1, F, C1, off); s.room('The Mall', 16.25, WX1, YM0, YM1, F, C1, off);
   s.room('Women’s Cloak Room', T, 15.6, YM1 + 1.5, 42.35, F, C1, off); s.room('Passage', 16.6, 20.6, YM1 + 1.5, 42.35, F, C1, off);
   s.room('Men’s Cloak Room', T, 20.6, 43.35, YB - T, F, C1, off); s.room('Librarian’s & Trustees’ Room', 21.6, WX1, YM1 + 1.5, YB - T, F, C1, off);
   s.room('Tower Stair', TX - 6, TX + 6, TY - 6, TY + 6, F, TOP1, { pad: 0 });
+  // (and, after it, so that the room is still known by the square of the drum: the passage from the drum to the wall
+  // behind the porch, through which both its doorways open, and the two slivers where the drum bulges past the square.
+  // Without the passage the doorways led from the Mall and from the Upper Room to out of doors (visibility.js finds the
+  // room 1.3 ft each side of an opening), so that from the stair neither room's furniture, lamps or doors were drawn
+  // until you stepped through, the stair's notices were never drawn from either room, and on the step through the
+  // doorway you stood in no room at all. Without the south sliver the lower window, whose inside lies there, was no
+  // opening, and the garden went missing behind it while it was the only window in view.)
+  s.room('Tower Stair', TX - 2.3, TX + 2.3, TY + 6, YP, F, TOP1, off); s.room('Tower Stair', TX - 6.5, TX - 6, TY - 2.2, TY + 2.2, F, TOP1, off); s.room('Tower Stair', TX - 2.2, TX + 2.2, TY - 6.5, TY - 6, F, TOP1, off);
   // the upper room, under the roof: steps of light that stay below the slates
   s.room('Upper Room', T, 26.9, T, YP, F2, 30, off); s.room('Upper Room', T, WX1, YP, YB - T, F2, 40, off);
   s.interior(T - 0.3, 27.9, T - 0.3, YP, F2 - 0.6, UPL, { floor: F2, ceil: 30 }); s.interior(T - 0.3, WX1 + 0.3, YP, YB - T + 0.3, F2 - 0.6, UPL, { floor: F2, ceil: 30 });

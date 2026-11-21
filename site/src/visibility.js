@@ -14,12 +14,21 @@
 // drawn through their windows: in full when close, their big furniture further off, and
 // only the shell beyond that. The garden is drawn indoors only when a window or outside
 // door is in view.
+//
+// Coming in from the garden: what is seen from outdoors is held back (rooms beyond the first, furniture only), but a
+// chain of openings that begins at a door near the visitor (NEAR_DOOR) is followed as from indoors. So the rooms
+// behind the hall you are about to enter are already drawn, through its doorways, before you cross the threshold:
+// they used to come in all at once on the step over it (?ahead=0 for that, as it was). `near` lists the rooms one or
+// two doorways from where you are (through any doorway, open or shut), for preparing their pictures before they are
+// seen (life.js).
 
 import * as THREE from 'three';
 
 const OUTSIDE = new Set();
 export const CELL = 160;
 const BIG = 1.6;                                          // half-diagonal (ft) above which a piece counts as furniture
+const AHEAD = new URLSearchParams(globalThis.location?.search ?? '').get('ahead') !== '0';
+const NEAR_DOOR = 30;                                     // feet: from a door this near, what lies beyond it is drawn as from indoors
 
 export function makeVisibility({ rooms, portals, footprints = [], quality = {} }) {
   const R = rooms.filter(r => !OUTSIDE.has(r.name)).map(r => ({ ...r, id: 'r:' + r.name }));
@@ -81,9 +90,33 @@ export function makeVisibility({ rooms, portals, footprints = [], quality = {} }
   const cut = (a, b) => { const r = [Math.max(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.min(a[3], b[3])]; return r[0] < r[1] && r[2] < r[3] ? r : null; };
   const within = (a, b) => a[0] >= b[0] && a[1] <= b[1] && a[2] >= b[2] && a[3] <= b[3];
 
-  const state = { seen: new Map(), out: true, here: [], eye: new THREE.Vector3(), ms: 0, frames: 0 };
+  const state = { seen: new Map(), out: true, here: [], eye: new THREE.Vector3(), ms: 0, frames: 0, near: new Map() };
   const REACH_FULL = quality.reachFull ?? 85, REACH_BIG = quality.reachBig ?? 230, MAXD = 4;
   const tmp = new THREE.Vector3();
+
+  // The rooms one or two doorways (or stairs) from where the eye is, open or shut, with how many: worked out again only
+  // when the eye moves to another room or comes near a door from outside.
+  let nearKey = '';
+  function findNear(here, eye) {
+    const start = here.filter(z => z !== 'out'), outDoors = [];
+    if (here.includes('out')) for (const p of P) if (p.kind !== 'win' && (p.a === 'out' || p.b === 'out') && p.box.distanceToPoint(eye) < NEAR_DOOR + 15) outDoors.push(p.a === 'out' ? p.b : p.a);
+    const key = start.join('|') + '/' + outDoors.join('|');
+    if (key === nearKey) return; nearKey = key;
+    const near = state.near; near.clear();
+    const q = [];
+    for (const z of start) { near.set(z, 0); q.push(z); }
+    for (const z of outDoors) if (!near.has(z)) { near.set(z, 1); q.push(z); }
+    while (q.length) {
+      const z = q.shift(), n = near.get(z);
+      if (n >= 2) continue;
+      for (const p of adj.get(z) ?? []) {
+        if (p.kind === 'win') continue;
+        const o = p.a === z ? p.b : p.a;
+        if (o === 'out' || near.has(o)) continue;
+        near.set(o, n + 1); q.push(o);
+      }
+    }
+  }
 
   function update(camera) {
     const t0 = performance.now();
@@ -96,33 +129,38 @@ export function makeVisibility({ rooms, portals, footprints = [], quality = {} }
     for (const p of P) if (p.box.distanceToPoint(eye) < 0.9) for (const z of [p.a, p.b]) if (!here.includes(z)) here.push(z);
     if (!here.length) here.push('out');
     const inside = !here.includes('out');
+    // Each chain of openings remembers whether it began outdoors (o): it is then held back as seen from the garden.
+    // (It had been the one `inside` for all of them: standing in a doorway still counted as outdoors, so the rooms
+    // beyond the hall stayed bare until the eye was a step inside, and then all came at once.)
     const queue = [];
-    for (const z of here) { seen.set(z, { rect: FULL, level: 2 }); queue.push([z, FULL, 0, 2]); }
+    for (const z of here) { const o = AHEAD ? z === 'out' : !inside; seen.set(z, { rect: FULL, level: 2, inside: !o }); queue.push([z, FULL, 0, 2, o]); }
     while (queue.length) {
-      const [z, rect, d, level] = queue.shift();
-      if (d >= MAXD || (z === 'out' && inside)) continue;      // from indoors, the garden is the end of the line
-      if (!inside && z !== 'out' && (level < 2 || d >= 2)) continue;   // from outdoors: rooms seen from afar, or two rooms deep, go no further
+      const [z, rect, d, level, o] = queue.shift();
+      if (d >= MAXD || (z === 'out' && !o)) continue;      // from indoors, the garden is the end of the line
+      if (o && z !== 'out' && (level < 2 || d >= 2)) continue;   // from outdoors: rooms seen from afar, or two rooms deep, go no further
       for (const p of adj.get(z) ?? []) {
         const other = p.a === z ? p.b : p.a;
         if ((eye.getComponent(p.k) - p.at) * (p.a === z ? -1 : 1) < -0.3) continue;   // the eye is beyond the opening: cannot look through it this way
         if (!frustum.intersectsBox(p.box)) continue;
         const r = cut(rect, screenRect(p.box)); if (!r) continue;
-        let lv = level;
-        if (!inside && z !== 'out') lv = Math.min(lv, 1);          // from outdoors, a room seen through another: its furniture only
+        let lv = level, co = o;
+        if (o && z !== 'out') lv = Math.min(lv, 1);          // from outdoors, a room seen through another: its furniture only
         if (z === 'out') {
           const dist = p.box.distanceToPoint(eye); lv = dist < REACH_FULL ? 2 : dist < REACH_BIG ? 1 : 0;
           if (eye.y < p.box.min.y - 2.5) lv = Math.min(lv, 1);       // looking up into a window from below: only the furniture shows
           if (!lv) continue;
+          if (AHEAD && p.kind !== 'win' && dist < NEAR_DOOR && lv === 2) co = false;      // a door at hand: beyond it, as from indoors
         }
         const was = seen.get(other);
-        if (was && was.level >= lv && within(r, was.rect)) continue;
-        const merged = was ? { rect: [Math.min(was.rect[0], r[0]), Math.max(was.rect[1], r[1]), Math.min(was.rect[2], r[2]), Math.max(was.rect[3], r[3])], level: Math.max(was.level, lv) } : { rect: r, level: lv };
+        if (was && was.level >= lv && within(r, was.rect) && (was.inside || co)) continue;
+        const merged = was ? { rect: [Math.min(was.rect[0], r[0]), Math.max(was.rect[1], r[1]), Math.min(was.rect[2], r[2]), Math.max(was.rect[3], r[3])], level: Math.max(was.level, lv), inside: was.inside || !co } : { rect: r, level: lv, inside: !co };
         seen.set(other, merged);
-        queue.push([other, merged.rect, d + 1, merged.level]);
+        queue.push([other, merged.rect, d + 1, merged.level, co && !merged.inside]);
       }
     }
     state.out = seen.has('out');
     state.here = here;
+    if (AHEAD) findNear(here, eye);
     state.ms += performance.now() - t0; state.frames++;
   }
 

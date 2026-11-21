@@ -49,7 +49,7 @@ export function* furnishSteps(B, site, b, lists) {
     const [Xa, Ya] = plan(r.x0, r.z0), [Xb, Yb] = plan(r.x1, r.z1), X0 = Math.min(Xa, Xb), X1 = Math.max(Xa, Xb), Y0 = Math.min(Ya, Yb), Y1 = Math.max(Ya, Yb);
     const floor = (r.floor ?? r.y0 + 0.6) - g0, ceil = (r.ceil ?? r.y1 - 0.6) - g0;
     const box = { name: r.name, X0, X1, Y0, Y1, floor, ceil, w: X1 - X0, d: Y1 - Y0, cx: (X0 + X1) / 2, cy: (Y0 + Y1) / 2, world: r };
-    (rooms[r.name] ??= Object.assign(box, { boxes: [] })).boxes.push(box);
+    (rooms[r.name] ??= { ...box, boxes: [] }).boxes.push(box);      // (the room is a thing of its own, not its first box: taking a later, larger box's size used to overwrite that first box, and the Upper Room's front-west part had no light of its own)
     if (box.w * box.d > rooms[r.name].w * rooms[r.name].d) Object.assign(rooms[r.name], { X0, X1, Y0, Y1, floor, ceil, w: box.w, d: box.d, cx: box.cx, cy: box.cy, world: r });      // a room of several boxes is known by its largest
   }
   const room = name => { const r = typeof name === 'string' ? rooms[name] : name; if (!r) throw new Error(`furnish ${site.id}: no room called "${name}" (there are: ${Object.keys(rooms).join(', ')})`); return r; };

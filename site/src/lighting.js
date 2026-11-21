@@ -44,6 +44,13 @@ const lerp = THREE.MathUtils.lerp, clamp = THREE.MathUtils.clamp, smooth = THREE
 const f = n => n.toFixed(3);
 const QS = new URLSearchParams(globalThis.location?.search ?? '');
 export const LIGHT_OLD = QS.get('light') === 'old';
+// For measuring what each part of the indoor light costs per pixel (and trying cheaper forms of it):
+//   ?taps=17|9|5|1   how many samples of the sun's shadow map each pixel takes (17: three's own filter, as it was)
+//   ?boxes=old       the room tests one after another, all of them (as it was; now they go in groups, each behind one test of the group's bounds: the same picture);  ?boxes=0  none (wrong picture: timing only)
+//   ?soft=0          no shader lamps (wrong picture: timing only)
+//   ?soft=old       each pixel goes through all sixteen shader lamps (as it was; now only its own room's: the same picture)
+const EASE = QS.get('ease') !== '0';      // (?ease=0: rooms' own light switched at a stroke, as it was)
+const TAPS = Number(QS.get('taps') ?? 17), BOXES = QS.get('boxes') ?? 'fast', SOFT_OFF = QS.get('soft') === '0', SOFT_FAST = QS.get('soft') !== 'old' && !SOFT_OFF;      // (the grouped room tests and the room-by-room lamps are how it is drawn now: the same picture, less work. ?boxes=old, ?soft=old: as it was)
 // The insides of the buildings, as boxes in world feet [x0, x1, z0, z1, y0, y1, floor, ceiling]
 // (building.js gives them: one for each room, or one for a whole storey). The floor and ceiling of
 // the box a surface lies in are what the corner shade is measured from; where they are left out,
@@ -65,6 +72,7 @@ export const HL = {
   soft: new Float32Array(SOFT * 4),// their lamps that the pool has not lit: x, y, z, strength (the live ones first)
   softCone: new Float32Array(SOFT),// ...for each, 2 x which of those rooms it is in, plus 1 if it is shaded (its light goes down in a cone)
   softTint: { x: 1, y: 1, z: 1 },  // the lamps' colour (linear), as the pool's
+  softRun: new Float32Array(NREG * 2),// (?soft=fast) for each of those rooms, where its lamps begin and end in soft (which is then kept room by room)
 };
 
 // ---- rooms that light themselves ----------------------------------------------------------
@@ -94,9 +102,19 @@ export function installHouseLight(boxes = [], floor = 0.55, ceil = 12.55) {
   FLOOR = floor; CEILING = ceil;
   // (a round end is given as { round: true, x, z, r, y0, y1, dx, dz, cos, floor, ceil }: within r of (x, z), and
   // within the angle whose cosine is cos of the direction (dx, dz): building.js, roomArc)
-  boxGLSL = boxes.map(q => (q.round
+  const boxLines = boxes.map(q => (q.round
     ? `  { vec2 q = p.xz - vec2(${f(q.x)}, ${f(q.z)}); float l = length(q); if (l < ${f(q.r)} && p.y > ${f(q.y0)} && p.y < ${f(q.y1)} && dot(q, vec2(${f(q.dx)}, ${f(q.dz)})) >= ${f(q.cos)} * l) { m = 1.0; hlFloor = ${f(q.floor ?? floor)}; hlCeil = ${f(q.ceil ?? ceil)}; } }`
-    : (([x0, x1, z0, z1, y0, y1, fl = floor, cl = ceil]) => `  if (hlBox(p, vec3(${[x0, y0, z0].map(f)}), vec3(${[x1, y1, z1].map(f)})) > 0.5) { m = 1.0; hlFloor = ${f(fl)}; hlCeil = ${f(cl)}; }`)(q))).join('\n');
+    : (([x0, x1, z0, z1, y0, y1, fl = floor, cl = ceil]) => `  if (hlBox(p, vec3(${[x0, y0, z0].map(f)}), vec3(${[x1, y1, z1].map(f)})) > 0.5) { m = 1.0; hlFloor = ${f(fl)}; hlCeil = ${f(cl)}; }`)(q)));
+  if (BOXES === '0') boxGLSL = '';
+  else if (BOXES === 'fast') {
+    // the same tests in the same order, in runs of eight, each run skipped where the point is outside the run's bounds;
+    // and nothing at all tested outside the bounds of them all (out of doors)
+    const bound = q => (q.round ? [q.x - q.r, q.x + q.r, q.z - q.r, q.z + q.r, q.y0, q.y1] : q.slice(0, 6));
+    const hull = qs => { const b = qs.map(bound); return [0, 1, 2, 3, 4, 5].map(k => (k % 2 ? Math.max : Math.min)(...b.map(v => v[k]))); };
+    const test = ([x0, x1, z0, z1, y0, y1]) => `hlBox(p, vec3(${[x0 - 0.01, y0 - 0.01, z0 - 0.01].map(f)}), vec3(${[x1 + 0.01, y1 + 0.01, z1 + 0.01].map(f)})) > 0.5`;
+    const runs = []; for (let k = 0; k < boxes.length; k += 8) runs.push(`  if (${test(hull(boxes.slice(k, k + 8)))}) {\n${boxLines.slice(k, k + 8).join('\n')}\n  }`);
+    boxGLSL = boxes.length ? `  if (${test(hull(boxes))}) {\n${runs.join('\n')}\n  }` : '';
+  } else boxGLSL = boxLines.join('\n');
   // The plan of what is indoors, whatever the height: the boxes' rectangles (those that lie within another left
   // out). A room's finishes (indoorLit, below) are lit as indoors anywhere over these: the boxes are square and stop
   // under a sloping ceiling, and the plaster or boards between a box's top and the slates were lit as out of doors,
@@ -115,6 +133,7 @@ uniform vec4 uInReg[${NREG * 2}];
 uniform vec3 uInAmbN, uInAmbD, uInSoftTint;
 uniform vec4 uInSoft[${SOFT}];
 uniform vec4 uInSoftCone[${SOFT / 4}];
+uniform vec2 uInSoftRun[${NREG}];
 // which of the rooms that light themselves the point is in (-1: none)
 int hlRegion(vec3 p) {
   for (int i = 0; i < ${NREG}; i++) {
@@ -131,13 +150,19 @@ int hlRegion(vec3 p) {
 // (each lamp lights only the room it is in: no light through the walls)
 vec3 hlSoftLamps(vec3 p, vec3 n, int room) {
   float s = 0.0;
-  for (int i = 0; i < ${SOFT}; i++) {
+${SOFT_OFF ? '  return vec3(0.0);' : ''}
+${SOFT_FAST ? `  vec2 run = uInSoftRun[room];
+  for (int i = int(run.x); i < int(run.y); i++) {
+    vec4 L = uInSoft[i];
+    float c = uInSoftCone[i >> 2][i & 3], r = floor(c * 0.5);` : `  for (int i = 0; i < ${SOFT}; i++) {
     vec4 L = uInSoft[i];
     if (L.w <= 0.0) break;
     float c = uInSoftCone[i >> 2][i & 3], r = floor(c * 0.5);
-    if (int(r) != room) continue;
-    vec3 d = L.xyz - p; float l = max(length(d), 0.05);
-    float w = clamp(1.0 - pow(l / ${f(SHAPE.lamp[0])}, 4.0), 0.0, 1.0);
+    if (int(r) != room) continue;`}
+    vec3 d = L.xyz - p; float l2 = dot(d, d);
+    if (l2 > ${f(SHAPE.lamp[0] * SHAPE.lamp[0])}) continue;      // beyond the lamp's reach it gives nothing: most of a big room's lamps, for any one point of it (the Reading Room has sixteen)
+    float l = max(sqrt(l2), 0.05), q = l / ${f(SHAPE.lamp[0])}; q *= q;
+    float w = clamp(1.0 - q * q, 0.0, 1.0);
     float cone = mix(1.0, 0.1 + 0.9 * smoothstep(0.25, 0.8, d.y / l), c - 2.0 * r);
     s += L.w * cone * w * w / max(pow(l, ${f(SHAPE.lamp[1])}), 0.01) * max(dot(n, d / l), 0.0);
   }
@@ -185,6 +210,13 @@ float houseShade(vec3 p, vec3 n, float inside) {
   }
 #endif
 `;
+  if (TAPS !== 17) {
+    // fewer samples of the sun's shadow map, over the same width (three's own filter takes seventeen)
+    const C = THREE.ShaderChunk.shadowmap_pars_fragment, i0 = C.indexOf('#if defined( SHADOWMAP_TYPE_PCF )'), i1 = C.indexOf('#elif defined( SHADOWMAP_TYPE_PCF_SOFT )');
+    const at = (x, y) => `texture2DCompare( shadowMap, shadowCoord.xy + vec2( ${f(x)}, ${f(y)} ) * hlR, shadowCoord.z )`;
+    const pts = TAPS >= 9 ? [[-1, -1], [0, -1], [1, -1], [-1, 0], [0, 0], [1, 0], [-1, 1], [0, 1], [1, 1]] : TAPS >= 5 ? [[0, 0], [-0.7, -0.7], [0.7, -0.7], [-0.7, 0.7], [0.7, 0.7]] : [[0, 0]];
+    if (i0 > 0 && i1 > i0) THREE.ShaderChunk.shadowmap_pars_fragment = C.slice(0, i0) + `#if defined( SHADOWMAP_TYPE_PCF )\n\t\t\tvec2 hlR = shadowRadius / shadowMapSize;\n\t\t\tshadow = ( ${pts.map(([x, y]) => at(x, y)).join(' + ')} ) * ${f(1 / pts.length)};\n\t\t` + C.slice(i1);
+  }
   for (const id of ['standard', 'physical']) {
     const S = THREE.ShaderLib[id];
     S.uniforms.uInAmb = { value: HL.amb };
@@ -197,6 +229,7 @@ float houseShade(vec3 p, vec3 n, float inside) {
     S.uniforms.uInSoft = { value: HL.soft };
     S.uniforms.uInSoftTint = { value: HL.softTint };
     S.uniforms.uInSoftCone = { value: HL.softCone };
+    S.uniforms.uInSoftRun = { value: HL.softRun };
     S.fragmentShader = S.fragmentShader
       .replace('#include <common>', '#include <common>\n' + head)
       .replace('#include <lights_fragment_maps>', '#include <lights_fragment_maps>\n' + after);
@@ -466,14 +499,21 @@ export function makeLampPool({ scene, lamps, vis, size, day, camera }) {
     ROOM.in += ((indoors ? 1 : 0) - ROOM.in) * Math.min(1, dt * 1.6);
     ROOM.k += ((here && indoors ? here.night : 1) - ROOM.k) * Math.min(1, dt * 1.6);
     setRoomAmb();
-    ROOM.act = ROOM.in < 0.01 ? [] : REGIONS.map(r => [r, away(r, eye)]).filter(([, d]) => d < 70).sort((a, b) => a[1] - b[1]).slice(0, NREG).map(([r]) => r);
+    // (As the house: a room joins or leaves the nearest few over a third of a second, never at a stroke. Seen through a
+    // doorway, its lamps and its own level otherwise jumped on as you crossed the room before it. Anna, 2026-11-21:
+    // "Can you incorporate the lighting fix from the house?")
+    const want = ROOM.in < 0.01 ? [] : REGIONS.map(r => [r, away(r, eye)]).filter(([, d]) => d < 70).sort((a, b) => a[1] - b[1]).slice(0, NREG).map(([r]) => r);
+    const ease = EASE ? Math.min(1, dt * 7) : 1;
+    for (const r of REGIONS) { const to = want.includes(r) ? 1 : 0; r.lv = (r.lv ?? 0) + (to - (r.lv ?? 0)) * ease; if (!to && r.lv < 0.02) r.lv = 0; }
+    ROOM.act = REGIONS.filter(r => r.lv > 0).sort((a, b) => (want.includes(b) ? 1 : 0) - (want.includes(a) ? 1 : 0) || b.lv - a.lv).slice(0, NREG);
     HL.reg.fill(0);
-    ROOM.act.forEach((r, i) => HL.reg.set([r.x0, r.z0, r.x1, r.z1, r.y0, r.y1, 1, lerp(1, r.night, ROOM.in)], i * 8));
+    ROOM.act.forEach((r, i) => HL.reg.set([r.x0, r.z0, r.x1, r.z1, r.y0, r.y1, 1, lerp(1, r.night, ROOM.in * r.lv)], i * 8));
     // their lamps near the eye, each lit by the shader as far as the pool has not lit it
     const lvl = new Map(pool.map(s => [s.lamp, s.level])), w = ROOM.in;
     const mine = ROOM.act.length ? lamps.filter(l => l.kind === 'lamp' && l.power > 0 && regOf(l) && ROOM.act.includes(l.__reg))
-      .map(l => ({ l, d: Math.hypot(l.x - eye.x, l.y - eye.y, l.z - eye.z), s: strength(l) * (1 - (lvl.get(l) ?? 0) * poolShare(l)) * w })).filter(o => o.s > 0.002 && o.d < 60)
+      .map(l => ({ l, d: Math.hypot(l.x - eye.x, l.y - eye.y, l.z - eye.z), s: strength(l) * (1 - (lvl.get(l) ?? 0) * poolShare(l)) * w * (l.__reg.lv ?? 1) })).filter(o => o.s > 0.002 && o.d < 60)
       .sort((a, b) => a.d * (a.l.__reg === here ? 1 : 2.5) - b.d * (b.l.__reg === here ? 1 : 2.5)).slice(0, SOFT) : [];      // (the room the eye is in first: a neighbour's lamps, nearer in a straight line through the wall, took its places and left its far tables dark)
+    if (SOFT_FAST) { mine.sort((a, b) => ROOM.act.indexOf(a.l.__reg) - ROOM.act.indexOf(b.l.__reg)); HL.softRun.fill(0); mine.forEach((o, k) => { const r = ROOM.act.indexOf(o.l.__reg); if (!HL.softRun[r * 2 + 1]) HL.softRun[r * 2] = k; HL.softRun[r * 2 + 1] = k + 1; }); }
     let i = 0;
     for (const { l, s } of mine) { HL.soft.set([l.x, l.y - DROP.lamp, l.z, LAMP * s], i * 4); HL.softCone[i] = 2 * ROOM.act.indexOf(l.__reg) + (l.cone ? 1 : 0); i++; }
     if (i < SOFT) HL.soft[i * 4 + 3] = 0;

@@ -23,7 +23,7 @@ import { FT, TAU, Walk, splitHead, turnTo, wrapA, clamp, clamp01, rng, vcMat } f
 
 // ---- Rabbits ---------------------------------------------------------------------------------------------------
 // S: { at: [[x, z], ...] where each begins, field: { x, z, r } the grass they keep to, hide: [x, z] the cover they
-//      bolt into (they are not seen there), when, tints, glow: a little light of their own for the small hours, name }
+//      bolt into (they are not seen there), when, tints, glow: a little light of their own after dark (kit.glow), name }
 export function rabbits(kit, S) {
   const { cam, scene, mesh, free, clear, groundAt, dist, nearest, add, feet, plant } = kit, r = rng(S.seed ?? 31337);
   const F = S.field, inField = (x, z) => Math.hypot(x - F.x, z - F.z) < F.r && free(x, z, 0.5);
@@ -52,7 +52,7 @@ export function rabbits(kit, S) {
     };
     add({
       name: (S.name ?? 'rabbit') + (n + 1), x: x0, z: z0, load: S.load ?? 300, live: S.live ?? 260, when: S.when,
-      init: async () => { me.o = o = await mesh('v_rabbit', 1.0, (S.tints ?? [0xffffff, 0xd0c0a8, 0xb8a892])[n % 3]); fp = feet(o.geometry); if (S.glow) { o.material = o.material.clone(); o.material.emissive = new THREE.Color(0x6a6258); o.material.emissiveMap = o.material.map; o.material.emissiveIntensity = S.glow; }      /* pale in the dark */ gy = groundAt(x0, z0); o.position.set(x0, gy, z0); o.rotation.y = face; plant(o, fp, gy); scene.add(o); me.w = w = new Walk(o); w.land = groundAt; w.base = gy; },
+      init: async () => { me.o = o = await mesh('v_rabbit', 1.0, (S.tints ?? [0xffffff, 0xd0c0a8, 0xb8a892])[n % 3]); fp = feet(o.geometry); if (S.glow) kit.glow(o, S.glow);      /* pale in the dark (and only in the dark) */ gy = groundAt(x0, z0); o.position.set(x0, gy, z0); o.rotation.y = face; plant(o, fp, gy); scene.add(o); me.w = w = new Walk(o); w.land = groundAt; w.base = gy; },
       show: on => { o.visible = on && !me.gone; },
       think: t => {
         const p = o.position, d = dist(p.x, p.z);
@@ -99,7 +99,7 @@ export function rabbits(kit, S) {
 }
 
 // ---- A hare ----------------------------------------------------------------------------------------------------
-// S: { spots: [[x, z], ...] its places (those that are not free are left out; it runs only where the way is clear), when }
+// S: { spots: [[x, z], ...] its places (those that are not free are left out; it runs only where the way is clear), glow, when }
 export function hare(kit, S) {
   const { cam, scene, mesh, free, clear, groundAt, dist, nearest, add, feet, plant } = kit, r = rng(S.seed ?? 577);
   const spots = S.spots.filter(([x, z]) => free(x, z, 0.8));
@@ -108,7 +108,7 @@ export function hare(kit, S) {
   const set = (s, t, dur) => { state = s; act = t; until = t + dur; };
   add({
     name: S.name ?? 'hare', x: spots[0][0], z: spots[0][1], load: S.load ?? 300, live: S.live ?? 260, when: S.when,
-    init: async () => { o = await mesh('v_hare', 0.8, 0xc9b8a0); fp = feet(o.geometry); gy = groundAt(spots[0][0], spots[0][1]); o.position.set(spots[0][0], gy, spots[0][1]); o.rotation.y = look = 0.4; plant(o, fp, gy); scene.add(o); w = new Walk(o); w.land = groundAt; w.base = gy; },
+    init: async () => { o = await mesh('v_hare', 0.8, 0xc9b8a0); if (S.glow) kit.glow(o, S.glow); fp = feet(o.geometry); gy = groundAt(spots[0][0], spots[0][1]); o.position.set(spots[0][0], gy, spots[0][1]); o.rotation.y = look = 0.4; plant(o, fp, gy); scene.add(o); w = new Walk(o); w.land = groundAt; w.base = gy; },
     show: on => { o.visible = on; },
     think: t => {
       const p = o.position, d = dist(p.x, p.z);
@@ -150,7 +150,7 @@ export function hare(kit, S) {
 // along the plank, and scampers up the trunk; if you come near it goes up the trunk and stays there.
 // S: { x, z the tree, trunk: its radius, seat: { top, plank, inner, edge } (the height of the boards; the corner radii
 //      of the plank it keeps to, of the innermost one, and of the seat's outer edge) or none, range: how far out over
-//      the grass it goes, wood: the name of the meshes the trunk is drawn in, start: the angle it begins at, when }
+//      the grass it goes, wood: the name of the meshes the trunk is drawn in, start: the angle it begins at, glow, when }
 export function squirrel(kit, S) {
   const { cam, scene, mesh, tag, free, clear, groundAt, cast, dist, nearest, add, feet, plant } = kit, r = rng(S.seed ?? 31337);
   const ox = S.x, oz = S.z, seat = S.seat ?? null, PL = seat?.plank ?? 0, IN = seat?.inner ?? 0, Y0 = groundAt(ox, oz), seatY = seat?.top ?? 0, seatIn = seatY;
@@ -188,7 +188,7 @@ export function squirrel(kit, S) {
   add({
     name: S.name ?? 'squirrel', x: ox, z: oz, load: S.load ?? 300, live: S.live ?? 260, when: S.when,
     init: async () => {
-      o = await mesh('v_squirrel', 1.0, S.tint ?? 0xd08a5a); fp = feet(o.geometry);
+      o = await mesh('v_squirrel', 1.0, S.tint ?? 0xd08a5a); if (S.glow) kit.glow(o, S.glow, 0x5a3a24); fp = feet(o.geometry);
       const bb = o.geometry.boundingBox; nut = tag(new THREE.Mesh(new THREE.SphereGeometry(0.075, 7, 5), new THREE.MeshStandardMaterial({ color: 0x6a4a26, roughness: 0.7 }))); nut.position.set(0, bb.min.y + (bb.max.y - bb.min.y) * 0.5, bb.max.z - 0.04); nut.visible = false; o.add(nut);
       if (seat) { s = sOf(homeA); onPlank(PL, s); o.rotation.set(0, 0, 0); plant(o, fp, seatY); }
       else { const [x, z] = foot(homeA); gy = groundAt(x, z); o.position.set(x, gy, z); o.rotation.set(0, homeA, 0); plant(o, fp, gy); }
@@ -299,14 +299,14 @@ export function squirrel(kit, S) {
 const strip = (S) => { const [ax, az] = S.a, [bx, bz] = S.b, L = Math.hypot(bx - ax, bz - az), tx = (bx - ax) / L, tz = (bz - az) / L; return { L, at: (u, c = 0) => [ax + tx * u - tz * c, az + tz * u + tx * c], yaw: Math.atan2(tx, tz) }; };
 
 // ---- A hedgehog along the foot of a hedge, from dusk ---------------------------------------------------------------
-// S: { a: [x, z], b: [x, z] the two ends of its beat, w: how wide, when }
+// S: { a: [x, z], b: [x, z] the two ends of its beat, w: how wide, glow: a little light of its own after dark, when }
 export function hedgehog(kit, S) {
   const { scene, mesh, clear, groundAt, dist, add, feet, plant } = kit, r = rng(S.seed ?? 808), R = strip(S), HW = (S.w ?? 1.2) / 2;
   let o, w, fp, gy = 0, state = 'root', until = 0, curl = 0, safe = 0, u = R.L * 0.5, dir = 1;
   add({
     name: S.name ?? 'hedgehog', x: R.at(R.L / 2)[0], z: R.at(R.L / 2)[1], load: S.load ?? 220, live: S.live ?? 180, when: S.when,
     init: async () => {
-      o = await mesh('v_hedgehog', 1.15, 0xffffff); o.material.color.setRGB(1.7, 1.55, 1.35);       /* paler spines and face, to read at dusk */ fp = feet(o.geometry);
+      o = await mesh('v_hedgehog', 1.15, 0xffffff); o.material.color.setRGB(1.7, 1.55, 1.35); if (S.glow) kit.glow(o, S.glow, 0x5a5048);       /* paler spines and face, to read at dusk */ fp = feet(o.geometry);
       const [x, z] = R.at(u); gy = groundAt(x, z); o.position.set(x, gy, z); o.rotation.y = R.yaw; plant(o, fp, gy); scene.add(o); w = new Walk(o); w.land = groundAt; w.base = gy;
     },
     show: on => { o.visible = on; },

@@ -172,6 +172,8 @@ function prepareModel(src, outdoor) {
 export function bringToLife({ scene, outdoors = scene, vis = null, quality = {}, renderer, camera, items, garden, colliders, materials, doors = [], onChange }) {
   const { models, extras, books, candles, seats, lamps, steam } = items;
   const Q_ = new URLSearchParams(location.search);
+  // ?ahead=0: as it was (rooms' pictures made ready only when first seen, clutter drawn less far when frames run slow)
+  const AHEAD = Q_.get('ahead') !== '0', REACH = quality.reach ?? 1;
   ANISO = Math.min(quality.aniso ?? 8, renderer.capabilities.getMaxAnisotropy());
   const animated = [], interact = [];
   // Things drawn only when their zone can be seen (visibility.js); test: an extra condition
@@ -288,15 +290,16 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
     // (born not yet wanted: version 0 keeps the renderer, and warm.js, from sending it before it is asked for here)
     tex.version = 0;
     mesh.geometry.computeBoundingBox();
-    const s = { mesh, levels: [{ t: tex, last: -1 }, null, null], box: mesh.geometry.boundingBox, level: 0, d: 0 };
+    const z = String(mesh.userData.sheet ?? '').split('|')[0], c = z.indexOf(':', 2);
+    const s = { mesh, levels: [{ t: tex, last: -1 }, null, null], box: mesh.geometry.boundingBox, level: 0, d: 0, room: z.startsWith('r:') ? (c > 0 ? z.slice(0, c) : z) : null };
     mesh.userData.textures = [tex];                    // (for perf.js, which counts what is on the card)
     managed.push(s);
   }
   function copyOf(s, n) {
     if (s.levels[n]) return s.levels[n];
-    const src = s.levels[0].t.image, c = document.createElement('canvas'), k = n === 1 ? 2 : 4;
+    const src = s.levels[0].t.image, c = document.createElement('canvas'), k = n === 1 ? 2 : 4, from = n === 2 && s.levels[1] ? s.levels[1].t.image : src;      // (the quarter from the half when there is one: a quarter of the work)
     c.width = Math.max(4, Math.round(src.width / k)); c.height = Math.max(4, Math.round(src.height / k));
-    const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(src, 0, 0, c.width, c.height);
+    const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(from, 0, 0, c.width, c.height);
     const t = new THREE.CanvasTexture(c), f = s.levels[0].t; t.colorSpace = f.colorSpace; t.anisotropy = f.anisotropy;
     s.mesh.userData.textures.push(t);
     return (s.levels[n] = { t, last: -1 });
@@ -307,20 +310,41 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
     for (const l of s.levels.slice(1)) if (l) { const c = l.t.image, g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height); g.drawImage(tex.image, 0, 0, c.width, c.height); l.t.needsUpdate = true; }
   }
   const onCard = t => !!props.get(t).__webglTexture;
+  // Made ready before it is seen (AHEAD). A copy used to be made, and sent to the card, in the very frame its sheet was
+  // first drawn at that distance: walking into a room, all its lettering, rugs and pictures at once, in one long frame
+  // (9 to 21 sheets on a doorway, measured). Now:
+  //  - the sheets of the rooms a doorway or two from where you are (visibility.js `near`, open doors or shut) are made
+  //    ready at the size they would be seen, nearest first, one every other frame, before you can see into them, and kept;
+  //  - a sheet that is seen while the copy wanted for its distance is not yet ready goes on showing a copy that is (a
+  //    finer one if there is one) until it is: so a label sharpens a moment later, rather than holding the frame up.
+  const isReady = l => !!l && onCard(l.t);
   function sheetsShown(all) {
     cullFrame++;
     if (all && !CULL_OFF) return;                      // (the first frame shows everything to compile it; that is not wanting it)
-    const p = camera.position, live = [];
-    let total = 0, best = null;
+    const p = camera.position, live = [], near = AHEAD ? vis?.state.near : null;
+    let total = 0, best = null, need = null;
     for (const s of managed) {
       s.d = s.box.distanceToPoint(p) + Math.max(0, Math.abs(p.y - (s.box.min.y + s.box.max.y) / 2) - 6) * 2;      // another floor counts as further
       // (a couple of feet either way at each line, so a sheet does not flick between copies as one stands on it)
       const up = s.level, d = s.d;
       s.level = d < FULL_AT - (up > 0 ? 2 : -2) ? 0 : d < HALF_AT - (up > 1 ? 3 : -3) ? 1 : 2;
       if (s.mesh.visible) {
-        const l = copyOf(s, s.level), m = s.mesh.material;
+        let l = s.levels[s.level];
+        if (AHEAD && !isReady(l)) {
+          const alt = [s.level - 1, s.level + 1, s.level - 2, s.level + 2].map(n => (n >= 0 && n <= 2 ? s.levels[n] : null)).find(isReady);
+          if (alt) { if (!need || need.vis !== true || s.d < need.s.d) need = { s, n: s.level, vis: true }; l = alt; }
+        }
+        l ??= copyOf(s, s.level);
+        const m = s.mesh.material;
         l.last = cullFrame; if (l.t.version === 0) l.t.needsUpdate = true;
         if (m.map !== l.t) { m.map = l.t; if (m.emissiveMap) m.emissiveMap = l.t; }
+      } else if (near && s.room && near.has(s.room) && s.d < 2 * HALF_AT) {
+        // a room a doorway or two away: a copy for this distance made ready, and kept while it is that near. (One copy of
+        // any size is enough: once in view it is shown at once and sharpened as above; making each size as the distance
+        // crossed its line cost a sheet a frame all the way along a corridor.)
+        let any = false;
+        for (const l of s.levels) if (isReady(l)) { l.last = cullFrame; any = true; }
+        if (!any && (cullFrame & 1) && (!need || (need.vis !== true && s.d < need.s.d))) need = { s, n: s.level };
       }
       for (const l of s.levels) if (l && (l.last === cullFrame || onCard(l.t))) { total += bytesOf(l.t); live.push([l, s]); }
       const f = s.levels[0];
@@ -338,8 +362,12 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
       }
     }
     // one full sheet a frame made ready ahead of being near enough to need it (the nearest), while there is room
-    if (best) { const t = best.levels[0].t; if (total + bytesOf(t) <= SHEET_BUDGET) { if (t.version === 0) t.needsUpdate = true; renderer.initTexture(t); } }
+    let sent = false;
+    if (best) { const t = best.levels[0].t; if (total + bytesOf(t) <= SHEET_BUDGET) { if (t.version === 0) t.needsUpdate = true; renderer.initTexture(t); sent = true; } }
+    // and, in a frame that has not sent one already, one copy wanted (one in view first, then the nearest room's)
+    if (need && (!sent || need.vis)) { const t0 = performance.now(), l = copyOf(need.s, need.n); if (l.t.version === 0) l.t.needsUpdate = true; renderer.initTexture(l.t); l.last = cullFrame; madeReady++; readyMs = Math.max(readyMs, performance.now() - t0); }
   }
+  let madeReady = 0, readyMs = 0;
   // A lit screen: black glass that shows its picture by its own light. The eye opens up after dark
   // (lighting.js, exposure), which would bleach a white page, so the glow is held level on screen.
   const screenMats = [];
@@ -585,7 +613,7 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
     if (!camera || (cullClock += dt) < 0.2) return; cullClock = 0;
     const p = camera.position;
     for (const c of cull) {
-      const d = Math.hypot(c.x - p.x, c.z - p.z), reach = Math.max(c.outdoor ? 60 : 30, c.r * (c.outdoor ? 90 : 60)) * (quality.reach ?? 1);
+      const d = Math.hypot(c.x - p.x, c.z - p.z), reach = Math.max(c.outdoor ? 60 : 30, c.r * (c.outdoor ? 90 : 60)) * (AHEAD ? REACH : quality.reach ?? 1);
       const otherFloor = !c.outdoor && Math.abs(c.y + 4 - p.y) > 7.5;
       c.near = d < reach && !(otherFloor && (d > 16 || c.r < 1.2));
     }
@@ -603,7 +631,11 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
     sheetsShown(all);
     placeHandles();
   }
-  const SMALL_NEAR = () => 34 * (quality.reach ?? 1);           // clutter further off than this is not drawn (main.js lowers reach for a while if frames run slow)
+  // Clutter further off than this is not drawn. (main.js lowers quality.reach when frames run slow; that is no longer followed
+  // here (AHEAD): on a laptop that runs below 46 frames a second throughout it sat at two thirds of the tier's reach for the
+  // whole visit, so a room's small things, a sheet or a shelf of books at a time, came in 19 ft from the eye instead of 29,
+  // once you were well into the room; and it saved at most a tenth of the draw calls, most often a few.)
+  const SMALL_NEAR = () => 34 * (AHEAD ? REACH : quality.reach ?? 1);
 
   const loader = new GLTFLoader(lazy), cache = new Map(), ready = new Map();
   const load = id => { if (!cache.has(id)) cache.set(id, new Promise((ok, bad) => loader.load(`assets/models/${id}/${id}.gltf`, g => ok(g.scene), undefined, bad))); return cache.get(id); };
@@ -682,7 +714,7 @@ export function bringToLife({ scene, outdoors = scene, vis = null, quality = {},
       // panel and its raised inset share a material: one mesh
       const panel = new THREE.BoxGeometry(w - 0.02, h1 - h0, d.slab.th), raised = new THREE.BoxGeometry(Math.max(0.05, w - 0.5), Math.max(0.05, h1 - h0 - 0.5), d.slab.th + 0.02);
       const body = new THREE.Mesh(mergeGeometries([panel, raised]), materials.make(d.slab.mat)); body.position.set(w / 2, (h0 + h1) / 2, 0); body.castShadow = body.receiveShadow = true;
-      const pull = new THREE.Mesh(new THREE.BoxGeometry(0.05, Math.min(0.5, (h1 - h0) * 0.3), 0.12), materials.make(d.slab.handle)); pull.position.set(w - 0.16, (h0 + h1) / 2, 0.06 * Math.sign(d.open - d.closed) * -1);
+      const pull = new THREE.Mesh(new THREE.BoxGeometry(0.05, Math.min(0.5, (h1 - h0) * 0.3), 0.12), materials.make(d.slab.handle)); pull.position.set(w - 0.16, (h0 + h1) / 2, (d.slab.th / 2 + 0.045) * Math.sign(d.open - d.closed) * -1);      // (standing off the panel's own face: on a thick door, the fridge's, its front lay exactly in that face)
       g.add(body, pull);
       d.isOpen = false;
       interact.push({ x: d.cx, y: (h0 + h1) / 2, z: d.cz, reach: 5.5, label: () => `${d.isOpen ? 'close' : 'open'} the ${d.label}`, act: () => { d.isOpen = !d.isOpen; } });
@@ -928,7 +960,7 @@ void main() {
   }
   function chalkSave() { try { localStorage.setItem('chalkboard2', chalk.canvas.toDataURL('image/jpeg', 0.7)); } catch { /* too big or private */ } }
 
-  return { attend: w => doors.attend(w), update: (t, dt = 0.016) => { for (const f of animated) f(t, dt); }, cull: cullModels, track, zoneAt, pending: () => left + (sheetQueue.length || job ? 1 : 0) + picLoading, arriving: () => left, get waits() { return { models: left, active, sheets: sheetQueue.length + (job ? 1 : 0), sheetMs: Math.round(sheetMs), slowSheets, pictures: picLoading, picturesWaiting: picQueue.length }; }, target, interact, animated, get chalk() { return chalk; }, chalkStroke, chalkWipe, chalkSave,
+  return { quality, attend: w => doors.attend(w), update: (t, dt = 0.016) => { for (const f of animated) f(t, dt); }, cull: cullModels, track, zoneAt, pending: () => left + (sheetQueue.length || job ? 1 : 0) + picLoading, arriving: () => left, get waits() { return { prepared: madeReady, preparedMaxMs: Math.round(readyMs), models: left, active, sheets: sheetQueue.length + (job ? 1 : 0), sheetMs: Math.round(sheetMs), slowSheets, pictures: picLoading, picturesWaiting: picQueue.length }; }, target, interact, animated, get chalk() { return chalk; }, chalkStroke, chalkWipe, chalkSave,
     // A fresh copy of a collected model, scaled to feet, for things that move (staff, pets)
     loadModel: async id => { const o = (await load(id)).clone(true); o.scale.setScalar(FT); o.traverse(n => { if (n.isMesh) n.castShadow = n.receiveShadow = true; }); return o; } };
 }

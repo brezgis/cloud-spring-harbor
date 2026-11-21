@@ -7,11 +7,12 @@
 //             the same brick in running bond, narrower, between the same edges. (The worn short cuts have nothing laid: campus.js, PATHS.)
 //   edge      a soldier course of brick, one brick wide (8 in.), standing a half-inch proud of the surface and an inch
 //             and a half proud of the lawn; its outer face runs down into the ground
-//   meeting   where a lesser walk meets a greater one its surface runs on underneath (an inch lower: nothing shares a
-//             plane) and its edges stop against the greater walk's edge; the greater walk's edge is left open across
-//             the mouth, exactly as wide as the lesser walk. The same at each door's setts and the Landing's oval
-//             (`under`: the regions something else paves). The ends of every cut are found by bisection, not by the
-//             spacing of the cross-sections.
+//   meeting   where a lesser walk meets a greater one its surface stops at the greater one's surface, cut along its
+//             edge at whatever angle they meet (in under it by a hair, an inch lower: nothing shares a plane), and
+//             its edges stop against the greater walk's edge; the greater walk's edge is left open across the mouth,
+//             exactly as wide as the lesser walk. At each door's setts and the Landing's oval (`under`: the regions
+//             something else paves) a walk runs on underneath instead. The ends of every cut are found by bisection,
+//             not by the spacing of the cross-sections.
 
 import * as THREE from 'three';
 import { WALKS, groundAt } from '../campus.js';
@@ -47,10 +48,32 @@ export function layWalks(G, under) {
       S.push(s);
     }
     S.sort((a, b) => a - b);
-    const secs = S.filter((s, i) => i === 0 || s - S[i - 1] > 0.02).map(s => ({ s, ...at(w, s) }));
+    // Where a lesser walk begins or ends on a greater one, its surface stops at the greater one's edge (MEET: three
+    // quarters of an inch in under it), cut along that edge, mitred to whatever angle the two meet at: it used to run on under the
+    // greater walk to its middle, and a surface of another stone drawn later (the side door's flags) showed through it
+    // as a slab laid across the brick. trim[0] / trim[1]: the greater walk at the start / the end, and where its edge is.
+    const MEET = 0.06, trim = [null, null];
+    for (const [end, p] of [[0, walk.pts[0]], [1, walk.pts.at(-1)]]) {
+      const k = WALKS.findIndex((o, k) => k < w && !under(p[0], p[1], 0) && dist(k, p[0], p[1], 8) < o.w / 2); if (k < 0) continue;
+      const lim = WALKS[k].w / 2, inside = s => { const a = at(w, s); return dist(k, a.x, a.z, 8) < lim; };
+      let a = end ? len : 0, b = a; const dir = end ? -1 : 1; while (inside(b) && Math.abs(b - a) < len / 2) b += dir * 0.25;
+      for (let q = 0; q < 16; q++) { const m = (a + b) / 2; if (inside(m)) a = m; else b = m; }
+      trim[end] = { k, lim: lim - MEET, s: (a + b) / 2 };
+    }
+    // (a section is kept only when it lies wholly clear of the greater walk: at a slant the cut runs on past the next
+    // section or two on the sharp side, and a section with a corner still under the brick would fold the strip back)
+    const clear = (s, t) => { const a = at(w, s); return [1, 0, -1].every(k => dist(t.k, a.x + a.nx * k * W / 2, a.z + a.nz * k * W / 2, 8) >= t.lim + MEET); };
+    const keep = s => (!trim[0] || (s > trim[0].s + 0.05 && clear(s, trim[0]))) && (!trim[1] || (s < trim[1].s - 0.05 && clear(s, trim[1])));
+    const secs = [...(trim[0] ? [trim[0].s] : []), ...S.filter(keep), ...(trim[1] ? [trim[1].s] : [])].filter((s, i, A) => i === 0 || s - A[i - 1] > 0.02).map(s => ({ s, ...at(w, s) }));
+    // a point of a cut section, moved along the walk until it lies on the greater walk's edge (by bisection)
+    const onEdge = (c, x, z) => { const t = trim.find(q => q && Math.abs(q.s - c.s) < 1e-6); if (!t) return [x, z, 0];
+      const f = d => dist(t.k, x + c.tx * d, z + c.tz * d, 8) - t.lim, sg = t === trim[0] ? -1 : 1;      // (sg: the way along the walk toward the greater one)
+      let a = 0, b = 0; while (f(a) >= 0 && Math.abs(a) < 6) a += sg * 0.2; while (f(b) < 0 && Math.abs(b) < 6) b -= sg * 0.2;      // a inside it, b outside
+      for (let q = 0; q < 16; q++) { const m = (a + b) / 2; if (f(m) < 0) a = m; else b = m; }
+      const d = (a + b) / 2; return [x + c.tx * d, z + c.tz * d, d]; };
     // ---- the surface: three points across (the middle one keeps a wide walk on the ground) ----
     const pos = [], uv = [], idx = [];
-    for (const c of secs) for (const k of [1, 0, -1]) { const x = c.x + c.nx * k * W / 2, z = c.z + c.nz * k * W / 2; pos.push(x, groundAt(x, z) + (low(x, z) ? LOW : SURF), z); uv.push(k * W / 2 + (brick ? 0 : 0.167), c.s); }
+    for (const c of secs) for (const k of [1, 0, -1]) { const [x, z, d] = onEdge(c, c.x + c.nx * k * W / 2, c.z + c.nz * k * W / 2); pos.push(x, groundAt(x, z) + (low(x, z) ? LOW : SURF), z); uv.push(k * W / 2 + (brick ? 0 : 0.167), c.s + d); }
     for (let i = 0; i < secs.length - 1; i++) { const a = i * 3, b = a + 3; idx.push(a, b, a + 1, a + 1, b, b + 1, a + 1, b + 1, a + 2, a + 2, b + 1, b + 2); }
     G.strip(surface, pos, uv, idx); stats.tris += idx.length / 3;
     // ---- the edges: outer face, top, inner face; a run ends in a closed face ----

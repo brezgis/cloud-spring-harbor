@@ -50,9 +50,19 @@ export default function (f) {
   // from 120. It had one light hung in the well (../../buildings/library.js), with no fitting. Two globes on brass arms,
   // on facets the notices leave bare (2 and 6), each well over its tread: one over the first turn, one at the half.
   // =================================================================================================================
+  // A region of light given in the building's plan (local feet, as above), for roomLight: { world } as a room's box has.
+  const [ox, oz] = f.site.origin, g0 = f.site.ground ?? 0, turn = { east: 0, north: 1, west: 2, south: 3 }[f.site.facing] ?? 0;
+  const cs = Math.round(Math.cos(turn * Math.PI / 2)), sn = Math.round(Math.sin(turn * Math.PI / 2)), P = (X, Y) => [ox + X * cs - Y * sn, oz - X * sn - Y * cs];      // (building.js's P)
+  const region = (x0, x1, y0, y1, h0, h1) => { const [ax, az] = P(x0 + OX, y0), [bx, bz] = P(x1 + OX, y1); return { world: { x0: Math.min(ax, bx), x1: Math.max(ax, bx), z0: Math.min(az, bz), z1: Math.max(az, bz), y0: g0 + h0, y1: g0 + h1 } }; };
+  const YP = 16.3;      // the back of the porch: the face of the wall the tower's two doorways are in (../../buildings/library.js)
   if (room('Tower Stair')) {
     const TX = 35.5, TY = 8.77, R = 6.22;
-    roomLight(room('Tower Stair'), { night: 0.15 });
+    // (One region over the whole drum and the passage to its doorways, to 0.05 ft into that wall: roomLight adds 0.2.
+    // It had been the square of the drum alone: the strips of the drum's west and south facets beyond the square, and
+    // the passage with its doorways' plaster, were lit at the ordinary level after dark, nearly seven times the
+    // stair's, pale bands that swept round as you climbed. Not the hull of the room's boxes either, which runs 0.2 ft
+    // past the wall's face into the Upper Room's region at the head of the stair: see the Upper Room, below.)
+    roomLight({ name: 'Tower Stair', boxes: [region(TX - 6.5, TX + 6, TY - 6.5, YP - 0.15, F - 0.6, 26.6)] }, { night: 0.15 });
     for (const i of [2, 6]) {
       const a = (123.75 + 22.5 * i) * RAD, tread = F + ((123.75 + 22.5 * i - 120) / 12.5 + 1) * 0.58;
       sconce(afr(TX + R * Math.cos(a), TY + R * Math.sin(a), tread, a + Math.PI / 2), 8.8, 0.12);
@@ -119,7 +129,10 @@ export default function (f) {
   // =================================================================================================================
   if (room('Upper Room')) {
     const up = room('Upper Room');
-    for (const b of up.boxes?.length ? up.boxes : [up]) roomLight({ name: 'Upper Room', boxes: [b] }, { night: 0.8 });
+    // (the box behind the tower begins in the face of the wall the stair's upper doorway is in: its region begins 0.05 ft
+    // inside that wall, where the Tower Stair's ends, so that the two never overlap. Overlapping, the doorway's casing and
+    // the wall round it on the stair's side were lit as the one room or the other by which was nearer the eye.)
+    for (const b of up.boxes?.length ? up.boxes : [up]) roomLight({ name: 'Upper Room', boxes: [Math.abs(b.Y0 - YP) < 0.01 ? region(b.X0 - OX, b.X1 - OX, YP + 0.25, b.Y1, b.world.y0 - g0, b.world.y1 - g0) : b] }, { night: 0.8 });
     for (const [x, y, z] of [[32.25, 19.65, 2.6], [16.15, 30.3, 2.5], [21.85, 29.7, 2.5], [7.0, 29.75, 2.5], [35.4, 41.1, 2.5], [17.45, 3.25, 3.32]]) lit(x, y, F2 + z + 1.65, 0.32, 1);
     const roof = y => 24.5 + 0.705 * Math.min(y, 55.3 - y);      // the west wing's roof over y (../../buildings/library.js, westRoof)
     for (const y of [24.2, 33.8]) pendant(f.fr(29.9 + OX, y, F2, 0), 9.0, roof(y) - 0.3 - F2, 0.6);

@@ -119,6 +119,10 @@ export function creatureKit(ctx, land = {}) {
   // ---- the crew -----------------------------------------------------------------------------------
   // A member: { name, x, z, load (ft), live (ft), when(), init() -> Promise, show(on), think(t, d), tick(t, dt) }
   const add = c => { Object.assign(c, { loaded: false, loading: false, on: false }); crew.push(c); return c; };
+  // A little light of an animal's own after dark, so that it can be seen on the lawn at night: its own picture, lit in
+  // proportion to the night (nothing by day). Each mesh's material is its own from then on.
+  const glows = [];
+  const glow = (o, k = 0.4, color = 0x6a6258) => { o.traverse(n => { if (!n.isMesh || n.userData.glows) return; n.userData.glows = true; const m = n.material = n.material.clone(); m.emissive = new THREE.Color(color); if (m.map) m.emissiveMap = m.map; m.emissiveIntensity = k * (day.night ?? 0); glows.push([m, k]); }); return o; };
   let next = 0;
   const all = new URLSearchParams(location.search).has('allcreatures');      // tests: load and run everything, everywhere
   animated.push((t, dt) => {
@@ -126,6 +130,7 @@ export function creatureKit(ctx, land = {}) {
     dt = Math.min(dt, 0.1);
     if (t >= next || t < next - 1) {
       next = t + 0.25;
+      for (let i = 0; i < glows.length; i++) glows[i][0].emissiveIntensity = glows[i][1] * (day.night ?? 0);
       for (let i = 0; i < crew.length; i++) {
         const c = crew[i], d = camDist(c.x, c.z), want = c.when ? c.when() : true;
         if (!c.loaded && !c.loading && !c.failed && (all || (want && d < (c.load ?? 150)))) {
@@ -156,7 +161,7 @@ export function creatureKit(ctx, land = {}) {
     for (let i = 0; i < pts.length; i += 3) { const v = e[1] * pts[i] + e[5] * pts[i + 1] + e[9] * pts[i + 2]; if (v < lo) lo = v; }
     o.position.y = y + lift - lo;
   };
-  const kit = { ctx, land, day, cam, scene, glb, mesh, tag, inLot, blocked, onIsland, keepOff, free, clear, groundAt, cast, plantsIn, laid, dist, camDist, nearest, dist3, add, crew, feet, plant, all,
+  const kit = { ctx, land, day, cam, scene, glb, mesh, tag, inLot, blocked, onIsland, keepOff, free, clear, groundAt, cast, plantsIn, laid, dist, camDist, nearest, dist3, add, crew, feet, plant, all, glow,
     hour: () => day.hour ?? 12 };
   if (typeof window !== 'undefined') { window.__creatures = crew; window.__creatureKit = kit; }      // for tests
   // ?creaturelog=14000 writes, that many milliseconds in, who is loaded and showing, where they are, and what

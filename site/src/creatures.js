@@ -1,16 +1,21 @@
-// The Laboratory's animals. There is always something moving in view, wherever you stand and whatever the hour:
-// about seven kinds by day and as many by night, each kind in its own places, and none of them still for long.
+// The Laboratory's animals. There is always something moving in view, wherever you stand and whatever the hour: Anna
+// nearly always walks here at night, so the grounds do not empty after dark (some keep hours no animal would: she said
+// that was all right). Plentiful but not a zoo; no flocks anywhere, and nothing flying overhead at night.
 //
-//                    early          midday         afternoon      dusk            night (to 1.30)   small hours
-//   the green        blackbird      squirrels      squirrels      bats            bats, moths       bats, moths
-//                    sparrows       sparrows       swallows       starlings       starlings at roost (they shuffle)
-//   the oak, meadow  rabbits        ants, bees     bees           hare            owl, fireflies    owl, fireflies
-//   Glider, lamps    robins         butterflies    butterflies    hedgehog        hedgehog, fox     hedgehog, rabbits
-//   the academy      sparrows       butterflies    jay, tortoise                  nightingale       nightingale
-//   the pond         ducks, frog    ducks,         ducks          frog            frog, fireflies   frog, fireflies
-//                                   dragonflies                                   (ducks asleep in the rushes)
-//   overhead         pigeons        pigeons        swallows       starlings (a murmuration: creatures/flock.js)
-//   koi are in the pond at every hour; ants keep their road by day; crickets are heard at night.
+//                    by day                                   dusk                        night and the small hours
+//   the green        blackbird; four sparrows at the tables;  rabbits come out on the     three rabbits on the lawn by a lamp;
+//                    the second squirrel; a tortoise; ants    lawn; blackbird             fireflies
+//   the oak, meadow  the oak's squirrel; rabbits; bees and    squirrel, rabbits, hare;    the squirrel still about the oak;
+//                    butterflies; ants                        the owl comes out           rabbits, hare; the owl; fireflies
+//   Glider, lamps    two robins                               robins                      a robin under the Landing's lamps;
+//                                                                                         moths at every lamp
+//   the academy      a pair of sparrows; a jay at the bath    a hedgehog                  a hedgehog; the nightingale
+//   the library      (the maple's sparrows, ants)             a hedgehog                  a hedgehog along the planting
+//   the pond         ducks, frog, koi; dragonflies at noon    ducks, frog, koi            ducks (asleep from three), frog, koi
+//   the rim          -                                        the fox                     the fox
+//   overhead         a pair of pigeons passing over now and   -                           nothing
+//                    then; three swallows in the afternoon
+//   fireflies are all over the grounds at night, a few wherever you stand; crickets are heard at night.
 //
 // How each one behaves is in creatures/ and knows nothing of this place: this file is the cast, and tells each
 // where it lives. creatures/kit.js is the crew they all belong to (it came from the garden of Anna's House by way
@@ -19,8 +24,9 @@
 //
 //   creatures/beasts.js   rabbits, hare, squirrel, hedgehog, tortoise, fox
 //   creatures/birds.js    robin, sparrows, blackbird, jay, barn owl
-//   creatures/swarms.js   butterflies, bees, dragonflies, swallows, bats, moths, fireflies, crickets
-//   creatures/flock.js    the flock: Reynolds's boids (pigeons by day, starlings at dusk)
+//   creatures/swarms.js   butterflies, bees, dragonflies, swallows, the passing pair, moths, fireflies, crickets
+//   creatures/flock.js    a flock (Reynolds's boids): no longer used here (Anna found the pigeons' and starlings' flocking
+//                         creepy); swarms.js's bats are not used either
 //   creatures/ants.js     the ants and their road: two scents on a grid
 //   creatures/pond.js     koi, frog, ducks (with koi.js, koi_school.js as at the house; pond_shape.js, pond_water.js for this pond)
 //
@@ -39,8 +45,7 @@ import { FLORA_CELLS } from './grounds/paint.js';
 import { creatureKit } from './creatures/kit.js';
 import { rabbits, hare, squirrel, hedgehog, tortoise, fox } from './creatures/beasts.js';
 import { robin, owl, sparrows, blackbird, jay } from './creatures/birds.js';
-import { fireflies, bats, butterflies, dragonflies, swallows, bees, moths, crickets } from './creatures/swarms.js';
-import { flock } from './creatures/flock.js';
+import { fireflies, butterflies, dragonflies, swallows, passers, bees, moths, crickets } from './creatures/swarms.js';
 import { ants } from './creatures/ants.js';
 import { koi, frog, ducks } from './creatures/pond.js';
 import { POND as WATER, at as pondAt, sAt as pondS } from './creatures/pond_shape.js';
@@ -65,7 +70,6 @@ export function creatures(ctx) {
   // the parts of the day (by the clock in the morning, by the light in the evening: the days are short in winter)
   const light = () => day.light > 0.5, early = () => light() && hour() < 10, midday = () => day.light > 0.7 && hour() >= 10 && hour() < 14, afternoon = () => day.light > 0.7 && hour() >= 14;
   const dusk = () => hour() >= 12 && day.light < 0.7 && day.light > 0.15, night = () => day.light < 0.15;
-  const late = () => night() && (hour() >= 12 || hour() < 1.5), small = () => night() && hour() >= 1.5 && hour() < 12;      // before and after half past one
 
   // ---- the land, as the crew needs it told ------------------------------------------------------------------
   let laidAt = null;                                                             // walks, paving and beds, read back from what was built (made at first need)
@@ -90,67 +94,112 @@ export function creatures(ctx) {
   const treeNear = (x, z, list = big) => [...list].sort((a, b) => Math.hypot(a.x - x, a.z - z) - Math.hypot(b.x - x, b.z - z));
   // a round of open grass: the first of the candidates that is nearly all free
   const lawn = (name, cands, need = 0.8) => { for (const [x, z, rad] of cands) { let ok = 0; for (let i = 0; i < 40; i++) { const a = i * 2.4, d = Math.sqrt((i + 0.5) / 40) * rad; if (free(x + Math.cos(a) * d, z + Math.sin(a) * d, 0.5)) ok++; } if (ok >= 40 * need) return { x, z, r: rad }; } say('no open grass for', name); return null; };
-  // a strip of open grass, a to b: the first of the candidates that is free all along
-  const beat = (name, cands) => { for (const [a, b] of cands) { let ok = true; for (let i = 0; i <= 12; i++) if (!free(a[0] + (b[0] - a[0]) * i / 12, a[1] + (b[1] - a[1]) * i / 12, 0.6)) ok = false; if (ok) return { a, b }; } say('no strip of grass for', name); return null; };
+  // a strip of open grass along a to b, or stood off from it a few feet either side (the beds and walks it runs beside
+  // are laid by others, and move): the longest free run of it, if it is at least `min` feet; the first candidate that has one
+  const beat = (name, cands, min = 10) => {
+    for (const [a, b] of cands) {
+      const L = Math.hypot(b[0] - a[0], b[1] - a[1]), tx = (b[0] - a[0]) / L, tz = (b[1] - a[1]) / L;
+      for (const off of [0, 1.5, -1.5, 3, -3, 4.5, -4.5, 6, -6, 8, -8, 10, -10]) {      // (as near the line as will do)
+        const pt = u => [a[0] + tx * u - tz * off, a[1] + tz * u + tx * off]; let s0 = -1, best = null;
+        for (let u = 0; u <= Math.floor(L) + 1; u++) {
+          const ok = u <= L && free(...pt(u), 0.6);
+          if (ok && s0 < 0) s0 = u;
+          if (!ok && s0 >= 0) { const len = u - 1 - s0; if (len >= min && (!best || len > best.len)) best = { a: pt(s0), b: pt(u - 1), len }; s0 = -1; }
+        }
+        if (best) return { a: best.a, b: best.b };
+      }
+    }
+    say('no strip of grass for', name); return null;
+  };
   const posts = (() => { const N = PLACES.network, out = []; for (let i = 0; i < N.posts; i++) { const a = N.a0 + (N.a1 - N.a0) * (i / (N.posts - 1)), rad = outlineAt(a) * RIM - N.in, x = Math.cos(a) * rad, z = Math.sin(a) * rad; if (blocked(x, z, 0.1, 6)) out.push([x, groundAt(x, z) + N.top, z]); } return out; })();      // the Network's posts that are really there
 
   // ---- squirrels: on the oak's seat, and at the oak on the green --------------------------------------------
   {
     const s = PLACES.seat, c = Math.cos(Math.PI / 8), oak = TREES.find(t => t.x === OAK.x && t.z === OAK.z), there = blocked(OAK.x + s.r0 + 1, OAK.z, 0.2, 3);
-    if (oak) squirrel(kit, { x: OAK.x, z: OAK.z, trunk: oak.trunk ?? 3.3, start: 2.5, range: 30, when: () => midday() || afternoon(),
+    if (oak) squirrel(kit, { x: OAK.x, z: OAK.z, trunk: oak.trunk ?? 3.3, start: 2.5, range: 30, glow: 0.45, when: () => true,      // (at every hour: Anna walks at night)
       seat: there ? { top: groundAt(OAK.x, OAK.z) + s.h, plank: (s.r0 + 2 * (s.slat + s.gap) + s.slat / 2) / c, inner: (s.r0 + s.slat / 2) / c, edge: (s.r0 + s.slats * (s.slat + s.gap)) / c } : null });
     const two = TREES.filter(t => t.kind === 'oak' && t !== oak && (t.height ?? 0) > 45 && rimDist(t.x, t.z) > 40).sort((a, b) => Math.hypot(a.x + 40, a.z + 20) - Math.hypot(b.x + 40, b.z + 20))[0];      // the big oak nearest the middle of the green
-    if (two) squirrel(kit, { name: 'squirrel2', seed: 99, x: two.x, z: two.z, trunk: two.trunk ?? 2.1 * two.height / 46, start: 0.4, range: 26, tint: 0xb89a7a, when: () => midday() || afternoon() });
+    if (two) squirrel(kit, { name: 'squirrel2', seed: 99, x: two.x, z: two.z, trunk: two.trunk ?? 2.1 * two.height / 46, start: 0.4, range: 26, tint: 0xb89a7a, when: light });
   }
 
-  // ---- rabbits: by the meadow early; on the lawn by a lamp in the small hours; a hare at dusk -------------------
-  rabbits(kit, { at: [[43, -91], [47, -97], [40, -100]], field: { x: 44, z: -95, r: 10 }, hide: [53, -80], when: () => early() || dusk() });
+  // ---- rabbits: by the meadow at every hour; on the lawn by a lamp from dusk to morning; a hare from dusk to morning ----
+  rabbits(kit, { at: [[43, -91], [47, -97], [40, -100]], field: { x: 44, z: -95, r: 10 }, hide: [53, -80], glow: 0.4, when: () => true });
   {
     const f = lawn('the night rabbits', [[-34, 40, 10], [-28, -40, 10], [-100, 44, 9]]);
-    if (f) { const tr = treeNear(f.x, f.z, TREES)[0]; rabbits(kit, { name: 'night rabbit', seed: 7, glow: 0.5, tints: [0xffffff, 0xe8e0d0, 0xffffff], at: [[f.x - 2, f.z], [f.x + 2, f.z + 2], [f.x, f.z - 3]], field: f, hide: [tr.x + 2, tr.z + 2], when: small }); }
+    if (f) { const tr = treeNear(f.x, f.z, TREES)[0]; rabbits(kit, { name: 'night rabbit', seed: 7, glow: 0.5, tints: [0xffffff, 0xe8e0d0, 0xffffff], at: [[f.x - 2, f.z], [f.x + 2, f.z + 2], [f.x, f.z - 3]], field: f, hide: [tr.x + 2, tr.z + 2], when: () => dusk() || night() }); }
   }
-  hare(kit, { spots: [[44, -92], [42, -112], [47, -131], [41, -150], [40, -100]], when: dusk });
+  hare(kit, { spots: [[44, -92], [42, -112], [47, -131], [41, -150], [40, -100]], glow: 0.4, when: () => early() || dusk() || night() });
+  {      // and from dusk to the morning, two more rabbits on the tongue by the Landing, and a hare on the bank below the terrace
+    const nightly = () => early() || dusk() || night();
+    const f = lawn('the Landing rabbits', [[-121, 111, 6], [-124, 59, 6], [-118, 104, 5], [-133, 56, 5]], 0.7);
+    if (f) { const tr = treeNear(f.x, f.z, TREES)[0]; rabbits(kit, { name: 'landing rabbit', seed: 17, glow: 0.5, tints: [0xe8e0d0, 0xffffff], at: [[f.x - 2, f.z + 1], [f.x + 2, f.z - 2]], field: f, hide: [tr.x + 2, tr.z + 2], when: nightly }); }
+    const g = lawn('the terrace hare', [[110, 106, 7], [150, 96, 8], [70, 100, 7]], 0.6);
+    if (g) hare(kit, { name: 'terrace hare', seed: 61, spots: [[g.x, g.z], [g.x + 5, g.z + 3], [g.x - 4, g.z + 4], [g.x + 2, g.z - 5], [g.x - 5, g.z - 2]], glow: 0.4, when: nightly });
+  }
 
-  // ---- the meadow by night: fireflies, crickets, and the barn owl on the Network's posts -----------------------
-  fireflies(kit, { x: M.x, z: M.z, n: 50, box: [M.x - 30, M.x + 30, M.z - 28, M.z + 28], ok: (x, z) => inMeadow(x, z, 1.05), from: 0.85, when: night });
-  fireflies(kit, { name: 'pond fireflies', seed: 12, x: POND.x, z: POND.z, n: 26, box: [POND.x - POND.rx - 8, POND.x + POND.rx + 8, POND.z - POND.rz - 8, POND.z + POND.rz + 8], ok: (x, z) => inPond(x, z, 1.5) && !inPond(x, z, 0.5), from: 0.85, when: night });
+  // ---- by night: fireflies all over the grounds, crickets, and the barn owl on the Network's posts ----------------------
+  // The fireflies are as at Anna's House, where there are 120 in seven patches of the garden (about one to every 85 sq ft
+  // of a patch, and none between): here they are spread evenly over all the open ground, one to every 110 sq ft or so
+  // (about 210 in all), so that wherever she stands out of doors at night two to five are lit about her and none are
+  // crowded. One to a square of the grid, anywhere in it, where there is grass or water and nothing else: not within
+  // 4.5 ft of a walk, a bed or paving (they drift 2.5 ft, and are kept below 4.6 ft: never at the height of her face
+  // on a path); not within 5 ft of anything standing (a sign, a lamp, a bench, a trunk, a statue, the Glider); not
+  // within 12 ft of a door out of doors or 6 ft of a building; not within 7 ft of a seat, nor in the 20 ft before it
+  // that its sitter looks over.
+  const fireflySpots = () => {
+    const laid = (laidAt ??= kit.laid()), out = [], C = 10.5; let s = 4711; const rf = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+    const seats = (ctx.items?.seats ?? []).filter(q => !kit.inLot(q.x, q.z, 0.5)), doors = (ctx.house?.doors ?? []).filter(d => d.exterior);
+    for (let gx = -280; gx < 280; gx += C) for (let gz = -280; gz < 280; gz += C) {
+      const x = gx + rf() * C, z = gz + rf() * C, y = 1 + rf() * 3;
+      if (!kit.onIsland(x, z, 8) || kit.inLot(x, z, 6) || laid(x, z, 4.5) || blocked(x, z, 5, 12) || onLanding(x, z) || nearRill(x, z, 3)) continue;
+      if (doors.some(d => Math.hypot(d.x - x, d.z - z) < 12)) continue;
+      if (seats.some(q => { const dx = x - q.x, dz = z - q.z, d = Math.hypot(dx, dz); return d < 7 || (d < 20 && -(dx * Math.sin(q.yaw) + dz * Math.cos(q.yaw)) > 0.75 * d); })) continue;
+      out.push([x, groundAt(x, z) + y, z]);
+    }
+    say(out.length, 'fireflies'); return out;
+  };
+  fireflies(kit, { spots: fireflySpots, x: 0, z: 0, from: 0.4, when: () => day.night > 0.3 && ctx.mode !== 'orbit' });      // (on foot: not over the whole island behind the welcome card)
   crickets(kit, { x: M.x, z: M.z, r: 110, when: night });
   {
     const p = posts.length >= 3 ? [posts[5] ?? posts[0], posts[2] ?? posts[1], posts[7] ?? posts.at(-1)] : lampNear(OAK.x, OAK.z, 2).map(l => [l[0], l[1] + 0.83, l[2]]);
-    if (p.length) owl(kit, { perches: p, toward: [OAK.x, OAK.z], when: night });
+    if (p.length) owl(kit, { perches: p, toward: [OAK.x, OAK.z], when: () => dusk() || night() });
   }
 
   // ---- robins: on the Glider's plinth, and on the lamps of the walk up from the Landing; a nightingale by the academy ----
   {
     const g = PLACES.glider, c = Math.cos(g.yaw), s = Math.sin(g.yaw), y = groundAt(g.x, g.z) + g.top, e = g.half - 0.1, corner = (lx, lz) => [g.x + lx * c + lz * s, y, g.z - lx * s + lz * c];
     const there = blocked(g.x, g.z, 0, 6), perches = there ? [corner(-e, -e), corner(e, -e), corner(-e, e), corner(e, e)] : lampNear(g.x, g.z, 2).map(l => [l[0], l[1] + 0.83, l[2]]);
-    if (perches.length) robin(kit, { perches, face: 2.2, forage: lawn('the robin', [[g.x - 7, g.z - 8, 7], [g.x - 12, g.z - 2, 6]], 0.6), when: early });
+    if (perches.length) robin(kit, { perches, face: 2.2, forage: lawn('the robin', [[g.x - 7, g.z - 8, 7], [g.x - 12, g.z - 2, 6]], 0.6), when: light });
     const two = lampNear(-110, 62, 2).map(l => [l[0], l[1] + 0.83, l[2]]);
-    if (two.length) robin(kit, { name: 'robin2', seed: 5, perches: two, face: 0.6, forage: lawn('the second robin', [[two[0][0] + 8, two[0][2] - 9, 7], [two[0][0] - 8, two[0][2] + 9, 7]], 0.6), when: early });
+    if (two.length) robin(kit, { name: 'robin2', seed: 5, perches: two, face: 0.6, forage: lawn('the second robin', [[two[0][0] + 8, two[0][2] - 9, 7], [two[0][0] - 8, two[0][2] + 9, 7], [two[0][0] + 10, two[0][2] + 8, 6], [two[0][0] - 10, two[0][2] - 8, 6], [two[0][0] + 14, two[0][2], 6], [two[0][0], two[0][2] - 14, 6]], 0.6), when: () => true });      // (under the lamps at night too, as town robins are)
     const st = SITES.find(q => q.id === 'stone'), near = st ? lampNear(st.rect.x0, st.rect.z0, 2).map(l => [l[0], l[1] + 0.83, l[2]]) : [];
     if (near.length) robin(kit, { name: 'nightingale', seed: 9, perches: near, face: -1, forage: null, flit: -0.18, when: night });      // (a plain brown bird that sings in the dark: the robin's ways, on a lamp)
   }
 
-  // ---- sparrows: at the picnic tables, on the bank below the terrace, by the academy's garden ------------------
+  // ---- sparrows: four at the picnic tables (as at the house's), a pair on the bank below the terrace, a pair by the academy's garden ----
   {
     const [a, b] = PLACES.tables, x = (a[0] + b[0]) / 2, z = (a[1] + b[1]) / 2, there = PLACES.tables.filter(([tx, tz]) => blocked(tx, tz, 0, 3));
     const day1 = () => early() || midday();
-    sparrows(kit, { x, z, r: 12, n: 6, trees: treeNear(x, z).slice(0, 2), perches: there.map(([tx, tz]) => [tx, groundAt(tx, tz) + PLACES.tableTop, tz, 1, 0]), when: day1 });
-    const f2 = lawn('the terrace sparrows', [[110, 106, 7], [150, 96, 8], [70, 100, 7]], 0.6); if (f2) sparrows(kit, { name: 'sparrows2', seed: 21, ...f2, n: 5, trees: treeNear(f2.x, f2.z).slice(0, 2), when: day1 });
-    const f3 = lawn('the garden sparrows', [[-36, 60, 8], [-50, 30, 8], [-30, 36, 8]], 0.7); if (f3) sparrows(kit, { name: 'sparrows3', seed: 33, ...f3, n: 5, trees: treeNear(f3.x, f3.z, TREES).slice(0, 2), when: day1 });
+    sparrows(kit, { x, z, r: 12, n: 4, trees: treeNear(x, z).slice(0, 2), perches: there.map(([tx, tz]) => [tx, groundAt(tx, tz) + PLACES.tableTop, tz, 1, 0]), when: day1 });
+    const f2 = lawn('the terrace sparrows', [[110, 106, 7], [150, 96, 8], [70, 100, 7]], 0.6); if (f2) sparrows(kit, { name: 'sparrows2', seed: 21, ...f2, n: 2, trees: treeNear(f2.x, f2.z).slice(0, 2), when: day1 });
+    const f3 = lawn('the garden sparrows', [[-36, 60, 8], [-50, 30, 8], [-30, 36, 8]], 0.7); if (f3) sparrows(kit, { name: 'sparrows3', seed: 33, ...f3, n: 2, trees: treeNear(f3.x, f3.z, TREES).slice(0, 2), when: day1 });
   }
 
-  // ---- a blackbird on the green, early; a tortoise on the tongue and a jay at the birdbath in the afternoon; a hedgehog from dusk ----
-  { const f = lawn('the blackbird', [[-12, -45, 11], [-20, -30, 10], [-60, 0, 9]]); if (f) blackbird(kit, { field: f, hide: crown(treeNear(f.x, f.z)[0], 0.6), when: early }); }
-  { const b = beat('the tortoise', [[[-100, 8], [-86, -4]], [[-128, 40], [-116, 30]], [[-60, 34], [-48, 46]], [[-30, -30], [-16, -40]]]); if (b) tortoise(kit, { ...b, w: 2.4, when: afternoon }); }
+  // ---- a blackbird on the green, a tortoise on its strip of grass and a jay at the birdbath, by day; two hedgehogs from dusk ----
+  { const f = lawn('the blackbird', [[-12, -45, 11], [-20, -30, 10], [-60, 0, 9]]); if (f) blackbird(kit, { field: f, hide: crown(treeNear(f.x, f.z)[0], 0.6), when: () => day.light > 0.15 }); }
+  { const b = beat('the tortoise', [[[-100, 8], [-86, -4]], [[-128, 40], [-116, 30]], [[-60, 34], [-48, 46]], [[-30, -30], [-16, -40]]]); if (b) tortoise(kit, { ...b, w: 2.4, when: light }); }
   {
     const B = PLACES.bath, Y = groundAt(B.from[0], B.from[1]);
-    if (blocked(B.x, B.z, 0, 4)) jay(kit, { bath: { x: B.x, z: B.z, r: B.r, top: Y + B.top }, perch: crown(treeNear(B.x, B.z, TREES.filter(t => t.height > 14))[0], 0.72), when: afternoon }); else say('no birdbath for the jay');
+    if (blocked(B.x, B.z, 0, 4)) jay(kit, { bath: { x: B.x, z: B.z, r: B.r, top: Y + B.top }, perch: crown(treeNear(B.x, B.z, TREES.filter(t => t.height > 14))[0], 0.72), when: light }); else say('no birdbath for the jay');
   }
-  { const b = beat('the hedgehog', [[[-60, -84.2], [-12, -84.2]], [[-36, 79.5], [-14, 79.5]], [[40, -86], [48, -120]]]); if (b) hedgehog(kit, { ...b, w: 1.2, when: () => dusk() || night() }); }
+  {      // two hedgehogs, from dusk to the morning: along the planting before the library, and by the academy's garden
+    const hh = () => !midday() && !afternoon();
+    const b = beat('the hedgehog', [[[-60, -84.2], [-12, -84.2]], [[40, -86], [48, -120]]]); if (b) hedgehog(kit, { ...b, w: 1.2, glow: 0.45, when: hh });
+    const b2 = beat('the second hedgehog', [[[-36, 79.5], [-14, 79.5]], [[-8, 82], [10, 82]], [[-40, 60], [-40, 76]]]); if (b2) hedgehog(kit, { ...b2, name: 'hedgehog2', seed: 77, w: 1.2, glow: 0.45, when: hh });
+  }
 
-  // ---- a fox along the island's edge, from nightfall to half past one -----------------------------------------
-  { const route = []; for (let i = 0; i < 420; i++) { const a = i / 420 * Math.PI * 2, d = outlineAt(a) * RIM - 14; route.push([Math.cos(a) * d, Math.sin(a) * d]); } fox(kit, { route, glow: 0.35, when: late }); }
+  // ---- a fox along the island's edge, from dusk to the morning ------------------------------------------------
+  { const route = []; for (let i = 0; i < 420; i++) { const a = i / 420 * Math.PI * 2, d = outlineAt(a) * RIM - 14; route.push([Math.cos(a) * d, Math.sin(a) * d]); } fox(kit, { route, glow: 0.35, when: () => dusk() || night() }); }
 
   // ---- butterflies and bees at the flowers (wherever they have been planted); the hives ---------------------------
   {
@@ -167,24 +216,12 @@ export function creatures(ctx) {
     if (tr) bees(kit, { name: 'garden bees', seed: 3, per: 8, active: flying, hives: [{ x: tr.x + 1, y: tr.y + Math.min(14, tr.height * 0.5), z: tr.z }], flowers: h => flowerHeads((x, z) => Math.hypot(x - h.x, z - h.z) < 45).slice(0, 80), when: () => day.light > 0.15 });
   }
 
-  // ---- the air: swallows over the tongue in the afternoon, bats from dusk, moths at every lamp at night ---------
-  swallows(kit, { x: -100, z: 52, rx: 24, rz: 17, y: 15, amp: 5, n: 6, when: afternoon });
-  {
-    // each bat keeps to a patch of open sky under the height of the crowns: a patch with a tree in it, or over a building or the rim, is not used. The first are by lamps.
-    const open = ([x, z, R]) => rimDist(x, z) > R * 1.4 + 8 && !kit.inLot(x, z, R * 1.4 + 4) && TREES.every(t => Math.hypot(t.x - x, t.z - z) > R * 1.4 + ((t.height ?? 40) < 40 ? 12 : 5));
-    const cands = [...lamps.map((l, i) => [l[0], l[2], 6, 12.5, i * 1.3]), [-12, -38, 9, 11, 0], [-40, 28, 9, 10, 2.1], [-8, -76, 8, 11, 4.2], [-96, 50, 8, 10, 1.1], [4, 34, 8, 11, 3.0]].filter(open);
-    const beats = []; for (const c of cands) if (beats.length < 6 && beats.every(b => Math.hypot(b[0] - c[0], b[1] - c[1]) > 40)) beats.push(c);
-    bats(kit, { beats, when: () => (hour() >= 12 && day.light < 0.55) || night() });
-    moths(kit, { lamps, per: 5, when: () => day.light < 0.4 });
-  }
-
-  // ---- the flock: pigeons by day, a murmuration of starlings at dusk that roosts in the trees for the night ------
-  {
-    const roosts = big.filter(t => rimDist(t.x, t.z) > 20).map(t => ({ x: t.x, y: t.y + t.height * 0.68, z: t.z, r: t.height * 0.2 }));
-    const avoid = (ctx.house?.footprints ?? []).map(f => ({ ...f, top: 68 }));
-    flock(kit, { name: 'pigeons', n: 24, x: -24, z: -14, r: 120, floor: 26, ceil: 62, avoid, roosts, air: [22, 38], rest: [6, 10], speed: [20, 30], near: 7, weights: { coh: 0.25 }, span: 2.1, colour: 0x8f96a0, under: 0xc9ccd0, wing: 0x6a7078, beat: 11, when: () => early() || midday() });
-    flock(kit, { name: 'starlings', seed: 87, n: 120, x: -24, z: -14, r: 135, floor: 30, ceil: 92, avoid, roosts, air: [55, 85], rest: [7, 12], speed: [24, 40], span: 1.55, colour: 0x1c1e26, beat: 16, near: 8, sight: 15, weights: { coh: 0.16, sep: 46 }, settle: () => day.light < 0.3, when: () => (hour() >= 12 && day.light < 0.93) || night() });
-  }
+  // ---- the air: three swallows over the tongue in the afternoon, a pair of pigeons passing over now and then by day;
+  // moths at the lamps at night. (No flocks: the pigeons' and starlings' murmuration, creatures/flock.js, and the bats
+  // were taken out at Anna's word that the birds flocking overhead were creepy. Nothing flies over at night.)
+  swallows(kit, { x: -100, z: 52, rx: 24, rz: 17, y: 15, amp: 5, n: 3, when: afternoon });
+  passers(kit, { r: 330, y: [80, 98], gap: [30, 80], when: light });      // (over the tallest crown, 72 ft, and the hall's roofs, 68)
+  moths(kit, { lamps, per: 2, when: () => day.light < 0.4 });
 
   // ---- the ants: a road from the oak's foot out over the grass, and one to the crumbs by a picnic table ---------
   {
@@ -205,8 +242,8 @@ export function creatures(ctx) {
       watch: ['Six koi, none of them large. The one with the single red spot keeps a little apart.', 'The gold one is the oldest, and goes about as if it had tenure.', 'The orange one has never once been late for a meal.'],
     });
     const pads = () => plants().filter(p => p.kind === 'lilypad' && pondS(p.x, p.z) < 0.9 && p.w > 1.3).sort((p, q) => q.w - p.w).map(p => [p.x, p.z, p.w * 0.42]);
-    frog(kit, { y: WATER.y + 0.05, pads, when: () => early() || dusk() || night() });
-    ducks(kit, { pads, roost: [1.2, 0.72], asleep: night, when: () => true });
+    frog(kit, { y: WATER.y + 0.05, pads, when: () => true });
+    ducks(kit, { pads, roost: [1.2, 0.72], asleep: () => night() && hour() >= 3 && hour() < 12, when: () => true });      // (awake until three in the morning)
     dragonflies(kit, { x: WATER.x, z: WATER.z, y: WATER.y, at: pondAt, n: 3, when: midday });
   }
   return kit;

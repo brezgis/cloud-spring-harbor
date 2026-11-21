@@ -413,7 +413,9 @@ export default function (b) {
   steps({ ax: 'Y', from: -8.3, to: PY, lo: 60, hi: BX1 - PL - 0.005, h0: 0, h1: F1, steps: 9, top: true, mat: STEPS });      // (they stop at the wing's basement ledge: 0.12 ft over it, the top tread shared its top)      // (with its own top tread; the porch's flags meet it at the face of the arch)
   // (the two outside doors' thresholds are the wall's own; here only the part of each sill that lies out over the basement wall's ledge)
   box(TRIM, 62.77, 69.23, BY0 - PL - 0.05, BY0, F1 - 0.05, F1 + 0.03); box(TRIM, -PL - 0.05, 0, 60.62, 64.41, F1 - 0.05, F1 + 0.03);
-  for (const [X0, X1, Y1] of [[PX0, 60, PY], [BX1 - PL - 0.005, 77, -0.3]]) { box(STONE, X0, X1, -2.3, Y1, -2.5, F1 + 0.1, { collide: true }); box(TRIM, X0 - 0.1, X1 + 0.1, -2.4, Y1, F1 + 0.1, F1 + 0.5); box(STONE, X0, X1, -8.3, -2.3, -2.5, 2.6, { collide: true }); box(TRIM, X0 - 0.1, X1 + 0.1, -8.4, -2.3, 2.6, 3.0); }
+  // (the upper cheek on the wing's side runs back to the wing's plinth band, and its coping, which stands above the band,
+  // to the wall's face: they stopped 0.05 and 0.3 ft short of them, a slot of sky between the coping and the wall)
+  for (const [X0, X1, Y1, Yc] of [[PX0, 60, PY, PY], [BX1 - PL - 0.005, 77, -PL - 0.005, -0.005]]) { box(STONE, X0, X1, -2.3, Y1, -2.5, F1 + 0.1, { collide: true }); box(TRIM, X0 - 0.1, X1 + 0.1, -2.4, Yc, F1 + 0.1, F1 + 0.5); box(STONE, X0, X1, -8.3, -2.3, -2.5, 2.6, { collide: true }); box(TRIM, X0 - 0.1, X1 + 0.1, -8.4, -2.3, 2.6, 3.0); }
   // the side door's stoop and steps (nine risers, toward the east)
   box(STONE, -2.4, -PL, 59.3, 65.7, -2.5, F1 - 0.15); box(STEPS, -2.5 - 7 / 9 - 0.08, -PL, 59.2, 65.8, F1 - 0.15, F1); surface(-2.5, 0.6, 59.2, 65.8, F1);
   steps({ ax: 'X', from: -9.5, to: -2.5, lo: 59.5, hi: 65.5, h0: 0, h1: F1, steps: 9, mat: STEPS });

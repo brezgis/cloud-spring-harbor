@@ -2,6 +2,7 @@
  {
   "slug": "stone_habs_sheet3",
   "title": "Adams Stone Library: east and north elevations",
+  "artist": "Frederic C. Detwiller, Historic American Buildings Survey",
   "source": "Historic American Buildings Survey, survey MA-841, sheet 3 of 7, drawn by Frederic C. Detwiller; Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/ma0435/",
   "licence": "Public domain (a work of the U.S. Government; no known restrictions)",
   "width_px": 1024,
@@ -10,6 +11,7 @@
  {
   "slug": "snow_front_elevation",
   "title": "Old Snow Hall: front elevation of the Natural History Building",
+  "artist": "Haskell & Wood, architects",
   "source": "Haskell & Wood, architects; blueprint, undated (the building opened in 1886); University Archives, Kenneth Spencer Research Library, University of Kansas, Architectural drawings of Snow Hall (ku-uarecords:860), https://digital.lib.ku.edu/ku-uarecords/860",
   "licence": "Believed public domain in the United States by age; the library's own rights statement is Copyright Not Evaluated",
   "width_px": 1200,
@@ -18,6 +20,7 @@
  {
   "slug": "snow_long_section",
   "title": "Old Snow Hall: longitudinal section of the Natural History Building",
+  "artist": "Haskell & Wood, architects",
   "source": "Haskell & Wood, architects; blueprint, undated (the building opened in 1886); University Archives, Kenneth Spencer Research Library, University of Kansas, Architectural drawings of Snow Hall (ku-uarecords:860), https://digital.lib.ku.edu/ku-uarecords/860",
   "licence": "Believed public domain in the United States by age; the library's own rights statement is Copyright Not Evaluated",
   "width_px": 1200,
@@ -26,6 +29,9 @@
  {
   "slug": "stone_death_of_socrates",
   "title": "The Death of Socrates, Jacques-Louis David, 1787 (oil on canvas, 51 x 77 1/4 in.)",
+  "short": "The Death of Socrates",
+  "artist": "Jacques-Louis David",
+  "year": "1787",
   "source": "The Metropolitan Museum of Art, New York, accession 31.45, Catharine Lorillard Wolfe Collection, Wolfe Fund, 1931; Met Open Access, https://www.metmuseum.org/art/collection/search/436105 (photograph trimmed to the canvas)",
   "licence": "Public domain (Met Open Access, CC0)",
   "width_px": 1200,
@@ -34,6 +40,7 @@
  {
   "slug": "stone_habs_sheet5",
   "title": "Adams Stone Library: sections A-A and B-B",
+  "artist": "Frederic C. Detwiller, Historic American Buildings Survey",
   "source": "Historic American Buildings Survey, survey MA-841, sheet 5 of 7, drawn by Frederic C. Detwiller; Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/ma0435/",
   "licence": "Public domain (a work of the U.S. Government; no known restrictions)",
   "width_px": 1024,
@@ -42,6 +49,9 @@
  {
   "slug": "cpl_plan_1887",
   "title": "Cambridge Public Library: the original floor plan, 1887",
+  "short": "Cambridge Public Library: the original floor plan",
+  "artist": "Van Brunt & Howe, architects",
+  "year": "1887",
   "source": "Van Brunt & Howe, architects; first published in the Cambridge Chronicle, 1887; reproduced in Ann Beha Architects, Existing Conditions Report and Preservation Recommendations, Main Library Expansion Project, Cambridge, Massachusetts (2003), p. 6",
   "licence": "Public domain in the United States by age (published 1887)",
   "width_px": 1089,
@@ -50,6 +60,8 @@
  {
   "slug": "cpl_exterior_1889",
   "title": "Cambridge Public Library, 1889",
+  "short": "Cambridge Public Library",
+  "year": "1889",
   "source": "Photograph of 1889, photographer not recorded; reproduced in Ann Beha Architects, Existing Conditions Report and Preservation Recommendations, Main Library Expansion Project, Cambridge, Massachusetts (2003), p. 5",
   "licence": "Public domain in the United States by age (a photograph of 1889)",
   "width_px": 392,
@@ -58,6 +70,8 @@
  {
   "slug": "cpl_reading_room_1889",
   "title": "Cambridge Public Library: the Reading Room, 1889",
+  "short": "Cambridge Public Library: the Reading Room",
+  "year": "1889",
   "source": "Photograph of 1889, photographer not recorded; reproduced in Ann Beha Architects, Existing Conditions Report and Preservation Recommendations, Main Library Expansion Project, Cambridge, Massachusetts (2003), p. 7",
   "licence": "Public domain in the United States by age (a photograph of 1889)",
   "width_px": 392,
@@ -66,6 +80,7 @@
  {
   "slug": "snow_rear_elevation",
   "title": "Old Snow Hall: rear elevation of the Natural History Building",
+  "artist": "Haskell & Wood, architects",
   "source": "Haskell & Wood, architects; blueprint, undated (the building opened in 1886); University Archives, Kenneth Spencer Research Library, University of Kansas, Architectural drawings of Snow Hall (ku-uarecords:860), https://digital.lib.ku.edu/ku-uarecords/860",
   "licence": "Public domain in the United States by age; the library's own rights statement is Copyright Not Evaluated",
   "width_px": 1200,
@@ -74,6 +89,7 @@
  {
   "slug": "snow_west_elevation",
   "title": "Old Snow Hall: west elevation of the Natural History Building",
+  "artist": "Haskell & Wood, architects",
   "source": "Haskell & Wood, architects; blueprint, undated (the building opened in 1886); University Archives, Kenneth Spencer Research Library, University of Kansas, Architectural drawings of Snow Hall (ku-uarecords:860), https://digital.lib.ku.edu/ku-uarecords/860",
   "licence": "Public domain in the United States by age; the library's own rights statement is Copyright Not Evaluated",
   "width_px": 1200,
@@ -82,6 +98,7 @@
  {
   "slug": "snow_east_elevation",
   "title": "Old Snow Hall: east elevation of the Natural History Building",
+  "artist": "Haskell & Wood, architects",
   "source": "Haskell & Wood, architects; blueprint, undated (the building opened in 1886); University Archives, Kenneth Spencer Research Library, University of Kansas, Architectural drawings of Snow Hall (ku-uarecords:860), https://digital.lib.ku.edu/ku-uarecords/860",
   "licence": "Public domain in the United States by age; the library's own rights statement is Copyright Not Evaluated",
   "width_px": 1200,
@@ -106,6 +123,8 @@
  {
   "slug": "cpl_memorial_hall_1870",
   "title": "Memorial Hall, Harvard (Ware & Van Brunt), view of 1870",
+  "short": "Memorial Hall, Harvard",
+  "year": "1870",
   "source": "Photograph, photographer not recorded; reproduced in Ann Beha Architects, Existing Conditions Report and Preservation Recommendations, Main Library Expansion Project, Cambridge, Massachusetts (2003), p. 4",
   "licence": "Public domain in the United States by age",
   "width_px": 302,
@@ -130,6 +149,8 @@
  {
   "slug": "p_wpa_march_read",
   "title": "In March read the books you've always meant to read",
+  "artist": "Illinois WPA Art Project",
+  "year": "1936-41",
   "source": "Illinois WPA Art Project, Chicago, for the Statewide Library Project, between 1936 and 1941 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .01 .I5531, no. 1, https://www.loc.gov/pictures/item/98507722/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 603,
@@ -138,6 +159,8 @@
  {
   "slug": "p_wpa_september_books",
   "title": "September: back to work, back to school, back to books",
+  "artist": "Illinois WPA Art Project",
+  "year": "1940",
   "source": "Illinois WPA Art Project, Chicago, 1940 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .D63, no. 2, https://www.loc.gov/pictures/item/98509757/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 619,
@@ -146,6 +169,8 @@
  {
   "slug": "p_wpa_january_reading",
   "title": "January: a year of good reading ahead",
+  "artist": "Illinois WPA Art Project",
+  "year": "1936-41",
   "source": "Illinois WPA Art Project, Chicago, for the Statewide WPA Library Project, between 1936 and 1941 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .H385, no. 2, https://www.loc.gov/pictures/item/98510133/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 624,
@@ -154,6 +179,8 @@
  {
   "slug": "p_wpa_october_read",
   "title": "October's \"bright blue weather\": a good time to read!",
+  "artist": "Albert M. Bender",
+  "year": "1936-40",
   "source": "Albert M. Bender for the Illinois WPA Art Project, Chicago, between 1936 and 1940 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .B46, no. 5, https://www.loc.gov/pictures/item/98509532/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 518,
@@ -162,6 +189,8 @@
  {
   "slug": "p_wpa_knowledge_library",
   "title": "For greater knowledge on more subjects, use your library often!",
+  "artist": "Illinois WPA Art Project",
+  "year": "1940",
   "source": "Illinois WPA Art Project, Chicago, 1940 (silkscreen poster, after Rodin's Thinker); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .D63, no. 1, https://www.loc.gov/pictures/item/98509756/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 621,
@@ -170,6 +199,8 @@
  {
   "slug": "p_wpa_ignorant_subjects",
   "title": "We are all ignorant on some subjects: what is yours?",
+  "artist": "Fred Rentschler",
+  "year": "1938",
   "source": "Fred Rentschler for the Federal Art Project, WPA, Ohio, 1938 (silkscreen poster for the Federal adult schools); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - OH .R458, no. 4, https://www.loc.gov/pictures/item/98517063/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 604,
@@ -178,6 +209,8 @@
  {
   "slug": "p_wpa_library_parkway",
   "title": "Young and old: visit the library on the Parkway",
+  "artist": "Nathan Sherman",
+  "year": "1936-37",
   "source": "Nathan Sherman for the Federal Art Project, WPA, Pennsylvania, 1936 or 1937 (silkscreen poster for the Free Library of Philadelphia); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - PA .S56, no. 3, https://www.loc.gov/pictures/item/98518436/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 625,
@@ -186,6 +219,8 @@
  {
   "slug": "p_wpa_keeping_up_science",
   "title": "Keeping up with science",
+  "artist": "Shari Weisberg",
+  "year": "1936-39",
   "source": "Shari Weisberg for the Federal Art Project, WPA, Illinois, between 1936 and 1939 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .W43, no. 2, https://www.loc.gov/pictures/item/98518267/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 669,
@@ -194,6 +229,8 @@
  {
   "slug": "p_cheret_librairie_sagot",
   "title": "Librairie Ed. Sagot: Affiches, Estampes",
+  "artist": "Jules Chéret",
+  "year": "1891",
   "source": "Jules Chéret, 1891 (colour lithograph poster for Edmond Sagot's book and print shop, Paris); The Cleveland Museum of Art, accession 1976.1072, https://clevelandart.org/art/1976.1072",
   "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
   "width_px": 427,
@@ -202,6 +239,8 @@
  {
   "slug": "p_solis_seven_liberal_arts",
   "title": "The Seven Liberal Arts",
+  "artist": "Virgil Solis",
+  "year": "1530-62",
   "source": "Virgil Solis, between 1530 and 1562 (engraving); The Cleveland Museum of Art, accession 1924.680, https://clevelandart.org/art/1924.680",
   "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
   "width_px": 1200,
@@ -210,6 +249,8 @@
  {
   "slug": "p_haeckel_orchids",
   "title": "Orchidae (orchids), plate 74 of Kunstformen der Natur",
+  "artist": "Ernst Haeckel",
+  "year": "1904",
   "source": "Ernst Haeckel, lithographed by Adolf Giltsch; Kunstformen der Natur (Leipzig and Vienna: Bibliographisches Institut, 1904), plate 74; scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Haeckel_Orchidae.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 852,
@@ -218,6 +259,8 @@
  {
   "slug": "p_haeckel_hummingbirds",
   "title": "Trochilidae (hummingbirds), plate 99 of Kunstformen der Natur",
+  "artist": "Ernst Haeckel",
+  "year": "1904",
   "source": "Ernst Haeckel, lithographed by Adolf Giltsch; Kunstformen der Natur (Leipzig and Vienna: Bibliographisches Institut, 1904), plate 99; scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Haeckel_Trochilidae.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 856,
@@ -226,6 +269,8 @@
  {
   "slug": "p_haeckel_jellyfish",
   "title": "Discomedusae (jellyfish), plate 8 of Kunstformen der Natur",
+  "artist": "Ernst Haeckel",
+  "year": "1904",
   "source": "Ernst Haeckel, lithographed by Adolf Giltsch; Kunstformen der Natur (Leipzig and Vienna: Bibliographisches Institut, 1904), plate 8; scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Haeckel_Discomedusae_8.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 837,
@@ -234,6 +279,7 @@
  {
   "slug": "p_kohler_coffee",
   "title": "Coffea arabica (coffee), from Köhler's Medizinal-Pflanzen",
+  "year": "1887-98",
   "source": "Köhler's Medizinal-Pflanzen in naturgetreuen Abbildungen (Gera-Untermhaus: Fr. Eugen Köhler, 1887-98), chromolithograph; scan by Kurt Stüber, Max-Planck-Institut für Züchtungsforschung, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Coffea_arabica_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-189.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 870,
@@ -242,6 +288,8 @@
  {
   "slug": "p_kohler_poppy",
   "title": "Papaver somniferum (opium poppy), plate 37 of Köhler's Medizinal-Pflanzen",
+  "short": "Papaver somniferum (opium poppy), from Köhler’s Medizinal-Pflanzen",
+  "year": "1887",
   "source": "Köhler's Medizinal-Pflanzen in naturgetreuen Abbildungen (Gera-Untermhaus: Fr. Eugen Köhler, 1887), plate 37; Biodiversity Heritage Library, https://www.biodiversitylibrary.org/pageimage/303636 (via Wikimedia Commons)",
   "licence": "Public domain (by age; Biodiversity Heritage Library scan)",
   "width_px": 881,
@@ -250,6 +298,8 @@
  {
   "slug": "p_redoute_lily",
   "title": "Lilium pomponium (turban lily), plate 7 of Les Liliacées",
+  "artist": "Pierre-Joseph Redouté",
+  "year": "1802-16",
   "source": "Pierre-Joseph Redouté, engraved by De Gouy; Les Liliacées (Paris, 1802-16), stipple engraving printed in colour and finished by hand; The Cleveland Museum of Art, accession 2020.164, https://clevelandart.org/art/2020.164",
   "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
   "width_px": 824,
@@ -258,6 +308,8 @@
  {
   "slug": "p_redoute_rose",
   "title": "Rosa indica vulgaris (China or Bengal rose), from Les Roses",
+  "artist": "Pierre-Joseph Redouté",
+  "year": "1817-24",
   "source": "Pierre-Joseph Redouté, engraved by Bessin; Les Roses (Paris, 1817-24), stipple engraving printed in colour and finished by hand; The Cleveland Museum of Art, accession 1943.138, https://clevelandart.org/art/1943.138",
   "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
   "width_px": 887,
@@ -266,6 +318,8 @@
  {
   "slug": "p_curtis_cape_lily",
   "title": "White Cape-coast lily, from Curtis's Botanical Magazine",
+  "artist": "Sydenham Edwards",
+  "year": "1806",
   "source": "Sydenham Edwards for The Botanical Magazine, or Flower-Garden Displayed (London, 1806), hand-coloured engraving (a fold-out plate); The Cleveland Museum of Art, accession 1955.142, https://clevelandart.org/art/1955.142",
   "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
   "width_px": 1200,
@@ -274,6 +328,8 @@
  {
   "slug": "p_audubon_flamingo",
   "title": "American Flamingo, plate 431 of The Birds of America",
+  "artist": "John James Audubon",
+  "year": "1838",
   "source": "John James Audubon, engraved and coloured by Robert Havell, London, 1838 (The Birds of America, double elephant folio); copy of the University of Pittsburgh Library System, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:431_American_Flamingo.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 838,
@@ -282,6 +338,9 @@
  {
   "slug": "p_mendeleev_1869",
   "title": "An attempt at a system of the elements (Opyt sistemy elementov), 1869",
+  "short": "An attempt at a system of the elements",
+  "artist": "Dmitri Mendeleev",
+  "year": "1869",
   "source": "D. I. Mendeleev, single printed sheet, St Petersburg, 17 February (1 March) 1869: the first periodic table; reproduction via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Periyodik_Tablo_1_Mart_1869.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 976,
@@ -290,6 +349,8 @@
  {
   "slug": "p_spectra_stars",
   "title": "Spectra of the Sun and stars",
+  "artist": "Cassell & Company",
+  "year": "late 19th century",
   "source": "Colour process print, London: Cassell & Company, late 19th century (plate XIII); Wellcome Collection, London, no. 47496i, https://wellcomecollection.org/works/sp3v2s2s",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 1200,
@@ -298,6 +359,8 @@
  {
   "slug": "p_spectra_flames",
   "title": "Spectra of various substances",
+  "artist": "R. H. Digeon",
+  "year": "c. 1868",
   "source": "R. H. Digeon, colour print, Paris, c. 1868 (plate IV of Les phénomènes de la physique); Wellcome Collection, London, no. 47054i, https://wellcomecollection.org/works/g62v5g5r",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 1200,
@@ -306,6 +369,8 @@
  {
   "slug": "p_optics_reflection",
   "title": "Optics: reflection and inflection of light",
+  "artist": "J. Pass",
+  "year": "1819",
   "source": "J. Pass, engraving coloured by hand, London, 1819 (plate I of an encyclopaedia's article on Optics); Wellcome Collection, London, no. 47045i, https://wellcomecollection.org/works/tbj3bxbu",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 915,
@@ -314,6 +379,8 @@
  {
   "slug": "p_optics_allegory",
   "title": "Optics: an eye in a star of the colours",
+  "artist": "J. Chapman after A. D. Macquin",
+  "year": "1820",
   "source": "J. Chapman after A. D. Macquin, engraving coloured by hand, London: G. Jones, January 1820 (the allegorical plate to an encyclopaedia's article on Optics); Wellcome Collection, London, no. 25681i, https://wellcomecollection.org/works/c8ws28pa",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 918,
@@ -322,6 +389,8 @@
  {
   "slug": "p_theory_of_seasons",
   "title": "The Theory of the Seasons and Signs of the Zodiac",
+  "artist": "John Emslie",
+  "year": "1851",
   "source": "John Emslie, engraving coloured by hand, London: James Reynolds, 174 Strand, 1851; Wellcome Collection, London, no. 46553i, https://wellcomecollection.org/works/cuq9r6wn",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 1200,
@@ -330,6 +399,8 @@
  {
   "slug": "p_earth_annual_revolution",
   "title": "The Earth's Annual Revolution round the Sun",
+  "artist": "John Emslie",
+  "year": "1851",
   "source": "John Emslie, engraving coloured by hand, London: James Reynolds, 174 Strand, 1851; Wellcome Collection, London, no. 46552i, https://wellcomecollection.org/works/yg3zd78u",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 1200,
@@ -338,6 +409,9 @@
  {
   "slug": "p_plan_solar_system",
   "title": "A Plan of the Solar System, exhibiting its relative magnitudes and distances",
+  "short": "A Plan of the Solar System",
+  "artist": "Seale, engraver",
+  "year": "18th century",
   "source": "Engraved by Seale, London, 18th century; Wellcome Collection, London, no. 46217i, https://wellcomecollection.org/works/kgm2vwt2",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 1200,
@@ -346,6 +420,9 @@
  {
   "slug": "p_cellarius_copernican",
   "title": "Planisphaerium Copernicanum: the system of the world after Copernicus",
+  "short": "Planisphaerium Copernicanum",
+  "artist": "Andreas Cellarius",
+  "year": "1660",
   "source": "From Andreas Cellarius, Harmonia Macrocosmica (Amsterdam: Johannes Janssonius, 1660), engraving; Rijksmuseum, Amsterdam, RP-P-AO-29-1-6, http://hdl.handle.net/10934/RM0001.COLLECT.702215 (via Wikimedia Commons)",
   "licence": "CC0 1.0 (Rijksmuseum open data)",
   "width_px": 1200,
@@ -354,6 +431,9 @@
  {
   "slug": "p_trouvelot_saturn",
   "title": "The Planet Saturn, 1874",
+  "short": "The Planet Saturn",
+  "artist": "Étienne Léopold Trouvelot",
+  "year": "1881-82",
   "source": "Étienne Léopold Trouvelot, chromolithograph, from The Trouvelot Astronomical Drawings (New York: Charles Scribner's Sons, 1881-82); The New York Public Library, Rare Book Division, digital id TROUVELOT_010 (via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Trouvelot_-_The_planet_Saturn_-_1874.jpg)",
   "licence": "Public domain (by age; The New York Public Library marks it free to use without restriction)",
   "width_px": 1200,
@@ -362,6 +442,8 @@
  {
   "slug": "p_chymie_table_des_rapports",
   "title": "Chymie: Laboratoire et Table des Rapports",
+  "artist": "Robert Bénard",
+  "year": "1763",
   "source": "Engraved by Robert Bénard for the Encyclopédie of Diderot and d'Alembert, Recueil de planches (Paris, 1763); Wellcome Collection, London, no. 47851i, https://wellcomecollection.org/works/qs8kztwu",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 1200,
@@ -370,6 +452,9 @@
  {
   "slug": "p_byrne_euclid_pythagoras",
   "title": "Euclid, Book I, Proposition 47 (the theorem of Pythagoras), in Byrne's colours",
+  "short": "Euclid, Book I, Proposition 47, in Byrne’s colours",
+  "artist": "Oliver Byrne",
+  "year": "1847",
   "source": "Oliver Byrne, The First Six Books of the Elements of Euclid, in which coloured diagrams and symbols are used instead of letters (London: William Pickering, 1847), the two pages of I.47 set side by side; scan by Mirko Junge via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Byrne_1847_Pythagoras_Querformat.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 1200,
@@ -378,6 +463,9 @@
  {
   "slug": "p_lovelace_note_g",
   "title": "Diagram for the computation by the Engine of the Numbers of Bernoulli",
+  "short": "Note G: the Numbers of Bernoulli",
+  "artist": "Ada Lovelace",
+  "year": "1843",
   "source": "Ada Lovelace, Note G to her translation of L. F. Menabrea, Sketch of the Analytical Engine invented by Charles Babbage, in Taylor's Scientific Memoirs, vol. 3 (London, 1843), folding table; photograph via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Diagram_for_the_computation_of_Bernoulli_numbers.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 1200,
@@ -386,6 +474,9 @@
  {
   "slug": "p_babbage_analytical_engine_plan",
   "title": "The General Plan of Mr. Babbage's Great Calculating Engine (Plan 25, 6 August 1840)",
+  "short": "General Plan of the Analytical Engine (Plan 25)",
+  "artist": "Charles Babbage",
+  "year": "1840",
   "source": "Charles Babbage, plan of the Analytical Engine, 6 August 1840 (a lithographed copy, shown at the Computer History Museum); photograph by ArnoldReinhold, Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Babbage_Analytical_Engine_Plan_1840_CHM.agr.jpg (trimmed)",
   "licence": "CC BY 4.0 (photograph (c) ArnoldReinhold, https://creativecommons.org/licenses/by/4.0/; the plan itself is in the public domain)",
   "width_px": 1200,
@@ -394,6 +485,7 @@
  {
   "slug": "p_jacquard_loom",
   "title": "Smith Brothers' patent Jacquard loom",
+  "year": "c. 1862",
   "source": "Engraving, c. 1862 (lettered: Smith Brothers patent Jacquard loom, obtained the prize medal 1862); Wellcome Collection, London, no. 43865i, https://wellcomecollection.org/works/rrqs9wgs",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 820,
@@ -402,6 +494,8 @@
  {
   "slug": "p_pascal_machine_arithmetique",
   "title": "Machine arithmétique de Pascal",
+  "artist": "Robert Bénard",
+  "year": "1767",
   "source": "Engraved by Robert Bénard for the Encyclopédie of Diderot and d'Alembert, Recueil de planches: Mathématiques, Algèbre, plate 2 (Paris, 1767); Wellcome Collection, London, no. 47855i, https://wellcomecollection.org/works/g3kp5a89",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 841,
@@ -410,6 +504,8 @@
  {
   "slug": "p_durer_melencolia",
   "title": "Melencolia I",
+  "artist": "Albrecht Dürer",
+  "year": "1514",
   "source": "Albrecht Dürer, 1514 (engraving); The Cleveland Museum of Art, accession 1926.211, https://clevelandart.org/art/1926.211",
   "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
   "width_px": 950,
@@ -418,6 +514,9 @@
  {
   "slug": "p_cajal_retina",
   "title": "The retina of vertebrates: cells stained by the Golgi method (plate III)",
+  "short": "The retina of vertebrates",
+  "artist": "Santiago Ramón y Cajal",
+  "year": "1894",
   "source": "Santiago Ramón y Cajal, Die Retina der Wirbelthiere, translated and arranged by Richard Greeff (Wiesbaden: J. F. Bergmann, 1894), plate III; Wellcome Collection, London, https://wellcomecollection.org/works/jubhkcy7",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 1200,
@@ -426,6 +525,8 @@
  {
   "slug": "p_cajal_nerve_cells",
   "title": "Nerve cells and their fibres, drawn in ink",
+  "artist": "Santiago Ramón y Cajal",
+  "year": "c. 1900",
   "source": "Santiago Ramón y Cajal, ink drawing, c. 1900 (Instituto Cajal, Madrid; the museum stamp shows at the right); reproduction via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Santiago_Ramon_y_Cajal_nerve_cells_in_the_brain.jpg",
   "licence": "Public domain (the artist died in 1934); the reproduction's own source is a newspaper feature",
   "width_px": 1200,
@@ -434,6 +535,8 @@
  {
   "slug": "p_vesalius_brain",
   "title": "The base of the brain, from De humani corporis fabrica",
+  "artist": "Andreas Vesalius",
+  "year": "1543",
   "source": "Andreas Vesalius, De humani corporis fabrica (Basel: Johannes Oporinus, 1543), Book VII, woodcut; copy of the Universitätsbibliothek Basel, e-rara, https://www.e-rara.ch/bau_1/content/zoom/6299471 (via Wikimedia Commons)",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 1072,
@@ -442,6 +545,9 @@
  {
   "slug": "p_vesalius_title_page",
   "title": "Vesalius teaching at a public dissection: title page of the Fabrica",
+  "short": "De humani corporis fabrica: title page",
+  "artist": "Andreas Vesalius",
+  "year": "1543",
   "source": "Andreas Vesalius, De humani corporis fabrica (Basel: Johannes Oporinus, June 1543), woodcut title page; Wellcome Collection, London, no. 24285i, https://wellcomecollection.org/works/f3ucftum",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 842,
@@ -450,6 +556,9 @@
  {
   "slug": "p_phrenology_symbolical_head",
   "title": "Symbolical Head and Phrenological Chart, by Drs Gall and Spurzheim",
+  "short": "Symbolical Head and Phrenological Chart",
+  "artist": "after O. S. Fowler (?)",
+  "year": "c. 1845",
   "source": "Wood engraving with letterpress, c. 1845, after O. S. Fowler (?); Wellcome Collection, London, no. 27755i, https://wellcomecollection.org/works/e8yefcpj",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 708,
@@ -458,6 +567,9 @@
  {
   "slug": "p_descartes_lhomme",
   "title": "How seeing guides the hand: a figure from L'Homme de René Descartes",
+  "short": "A figure from L’Homme",
+  "artist": "René Descartes",
+  "year": "1664",
   "source": "L'Homme de René Descartes (Paris, 1664), woodcut figure of the eyes, the pineal gland and the pointing arm, with its text; Bibliothèque nationale de France (Gallica), via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Figure_33_de_L%27Homme.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 897,
@@ -466,6 +578,9 @@
  {
   "slug": "p_istomin_primer_az",
   "title": "The letter A (Az), from Karion Istomin's illustrated primer",
+  "short": "The letter A (Az), from the illustrated primer",
+  "artist": "Karion Istomin",
+  "year": "1694",
   "source": "Karion Istomin, Bukvar' (Primer), engraved throughout by Leonty Bunin, Moscow, 1694; reproduction via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Karion_Istomin%27s_alphabet_A.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 768,
@@ -474,6 +589,9 @@
  {
   "slug": "p_lubok_birds_of_paradise",
   "title": "Birds of Paradise and the Lyre-tailed Menura (Raiskiya ptitsy; Lirokhvosty menyur): a Russian popular print",
+  "short": "Birds of Paradise and the Lyre-tailed Menura",
+  "artist": "lithography of I. Golyshev",
+  "year": "1870s",
   "source": "Lubok (popular print, lithographed and coloured by hand), lithography of I. Golyshev, Golyshevka, Russia, 1870s (dated 1879 on its file page); reproduced from Lubok (Leningrad: Aurora, 1984), via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Birds_of_Paradise_Russian_copperplate.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 871,
@@ -482,6 +600,8 @@
  {
   "slug": "p_cary_russian_empire_1799",
   "title": "A New Map of the Russian Empire, Divided into its Governments",
+  "artist": "John Cary",
+  "year": "1799",
   "source": "John Cary, London, 1799 (two sheets, engraved and coloured in outline, from Cary's New Universal Atlas); image from Geographicus Rare Antique Maps via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:1799_Cary_Map_of_the_Russian_Empire_-_Geographicus_-_Russia-cary-1799.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 1200,
@@ -490,6 +610,8 @@
  {
   "slug": "p_shepherd_growth_of_russia",
   "title": "The Growth of Russia in Europe, 1300-1796",
+  "artist": "William R. Shepherd",
+  "year": "1911",
   "source": "William R. Shepherd, Historical Atlas (New York: Henry Holt, 1911), pp. 138-139; scan from the Perry-Castañeda Library Map Collection, University of Texas at Austin, https://maps.lib.utexas.edu/maps/historical/shepherd_1911/shepherd-c-138-139.jpg",
   "licence": "Public domain (published in the United States in 1911)",
   "width_px": 964,
@@ -498,6 +620,8 @@
  {
   "slug": "p_schleicher_language_tree",
   "title": "The family tree of the Indo-European languages",
+  "artist": "August Schleicher",
+  "year": "1861",
   "source": "August Schleicher, Compendium der vergleichenden Grammatik der indogermanischen Sprachen (Weimar: Hermann Böhlau, 1861); scan from the Internet Archive via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Schleicher_Tree.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 1200,
@@ -506,6 +630,7 @@
  {
   "slug": "p_encyclopedie_alphabets",
   "title": "Alphabets anciens et modernes: Grantha and Old Persian",
+  "year": "1763",
   "source": "Encyclopédie of Diderot and d'Alembert, Recueil de planches, vol. 2 (Paris, 1763), Caractères et Alphabets; Bibliothèque nationale de France (Gallica), via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Encyclopedie_volume_2-183.png",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 887,
@@ -514,6 +639,9 @@
  {
   "slug": "p_virgil_aeneid_1502",
   "title": "Aeneid, Book VIII: a page of the Strasbourg Virgil of 1502",
+  "short": "Aeneid, Book VIII: a page of the Strasbourg Virgil",
+  "artist": "edited by Sebastian Brant",
+  "year": "1502",
   "source": "Publii Virgilii Maronis Opera, edited by Sebastian Brant (Strasbourg: Johann Grüninger, 1502), woodcut and text with commentary; via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Opera_Book_8_woodcut_1502.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 767,
@@ -522,6 +650,9 @@
  {
   "slug": "p_wettinger_gradual_leaf",
   "title": "Leaf from the Wettinger Gradual: initial I with scenes from the life of St Augustine",
+  "short": "Leaf from the Wettinger Gradual",
+  "artist": "Second Master of the Wettinger Gradual",
+  "year": "c. 1330",
   "source": "Second Master of the Wettinger Gradual (German), c. 1330; ink, tempera and gold on parchment; The Cleveland Museum of Art, accession 1949.203, https://clevelandart.org/art/1949.203",
   "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
   "width_px": 811,
@@ -530,6 +661,8 @@
  {
   "slug": "p_shepherd_expansion_of_rome",
   "title": "Territorial Expansion of Rome",
+  "artist": "William R. Shepherd",
+  "year": "1911",
   "source": "William R. Shepherd, Historical Atlas (New York: Henry Holt, 1911), pp. 34-35; scan from the Perry-Castañeda Library Map Collection, University of Texas at Austin, https://maps.lib.utexas.edu/maps/historical/shepherd_1911/shepherd-c-034-035.jpg",
   "licence": "Public domain (published in the United States in 1911)",
   "width_px": 1200,
@@ -538,6 +671,8 @@
  {
   "slug": "p_raphael_school_of_athens",
   "title": "The School of Athens",
+  "artist": "Raphael",
+  "year": "1509-11",
   "source": "Raphael, fresco, 1509-11, Stanza della Segnatura, Vatican Palace; photograph assembled from vatican.va, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:%22The_School_of_Athens%22_by_Raffaello_Sanzio_da_Urbino.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 1200,
@@ -546,6 +681,8 @@
  {
   "slug": "p_shepherd_plans_rome_athens",
   "title": "Plans of Imperial Rome, Republican Rome, Athens and the Acropolis",
+  "artist": "William R. Shepherd",
+  "year": "1911",
   "source": "William R. Shepherd, Historical Atlas (New York: Henry Holt, 1911), pp. 22-23; scan from the Perry-Castañeda Library Map Collection, University of Texas at Austin, https://maps.lib.utexas.edu/maps/historical/shepherd_1911/shepherd-c-022-023.jpg",
   "licence": "Public domain (published in the United States in 1911)",
   "width_px": 963,
@@ -554,6 +691,8 @@
  {
   "slug": "p_shepherd_ancient_greece",
   "title": "Reference Map of Ancient Greece: Southern Part",
+  "artist": "William R. Shepherd",
+  "year": "1911",
   "source": "William R. Shepherd, Historical Atlas (New York: Henry Holt, 1911), pp. 14-15; scan from the Perry-Castañeda Library Map Collection, University of Texas at Austin, https://maps.lib.utexas.edu/maps/historical/shepherd_1911/shepherd-c-014-015.jpg",
   "licence": "Public domain (published in the United States in 1911)",
   "width_px": 1200,
@@ -562,6 +701,8 @@
  {
   "slug": "p_attic_amphora",
   "title": "Attic black-figure amphora: Dionysos among satyrs",
+  "artist": "attributed to the Lysippides Painter",
+  "year": "c. 530-520 BC",
   "source": "The Bateman Group, attributed to the Lysippides Painter, Athens, c. 530-520 BC; ceramic, 49.5 cm high (museum photograph); The Cleveland Museum of Art, accession 1927.433, https://clevelandart.org/art/1927.433",
   "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
   "width_px": 751,
@@ -570,6 +711,8 @@
  {
   "slug": "p_piranesi_pantheon",
   "title": "Veduta del Pantheon d'Agrippa, from the Vedute di Roma",
+  "artist": "Giovanni Battista Piranesi",
+  "year": "1761",
   "source": "Giovanni Battista Piranesi, 1761 (etching and engraving); The Cleveland Museum of Art, accession 1922.5, https://clevelandart.org/art/1922.5",
   "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
   "width_px": 1200,
@@ -578,6 +721,8 @@
  {
   "slug": "p_wpa_see_america_parks",
   "title": "See America: visit the national parks",
+  "artist": "Harry Herzog",
+  "year": "1936-40",
   "source": "Harry Herzog for the NYC Art Project, WPA, for the United States Travel Bureau, between 1936 and 1940 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - NY .H47, no. 13, https://www.loc.gov/pictures/item/98518589/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 609,
@@ -586,6 +731,8 @@
  {
   "slug": "p_uranias_mirror_taurus",
   "title": "Taurus, from Urania's Mirror",
+  "artist": "Sidney Hall",
+  "year": "1825",
   "source": "Engraved by Sidney Hall, London: Samuel Leigh, 1825 (one of a boxed set of constellation cards); Library of Congress, Prints and Photographs Division, digital id cph.3g10065; restored copy via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Sidney_Hall_-_Urania%27s_Mirror_-_Taurus.jpg",
   "licence": "Public domain (by age; Library of Congress: no known restrictions)",
   "width_px": 1200,
@@ -594,6 +741,8 @@
  {
   "slug": "p_hiroshige_sudden_shower",
   "title": "Sudden Shower over Shin-Ohashi Bridge and Atake",
+  "artist": "Utagawa Hiroshige",
+  "year": "1857",
   "source": "Utagawa Hiroshige, 1857 (colour woodblock print, from One Hundred Famous Views of Edo); The Cleveland Museum of Art, accession 1921.318, https://clevelandart.org/art/1921.318",
   "licence": "CC0 1.0 (Cleveland Museum of Art Open Access)",
   "width_px": 806,
@@ -602,6 +751,8 @@
  {
   "slug": "p_haeckel_radiolaria_cyrtoidea",
   "title": "Cyrtoidea (radiolarians), plate 31 of Kunstformen der Natur",
+  "artist": "Ernst Haeckel",
+  "year": "1904",
   "source": "Ernst Haeckel, lithographed by Adolf Giltsch; Kunstformen der Natur (Leipzig and Vienna: Bibliographisches Institut, 1904), plate 31: Cyrtoidea; scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Haeckel_Cyrtoidea.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 847,
@@ -610,6 +761,8 @@
  {
   "slug": "p_haeckel_radiolaria_stephoidea",
   "title": "Stephoidea (radiolarians), plate 71 of Kunstformen der Natur",
+  "artist": "Ernst Haeckel",
+  "year": "1904",
   "source": "Ernst Haeckel, lithographed by Adolf Giltsch; Kunstformen der Natur (Leipzig and Vienna: Bibliographisches Institut, 1904), plate 71: Stephoidea; scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Haeckel_Stephoidea.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 846,
@@ -618,6 +771,8 @@
  {
   "slug": "p_haeckel_diatoms",
   "title": "Diatomea (diatoms), plate 4 of Kunstformen der Natur",
+  "artist": "Ernst Haeckel",
+  "year": "1904",
   "source": "Ernst Haeckel, lithographed by Adolf Giltsch; Kunstformen der Natur (Leipzig and Vienna: Bibliographisches Institut, 1904), plate 4: Diatomea; scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Haeckel_Diatomea_4.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 846,
@@ -626,6 +781,9 @@
  {
   "slug": "p_hooke_cork_cells",
   "title": "Cork under the microscope: the first 'cells' (Micrographia, Schem. XI)",
+  "short": "Cork under the microscope (Micrographia, Schem. XI)",
+  "artist": "Robert Hooke",
+  "year": "1665",
   "source": "Robert Hooke, Micrographia: or some physiological descriptions of minute bodies made by magnifying glasses (London: J. Martyn and J. Allestry, 1665), Schem. XI; Wellcome Collection, London, https://wellcomecollection.org/works/y5tm56u5",
   "licence": "CC BY 4.0 (credit: Wellcome Collection, https://creativecommons.org/licenses/by/4.0/; the engraving itself is in the public domain)",
   "width_px": 834,
@@ -634,6 +792,9 @@
  {
   "slug": "p_hooke_seeds",
   "title": "Seeds under the microscope, netted with polygons (Micrographia, Schem. XIX)",
+  "short": "Seeds under the microscope (Micrographia, Schem. XIX)",
+  "artist": "Robert Hooke",
+  "year": "1665",
   "source": "Robert Hooke, Micrographia: or some physiological descriptions of minute bodies made by magnifying glasses (London: J. Martyn and J. Allestry, 1665), Schem. XIX; Wellcome Collection, London, https://wellcomecollection.org/works/ru2ass77",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 784,
@@ -642,6 +803,8 @@
  {
   "slug": "p_hooke_flea",
   "title": "The flea (Micrographia, Schem. XXXIV)",
+  "artist": "Robert Hooke",
+  "year": "1665",
   "source": "Robert Hooke, Micrographia: or some physiological descriptions of minute bodies made by magnifying glasses (London: J. Martyn and J. Allestry, 1665), Schem. XXXIV, a folding plate; Wellcome Collection, London, https://wellcomecollection.org/works/ajveb66y",
   "licence": "CC BY 4.0 (credit: Wellcome Collection, https://creativecommons.org/licenses/by/4.0/; the engraving itself is in the public domain)",
   "width_px": 1200,
@@ -650,6 +813,9 @@
  {
   "slug": "p_termites_forms",
   "title": "Termes: the forms of the termite, labourers, soldiers, male and queen",
+  "short": "Termes: the forms of the termite",
+  "artist": "Moses Griffith",
+  "year": "1805",
   "source": "Etching by Moses Griffith, London (Fleet Street): G. Kearsley, 1 October 1805; Wellcome Collection, London, https://wellcomecollection.org/works/he9ujyx8",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 735,
@@ -658,6 +824,8 @@
  {
   "slug": "p_orsted_sound_figures",
   "title": "Sound figures (Klangfigurer) on vibrating plates",
+  "artist": "Hans Christian Ørsted",
+  "year": "1810",
   "source": "Hans Christian Ørsted, Forsög over Klangfigurerne, in Det kongelige danske Videnskabernes Selskabs Skrivter for 1807 og 1808, vol. 5 (Copenhagen, 1810), plate II; scan by the Royal Danish Academy of Sciences and Letters, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Hans_Christian_%C3%98rsted_Fors%C3%B6g_over_Klangfigurerne_Tab_2.png",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 846,
@@ -666,6 +834,8 @@
  {
   "slug": "p_bentley_snow_crystal_stellar",
   "title": "Snow crystal (a stellar dendrite)",
+  "artist": "Wilson A. Bentley",
+  "year": "c. 1910",
   "source": "Wilson A. Bentley, photomicrograph, Jericho, Vermont, c. 1910; The Metropolitan Museum of Art, New York (Open Access; image DT259027), via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:-Snow_Crystal-_MET_DT259027.jpg",
   "licence": "Public domain (Met Open Access, CC0)",
   "width_px": 1008,
@@ -674,6 +844,8 @@
  {
   "slug": "p_bentley_snow_crystal_plate",
   "title": "Snow crystal (a hexagonal plate)",
+  "artist": "Wilson A. Bentley",
+  "year": "1890s",
   "source": "Wilson A. Bentley, photomicrograph, Jericho, Vermont, 1890s; The Metropolitan Museum of Art, New York (Open Access; image DP351879), via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:-Snow_Crystal-_MET_DP351879.jpg",
   "licence": "Public domain (Met Open Access, CC0)",
   "width_px": 1200,
@@ -682,6 +854,9 @@
  {
   "slug": "p_kelvin_tide_predictor",
   "title": "Sir William Thomson's third tide-predicting machine: design drawing",
+  "short": "The third tide-predicting machine: design drawing",
+  "artist": "William Thomson (Lord Kelvin)",
+  "year": "1881",
   "source": "William Thomson (Lord Kelvin), design of 1879-81, as published in Minutes of Proceedings of the Institution of Civil Engineers, vol. 65 (1881); scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:099-tpm3-sk.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 1200,
@@ -690,6 +865,9 @@
  {
   "slug": "p_kepler_nested_solids",
   "title": "The planetary spheres nested in the five regular solids (Mysterium Cosmographicum)",
+  "short": "Mysterium Cosmographicum: the nested solids",
+  "artist": "Johannes Kepler",
+  "year": "1596-97",
   "source": "Johannes Kepler, Prodromus dissertationum cosmographicarum, continens Mysterium cosmographicum (Tübingen, 1596), folding plate engraved by Christoph Leibfried, dated 1597; copy of the L. Tom Perry Special Collections, Harold B. Lee Library, Brigham Young University, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Kepler_Platonic_Solids.tif",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 1129,
@@ -698,6 +876,9 @@
  {
   "slug": "p_leonardo_icosahedron",
   "title": "Icosaedron elevatum solidum: a stellated icosahedron after Leonardo",
+  "short": "Icosaedron elevatum solidum",
+  "artist": "after Leonardo da Vinci",
+  "year": "1509",
   "source": "Woodcut after Leonardo da Vinci, in Luca Pacioli, Divina proportione (Venice: Paganino Paganini, 1509); Internet Archive scan divinaproportion00paci, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:De_divina_proportione_-_Icosaedron_Elevatum_Solidum.jpg",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 1200,
@@ -706,6 +887,8 @@
  {
   "slug": "p_jacquard_woven_portrait",
   "title": "À la mémoire de J. M. Jacquard: a portrait woven in silk",
+  "artist": "Didier Petit et Cie after Claude Bonnefond",
+  "year": "1839",
   "source": "Woven by Didier Petit et Cie, Lyon, 1839, after the painting by Claude Bonnefond (silk, woven on a Jacquard loom); Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/2002737214/ (via Wikimedia Commons)",
   "licence": "No known restrictions on publication (Library of Congress); public domain by age",
   "width_px": 837,
@@ -714,6 +897,8 @@
  {
   "slug": "p_mark_i_perceptron",
   "title": "The Mark I Perceptron being shown the letter C",
+  "artist": "U.S. Navy",
+  "year": "c. 1960",
   "source": "U.S. Navy photograph, c. 1960 (released with the announcement of the Mark I Perceptron, built at Cornell Aeronautical Laboratory, Buffalo, under Frank Rosenblatt); National Archives, 330-PSA-80-60 (USN 710739), via the National Museum of the U.S. Navy and Wikimedia Commons, https://commons.wikimedia.org/wiki/File:330-PSA-80-60_(USN_710739)_(20897323365).jpg",
   "licence": "Public domain (a work of the U.S. Government: U.S. Navy photograph)",
   "width_px": 1200,
@@ -722,6 +907,8 @@
  {
   "slug": "p_golgi_pyramidal_cells",
   "title": "Nerve cells of the hippocampus, stained black (plate XIII)",
+  "artist": "Camillo Golgi",
+  "year": "1885",
   "source": "Camillo Golgi, Sulla fina anatomia degli organi centrali del sistema nervoso (Reggio Emilia: S. Calderini e Figlio, 1885), plate XIII; reproduction via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Golgi_1885_Plate_XIII.JPG",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 916,
@@ -730,6 +917,8 @@
  {
   "slug": "p_golgi_hippocampus",
   "title": "Section through the hippocampus (plate XX)",
+  "artist": "Camillo Golgi",
+  "year": "1885",
   "source": "Camillo Golgi, Sulla fina anatomia degli organi centrali del sistema nervoso (Reggio Emilia: S. Calderini e Figlio, 1885), plate XX; reproduction via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Golgi_1885_Plate_XX.JPG",
   "licence": "Public domain (by age; a faithful reproduction of a two-dimensional work)",
   "width_px": 1200,
@@ -738,6 +927,8 @@
  {
   "slug": "p_galvani_frogs",
   "title": "Experiments on animal electricity (Tab. II)",
+  "artist": "Luigi Galvani",
+  "year": "1792",
   "source": "Luigi Galvani, De viribus electricitatis in motu musculari commentarius, with Giovanni Aldini's dissertation and notes (Modena: Società Tipografica, 1792), folding plate II; Wellcome Collection, London, https://wellcomecollection.org/works/rnbddkf5",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 1200,
@@ -746,6 +937,8 @@
  {
   "slug": "p_poincare_portrait",
   "title": "Henri Poincaré (1854-1912), with his signature",
+  "short": "Henri Poincaré",
+  "year": "before 1912",
   "source": "Unidentified photographer, before 1912; Smithsonian Institution Libraries, Dibner Library of the History of Science and Technology (Scientific Identity: Portraits from the Dibner Library), via Wikimedia Commons, File:Portrait of Henri Poincaré (1854-1912), Mathematician (2551042945).jpg",
   "licence": "No known copyright restrictions (Smithsonian Institution, Flickr Commons)",
   "width_px": 721,
@@ -754,6 +947,9 @@
  {
   "slug": "p_signal_service_weather_1888",
   "title": "Daily weather map, 20 August 1888: a hurricane coming ashore in Louisiana (detail)",
+  "short": "Daily weather map, 20 August 1888",
+  "artist": "United States Army Signal Service",
+  "year": "1888",
   "source": "United States Army Signal Service, 1888; NOAA Central Library, U.S. Daily Weather Maps, https://library.noaa.gov/weather-climate/daily-weather-maps, via Wikimedia Commons, File:1888 August 20 weather map 1.jpg",
   "licence": "Public domain (a work of the U.S. Government)",
   "width_px": 777,
@@ -762,6 +958,8 @@
  {
   "slug": "p_wpa_careful_machinery",
   "title": "Be careful near machinery",
+  "artist": "Robert Lachenmann",
+  "year": "1936",
   "source": "Robert Lachenmann, WPA Federal Art Project, 1936 (woodblock poster); Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/98518717/",
   "licence": "No known restrictions on publication (WPA work)",
   "width_px": 717,
@@ -770,6 +968,8 @@
  {
   "slug": "p_wpa_save_your_eyes",
   "title": "Save your eyes: use your goggles",
+  "artist": "WPA Federal Art Project, Illinois (Safety Division)",
+  "year": "1936-37",
   "source": "WPA Federal Art Project, Illinois (Safety Division), 1936 or 1937 (silkscreen poster); Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/98517852/",
   "licence": "No known restrictions on publication (WPA work)",
   "width_px": 392,
@@ -778,6 +978,8 @@
  {
   "slug": "p_wpa_protect_hands",
   "title": "Protect your hands! You work with them",
+  "artist": "Robert Muchley",
+  "year": "1936",
   "source": "Robert Muchley, WPA Federal Art Project, Pennsylvania, 1936 (silkscreen poster); Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/98518513/",
   "licence": "No known restrictions on publication (WPA work)",
   "width_px": 775,
@@ -786,6 +988,8 @@
  {
   "slug": "p_wpa_work_with_care",
   "title": "Work with care",
+  "artist": "Nathan Sherman",
+  "year": "1936",
   "source": "Nathan Sherman, WPA Federal Art Project, Pennsylvania, 1936 (silkscreen poster); Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/98517388/",
   "licence": "No known restrictions on publication (WPA work)",
   "width_px": 781,
@@ -794,6 +998,7 @@
  {
   "slug": "stone_habs_sheet2",
   "title": "Adams Stone Library: floor plan and balcony plan",
+  "artist": "Frederic C. Detwiller, Historic American Buildings Survey",
   "source": "Historic American Buildings Survey, survey MA-841, sheet 2 of 7, drawn by Frederic C. Detwiller; Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/ma0435/",
   "licence": "Public domain (a work of the U.S. Government)",
   "width_px": 1024,
@@ -802,6 +1007,8 @@
  {
   "slug": "stone_habs_sheet6",
   "title": "Adams Stone Library: library ladder, balcony handrail and weathervane details",
+  "short": "Adams Stone Library: ladder, handrail and weathervane details",
+  "artist": "Frederic C. Detwiller, Historic American Buildings Survey",
   "source": "Historic American Buildings Survey, survey MA-841, sheet 6 of 7, drawn by Frederic C. Detwiller; Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/ma0435/",
   "licence": "Public domain (a work of the U.S. Government)",
   "width_px": 1024,
@@ -810,6 +1017,8 @@
  {
   "slug": "stone_habs_sheet7",
   "title": "Adams Stone Library: French door, framing, marble mantel and Italian tile floor details",
+  "short": "Adams Stone Library: door, framing, mantel and floor details",
+  "artist": "Frederic C. Detwiller, Historic American Buildings Survey",
   "source": "Historic American Buildings Survey, survey MA-841, sheet 7 of 7, drawn by Frederic C. Detwiller; Library of Congress, Prints and Photographs Division, https://www.loc.gov/item/ma0435/",
   "licence": "Public domain (a work of the U.S. Government)",
   "width_px": 1024,
@@ -818,6 +1027,8 @@
  {
   "slug": "stone_saenredam_cave",
   "title": "Plato's Cave (Antrum Platonicum)",
+  "artist": "Jan Saenredam after Cornelis van Haarlem",
+  "year": "1604",
   "source": "Jan Saenredam after Cornelis van Haarlem, engraving, 1604, published by Hendrik Hondius I; National Gallery of Art, Washington, 1983.61.1, https://www.nga.gov/artworks/62542-platos-cave",
   "licence": "Public domain (NGA Open Access, CC0)",
   "width_px": 1200,
@@ -826,6 +1037,9 @@
  {
   "slug": "p_harvard_class_day_1853",
   "title": "Order of exercises for Class Day, at Harvard College, Friday, June 24, 1853",
+  "short": "Order of exercises for Class Day",
+  "artist": "Harvard College",
+  "year": "1853",
   "source": "Harvard College, 1853; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 61, Folder 20, https://www.loc.gov/item/2021771134/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 793,
@@ -834,6 +1048,7 @@
  {
   "slug": "p_yale_applied_chemistry_1848",
   "title": "School of Applied Chemistry: Analytical Laboratory, Yale College",
+  "year": "1848",
   "source": "B. Silliman Jr. and J. P. Norton, New Haven, June 1848; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 8, Folder 23, https://www.loc.gov/item/2021769432/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 794,
@@ -842,6 +1057,9 @@
  {
   "slug": "p_yale_wooden_spoon_1858",
   "title": "Presentation of the Wooden Spoon, by the Junior Class in Yale College, Brewster's Hall, June 15th, 1858",
+  "short": "Presentation of the Wooden Spoon",
+  "artist": "Yale College",
+  "year": "1858",
   "source": "Yale College, 1858; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 9, Folder 5, https://www.loc.gov/item/rbpe.00900500/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 664,
@@ -850,6 +1068,9 @@
  {
   "slug": "p_yale_junior_exhibition_1836",
   "title": "Junior Exhibition, Yale University, 1836: an engraved invitation",
+  "short": "Junior Exhibition: an engraved invitation",
+  "artist": "engraved by Charles E. Ely",
+  "year": "1836",
   "source": "engraved by Charles E. Ely, New York, 1836; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 7, Folder 22, https://www.loc.gov/item/2021767246/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 486,
@@ -858,6 +1079,9 @@
  {
   "slug": "p_transylvania_philosophy_of_mind_1826",
   "title": "The Philosophy of Mind according to Thomas Brown, M.D.: a table for students",
+  "short": "The Philosophy of Mind according to Thomas Brown, M.D.",
+  "artist": "Transylvania University",
+  "year": "1826",
   "source": "Transylvania University, Lexington, Ky., January 1826; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 174, Folder 10, https://www.loc.gov/item/2020770848/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 1007,
@@ -866,6 +1090,8 @@
  {
   "slug": "p_harvard_quaestiones_1790",
   "title": "Quaestiones sub reverendo Josepho Willard ... in comitiis publicis a laureae magistralis candidatis",
+  "short": "Quaestiones",
+  "artist": "Harvard University",
   "source": "Harvard University, Cambridge, Mass., 1790; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 44, Folder 5b, https://www.loc.gov/item/rbpe.0440050b/ (Evans 22562; LOC dates the sheet 1781-91; 1790 is the year Adams took his master's degree)",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 840,
@@ -874,6 +1100,9 @@
  {
   "slug": "p_transylvania_lecture_card_1823",
   "title": "Transylvania University: Lectures on the Theory & Practice of Medicine, by Samuel Brown, M.D., 1823-4",
+  "short": "Lectures on the Theory & Practice of Medicine, by Samuel Brown",
+  "artist": "Transylvania University",
+  "year": "1823",
   "source": "Transylvania University, Lexington, Ky., 1823; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 21, Folder 45a, https://www.loc.gov/item/rbpe.0210450a/, card 1 of the set of 17",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 700,
@@ -882,6 +1111,9 @@
  {
   "slug": "p_transylvania_chemistry_card_1826",
   "title": "Transylvania University, Medical Department: Course of Chemistry, by James Blythe, D.D., 1826-7",
+  "short": "Course of Chemistry, by James Blythe",
+  "artist": "Transylvania University",
+  "year": "1826",
   "source": "Transylvania University, Lexington, Ky., 1826; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 21, Folder 45a, https://www.loc.gov/item/rbpe.0210450a/, image 5 of the set",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 700,
@@ -890,6 +1122,9 @@
  {
   "slug": "p_transylvania_library_ticket_1826",
   "title": "Transylvania University, Medical Department: Matriculation and Library Ticket, winter session 1826-7",
+  "short": "Matriculation and Library Ticket",
+  "artist": "Transylvania University",
+  "year": "1826",
   "source": "Transylvania University, Lexington, Ky., 1826; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 21, Folder 45a, https://www.loc.gov/item/rbpe.0210450a/, image 14 of the set",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 700,
@@ -898,6 +1133,9 @@
  {
   "slug": "p_upenn_lecture_ticket_1848",
   "title": "University of Pennsylvania: Lectures on the Theory & Practice of Medicine, by N. Chapman, M.D.",
+  "short": "Lectures on the Theory & Practice of Medicine, by N. Chapman",
+  "artist": "University of Pennsylvania",
+  "year": "1848",
   "source": "University of Pennsylvania, Philadelphia, 1848; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 154, Folder 13, https://www.loc.gov/item/rbpe.15401300/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 700,
@@ -906,6 +1144,8 @@
  {
   "slug": "p_silliman_structure_of_earth_1852",
   "title": "Course of Lectures upon the Structure of the Earth, by Professor B. Silliman, of Yale College",
+  "short": "Lectures upon the Structure of the Earth, by Professor B. Silliman",
+  "year": "1852",
   "source": "Benjamin Silliman, 1852; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 61, Folder 2, https://www.loc.gov/item/2021771150/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 573,
@@ -914,6 +1154,8 @@
  {
   "slug": "p_amherst_williams_baseball_chess_1859",
   "title": "Amherst Express. Extra. Williams and Amherst Base Ball and Chess! Muscle and Mind!!",
+  "short": "Williams and Amherst Base Ball and Chess!",
+  "year": "1859",
   "source": "Amherst, Mass., July 1859; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 0, Folder 7, https://www.loc.gov/item/rbpe.00000700/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 865,
@@ -922,6 +1164,9 @@
  {
   "slug": "p_harvard_lowell_inauguration_1909",
   "title": "Inauguration of President Lowell: undergraduate torchlight parade and fireworks",
+  "short": "Inauguration of President Lowell: torchlight parade",
+  "artist": "Harvard Co-operative Society",
+  "year": "1909",
   "source": "Harvard Co-operative Society, Cambridge, October 1909; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 79, Folder 49e, https://www.loc.gov/item/rbpe.0790490e/, sheet 1 of the folder of seven Harvard broadsides",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 1100,
@@ -930,6 +1175,8 @@
  {
   "slug": "p_harvard_change_in_programme_1917",
   "title": "Harvard University: Change in Programme. Commencement, June 21, 1917, Sanders Theatre",
+  "short": "Harvard University: Change in Programme",
+  "year": "1917",
   "source": "C. C. Little, Acting University Marshal, Cambridge, 1917; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 79, Folder 49e, https://www.loc.gov/item/rbpe.0790490e/, image 7 of the folder of seven Harvard broadsides",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 540,
@@ -938,6 +1185,9 @@
  {
   "slug": "p_queens_college_lottery_1814",
   "title": "By authority of the State of New-Jersey: Queen's College Lottery, No. III (an uncut sheet of tickets)",
+  "short": "Queen’s College Lottery, No. III",
+  "artist": "Queen's College (now Rutgers)",
+  "year": "1814",
   "source": "Queen's College (now Rutgers), New Brunswick, June 1814; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 99, Folder 14, https://www.loc.gov/item/rbpe.09901400/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 732,
@@ -946,6 +1196,9 @@
  {
   "slug": "p_uva_absence_report_1831",
   "title": "University of Virginia: a monthly report to a student's parent",
+  "short": "A monthly report to a student’s parent",
+  "artist": "University of Virginia",
+  "year": "1831",
   "source": "University of Virginia, Charlottesville, 1831; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 186, Folder 28a, https://www.loc.gov/item/2020775168/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 719,
@@ -954,6 +1207,9 @@
  {
   "slug": "p_oxford_chemistry_syllabus_1831",
   "title": "Syllabus of a Course of Lectures on the Principles of Chemistry, commencing at the Museum, Oxford, in October 1831",
+  "short": "Syllabus of Lectures on the Principles of Chemistry, Oxford",
+  "artist": "Charles Daubeny",
+  "year": "1831",
   "source": "Charles Daubeny, Oxford, 1831; Wellcome Collection, London, https://wellcomecollection.org/works/jw85n8pf",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 529,
@@ -962,6 +1218,8 @@
  {
   "slug": "p_princeton_rah_1903",
   "title": "Princeton, rah, rah, rah",
+  "artist": "Nanon West",
+  "year": "1903",
   "source": "Nanon West, 1903 (colour print, poster format); Library of Congress, Prints and Photographs Division, Artist Poster filing series, POS - US .W458, no. 2, https://www.loc.gov/item/2015646618/ (the photograph's margin trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement); published in the United States before 1930",
   "width_px": 634,
@@ -970,6 +1228,9 @@
  {
   "slug": "p_mercantile_library_lectures_1861",
   "title": "The Eighteenth Annual Course of Lectures before the Mercantile Library Association, Boston Music Hall",
+  "short": "Mercantile Library Association: the Eighteenth Annual Course of Lectures",
+  "artist": "Mercantile Library Association",
+  "year": "1861",
   "source": "Mercantile Library Association, Boston, 1861; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 67, Folder 1, https://www.loc.gov/item/2020770140/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 600,
@@ -978,6 +1239,8 @@
  {
   "slug": "p_lyceum_lecture_medford_1852",
   "title": "Lyceum Lecture: the introductory lecture before the West Medford Library and Lyceum Association",
+  "short": "Lyceum Lecture, West Medford",
+  "year": "1852",
   "source": "T. S. Harlow, Sec'y, Medford, Mass., January 19, 1852; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 61, Folder 1, https://www.loc.gov/item/2021771183/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 849,
@@ -986,6 +1249,7 @@
  {
   "slug": "p_dog_lost_fancy_1851",
   "title": "Dog Lost! A Cuba lap dog ... answers to the name of \"Fancy\"",
+  "year": "1851",
   "source": "Boston, August 4th, 1851; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 60, Folder 27, https://www.loc.gov/item/2021771794/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 900,
@@ -994,6 +1258,9 @@
  {
   "slug": "p_dancing_school_1861",
   "title": "Afternoon Dancing School: Joseph B. Brown",
+  "short": "Afternoon Dancing School",
+  "artist": "Joseph B. Brown",
+  "year": "1861",
   "source": "Joseph B. Brown, Boston, December 1861; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 68, Folder 7, https://www.loc.gov/item/rbpe.06800700/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 619,
@@ -1002,6 +1269,9 @@
  {
   "slug": "p_penmanship_lessons_1843",
   "title": "Penmanship: Messrs. Dolbear are now commencing their last course of lessons in this city",
+  "short": "Penmanship: the last course of lessons",
+  "artist": "Messrs. Dolbear",
+  "year": "1843",
   "source": "Messrs. Dolbear, Nashville, September 1843; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 175, Folder 3, https://www.loc.gov/item/2021769009/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 785,
@@ -1010,6 +1280,8 @@
  {
   "slug": "p_musicians_ball_1854",
   "title": "Musicians' Military & Civic Ball, complimentary to the Lowell Cornet Band, at French's Hall",
+  "short": "Musicians’ Military & Civic Ball",
+  "year": "1854",
   "source": "Lowell, Mass., November 16th, 1854; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 61, Folder 36, https://www.loc.gov/item/2021771062/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 539,
@@ -1018,6 +1290,8 @@
  {
   "slug": "p_tyndall_lectures_on_light_1872",
   "title": "Announcement: Prof. John Tyndall, of the Royal Institution, London, will deliver a Course of Six Lectures on Light",
+  "short": "Prof. John Tyndall: Six Lectures on Light",
+  "year": "1872",
   "source": "Gibson Brothers, printers, Washington, D.C., 1872; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 206, Folder 33, https://www.loc.gov/item/2020781545/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 559,
@@ -1026,6 +1300,9 @@
  {
   "slug": "p_ymca_scientific_lectures_1870",
   "title": "Scientific Lectures: a course of twelve popular scientific lectures, Lincoln Hall",
+  "short": "Twelve popular scientific lectures, Lincoln Hall",
+  "artist": "Young Men's Christian Association",
+  "year": "1870",
   "source": "Young Men's Christian Association, Washington, D.C., 1870; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 206, Folder 1, https://www.loc.gov/item/2020779282/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 595,
@@ -1034,6 +1311,8 @@
  {
   "slug": "p_armitstead_lectures_ticket_1888",
   "title": "The Armitstead Lectures, Kinnaird Hall: tickets for the course, first seats, no. 370",
+  "short": "The Armitstead Lectures: a ticket",
+  "year": "1888",
   "source": "Dundee, 1888; Wellcome Collection, London, https://wellcomecollection.org/works/u9f7ppam",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 700,
@@ -1042,6 +1321,8 @@
  {
   "slug": "p_chemical_industry_programme_1900",
   "title": "Reception to the President and Members of the Society of Chemical Industry, the Mansion House: Programme of Music",
+  "short": "Society of Chemical Industry: Programme of Music",
+  "year": "1900",
   "source": "London, July 19th, 1900; Wellcome Collection, London, https://wellcomecollection.org/works/z6a9xepm",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 604,
@@ -1050,6 +1331,8 @@
  {
   "slug": "p_royal_institution_notice_1841",
   "title": "Royal Institution of Great Britain: the extended and practical course of chemical lectures and demonstrations",
+  "short": "Royal Institution: chemical lectures and demonstrations",
+  "year": "1841",
   "source": "Joseph Fincher, Assistant Secretary, London, August 30, 1841; Wellcome Collection, London, https://wellcomecollection.org/works/v65vwkzs",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 700,
@@ -1058,6 +1341,8 @@
  {
   "slug": "p_maelzel_automaton_chess_player_1826",
   "title": "Maelzel's Exhibition at the Julien Hall: Automaton Chess Player, Automaton Trumpeter, Automaton Rope Dancers",
+  "short": "Maelzel’s Exhibition: the Automaton Chess Player",
+  "year": "1826",
   "source": "W. W. Clapp, printer, Boston, 1826; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 54, Folder 24, https://www.loc.gov/item/2020770872/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 628,
@@ -1066,6 +1351,8 @@
  {
   "slug": "p_thermo_lamp_1802",
   "title": "Thermo Lamp: this recent, extraordinary, and celebrated discovery",
+  "short": "Thermo Lamp",
+  "year": "1802",
   "source": "E. Savage, Columbian Museum, New York, December 31, 1802; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 113, Folder 6a, https://www.loc.gov/item/2020781488/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 729,
@@ -1074,6 +1361,8 @@
  {
   "slug": "p_aeroport_flying_ship_1853",
   "title": "Wonderful, Unprecedented, and Exciting Exhibition! An Aeroport or Flying-Ship",
+  "short": "An Aeroport or Flying-Ship",
+  "year": "1853",
   "source": "Washington, D.C., March 1853; Library of Congress, Rare Book and Special Collections Division, Printed Ephemera Collection, Portfolio 201, Folder 9, https://www.loc.gov/item/2021771099/",
   "licence": "No known U.S. copyright: printed in the United States before 1930 (Library of Congress: \"the Library is not aware of any U.S. copyright protection ... in the materials in the Printed Ephemera Collection\")",
   "width_px": 622,
@@ -1082,6 +1371,8 @@
  {
   "slug": "p_air_balloon_lecture_1783",
   "title": "Air Balloon: at Mr. Patterson's Great Room ... will be delivered a Lecture on Air",
+  "short": "Air Balloon: a Lecture on Air",
+  "year": "1783",
   "source": "J. Dinwiddie, London, 1783; Wellcome Collection, London, https://wellcomecollection.org/works/s3j2y6rv",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 751,
@@ -1090,6 +1381,8 @@
  {
   "slug": "p_great_comet_1858_bill",
   "title": "Music Hall, George Street: Mr. Henry's Heavens, Celestial Scenery, the Planetarium; the path of the great comet of 1858",
+  "short": "Mr. Henry’s Heavens: the path of the great comet of 1858",
+  "year": "about 1859",
   "source": "Edinburgh, about 1859; Wellcome Collection, London, https://wellcomecollection.org/works/gpajjast",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 407,
@@ -1098,6 +1391,8 @@
  {
   "slug": "p_dioastrodoxon_orrery_1820",
   "title": "Astronomical Lecture on the new Dioastrodoxon, or Grand Transparent Orrery, twenty-one feet in diameter",
+  "short": "Astronomical Lecture on the new Dioastrodoxon",
+  "year": "about 1820",
   "source": "London, about 1820; Wellcome Collection, London, https://wellcomecollection.org/works/kxqktjwd",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 1000,
@@ -1106,6 +1401,8 @@
  {
   "slug": "p_walker_eidouranion_1817",
   "title": "Positively the Last Times: Mr. D. F. Walker ... Three Astronomical Lectures on the Eidouranion, or Large Transparent Orrery",
+  "short": "Three Astronomical Lectures on the Eidouranion",
+  "year": "1817",
   "source": "Theatre, Dover, 1817; Wellcome Collection, London, https://wellcomecollection.org/works/j773v7k5",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 725,
@@ -1114,6 +1411,8 @@
  {
   "slug": "p_philipsthal_exhibition",
   "title": "Grand Philosophical, Optical, & Mechanical Exhibition, by M. de Philipsthal, Lyceum, Strand",
+  "short": "Grand Philosophical, Optical, & Mechanical Exhibition",
+  "year": "1784?",
   "source": "London; Wellcome dates it 1784?; Wellcome Collection, London, https://wellcomecollection.org/works/zw87shps",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 870,
@@ -1122,6 +1421,8 @@
  {
   "slug": "p_miller_chemistry_lectures",
   "title": "Dr. Miller will begin a Course of Lectures on Chemistry, illustrated by experiments",
+  "short": "A Course of Lectures on Chemistry",
+  "year": "late 18th century",
   "source": "late 18th century; Wellcome Collection, London, https://wellcomecollection.org/works/bksty9ex",
   "licence": "Public domain (Public Domain Mark; Wellcome Collection)",
   "width_px": 663,
@@ -1130,6 +1431,9 @@
  {
   "slug": "p_wpa_adler_planetarium",
   "title": "The drama of the heavens: Adler Planetarium, operated by Chicago Park District",
+  "short": "The drama of the heavens: Adler Planetarium",
+  "artist": "Beard, Illinois WPA Art Project",
+  "year": "1939",
   "source": "Beard, Illinois WPA Art Project, 1939; Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .B42, no. 6, https://www.loc.gov/item/98508993/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 563,
@@ -1138,6 +1442,8 @@
  {
   "slug": "p_wpa_museum_science_industry",
   "title": "Museum of Science & Industry",
+  "artist": "Galic, Illinois WPA Art Project",
+  "year": "1936-40",
   "source": "Galic, Illinois WPA Art Project, 1936-40; Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - ILL .G36, no. 3, https://www.loc.gov/item/98510059/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 614,
@@ -1146,6 +1452,9 @@
  {
   "slug": "p_wpa_whos_who_zoo",
   "title": "Who's who in the zoo: illustrated natural history prepared by the WPA Federal Writers Project",
+  "short": "Who’s who in the zoo",
+  "artist": "attributed to Sidney Jacobson",
+  "year": "1936-37",
   "source": "attributed to Sidney Jacobson, WPA Federal Art Project (New York), 1936-37; Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - NY .J34, no. 2, https://www.loc.gov/item/98514973/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 398,
@@ -1154,6 +1463,8 @@
  {
   "slug": "p_wpa_romance_of_robot",
   "title": "Two chamber operas: \"The Romance of Robot\" and \"La Serva Padrona\"",
+  "artist": "WPA Federal Music Project of New York City",
+  "year": "1936-41",
   "source": "WPA Federal Music Project of New York City, 1936-41; Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - NY .01 .T89, no. 1, https://www.loc.gov/item/98514982/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 624,
@@ -1162,6 +1473,8 @@
  {
   "slug": "p_wpa_beethoven_series_1937",
   "title": "Beethoven Series",
+  "artist": "WPA Federal Art Project (New York)",
+  "year": "1937",
   "source": "WPA Federal Music Project (New York), 1937; WPA Federal Art Project (New York), 1937 (silkscreen poster); Library of Congress, Prints and Photographs Division, WPA Poster Collection, POS - WPA - NY .L37, no. 4, https://www.loc.gov/item/98507229/ (the film-copy border trimmed)",
   "licence": "No known restrictions on publication (Library of Congress rights statement; a work made for the U.S. Works Progress Administration)",
   "width_px": 1200,
@@ -1170,6 +1483,8 @@
  {
   "slug": "p_bamber_dime_show_1880",
   "title": "5th Annual Tour: B. A. Bamber's Dime Show: travels, art, history, astronomy, fun, electricity",
+  "short": "B. A. Bamber’s Dime Show",
+  "year": "about 1880",
   "source": "about 1880; Library of Congress, Prints and Photographs Division, Theatrical poster collection, POS - TH - SPE, no. 7, https://www.loc.gov/item/2014635917/",
   "licence": "No known restrictions on publication (Library of Congress rights statement); published in the United States before 1930",
   "width_px": 281,
@@ -1178,6 +1493,8 @@
  {
   "slug": "p_hollerith_tabulator_1890",
   "title": "The Hollerith electric tabulating machine at the 1890 United States census",
+  "artist": "Scientific American",
+  "year": "1890",
   "source": "Scientific American, 30 August 1890 (wood engraving, artist not credited); scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:1890_Census_Hollerith_Electrical_Counting_Machines_Sci_Amer.jpg",
   "licence": "Public domain (published in the United States in 1890)",
   "width_px": 622,
@@ -1186,6 +1503,9 @@
  {
   "slug": "p_principia_54_43",
   "title": "Proposition *54.43 of Principia Mathematica: on the way to 1 + 1 = 2",
+  "short": "Principia Mathematica, proposition *54.43",
+  "artist": "A. N. Whitehead and B. Russell",
+  "year": "1910",
   "source": "A. N. Whitehead and B. Russell, Principia Mathematica, vol. 1 (Cambridge University Press, 1910); scan from the University of Michigan Historical Math Collection, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Principia_Mathematica_54-43.png",
   "licence": "Public domain in the United States (published 1910)",
   "width_px": 800,
@@ -1194,6 +1514,9 @@
  {
   "slug": "p_leibniz_binary_1703",
   "title": "Table des nombres: Leibniz's binary numbers, from Explication de l'arithmétique binaire",
+  "short": "Explication de l’arithmétique binaire: table of numbers",
+  "artist": "G. W. Leibniz",
+  "year": "1703",
   "source": "G. W. Leibniz, Explication de l'arithmétique binaire, Mémoires de l'Académie royale des sciences (Paris, 1703), p. 86; scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Leibniz_binary_system_1703.png",
   "licence": "Public domain (Public Domain Mark 1.0; the author died in 1716)",
   "width_px": 727,
@@ -1202,6 +1525,9 @@
  {
   "slug": "p_cajal_hippocampus_circuit",
   "title": "The circuit of the hippocampus, with the direction of the currents marked by arrows",
+  "short": "The circuit of the hippocampus",
+  "artist": "Santiago Ramón y Cajal",
+  "year": "1911",
   "source": "Santiago Ramón y Cajal, Histologie du système nerveux de l'homme et des vertébrés, vols. 1 and 2 (A. Maloine, Paris, 1911); scan via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:CajalHippocampus.jpeg",
   "licence": "Public domain (published 1911; the author died in 1934)",
   "width_px": 644,
@@ -1210,6 +1536,9 @@
  {
   "slug": "p_muybridge_horse_in_motion_1878",
   "title": "The Horse in Motion: Sallie Gardner, running at a 1:40 gait over the Palo Alto track, 19 June 1878",
+  "short": "The Horse in Motion",
+  "artist": "Eadweard Muybridge",
+  "year": "1878",
   "source": "Eadweard Muybridge, 1878 (albumen print on card, Morse's Gallery, San Francisco); Library of Congress, Prints and Photographs Division, LOT 3081, https://www.loc.gov/item/97502309/",
   "licence": "Public domain (no known restrictions on publication)",
   "width_px": 1024,
@@ -1218,6 +1547,9 @@
  {
   "slug": "p_mandeville_fable_of_the_bees_1725",
   "title": "The Fable of the Bees: or, Private Vices, Publick Benefits (fourth edition, title page)",
+  "short": "The Fable of the Bees: title page",
+  "artist": "Bernard Mandeville",
+  "year": "1725",
   "source": "Bernard Mandeville; London, printed for J. Tonson, 1725; Wellcome Collection, London, https://wellcomecollection.org/works/jv2hn9s5",
   "licence": "Public domain (Public Domain Mark, Wellcome Collection)",
   "width_px": 735,
@@ -1226,6 +1558,9 @@
  {
   "slug": "p_verrill_loligo_pealei",
   "title": "The long-finned squid, Loligo pealei (now Doryteuthis pealeii), plate of A. E. Verrill's Report on the Cephalopods of the Northeastern Coast of America",
+  "short": "The long-finned squid, Loligo pealei",
+  "artist": "A. E. Verrill",
+  "year": "1882",
   "source": "A. E. Verrill, Report of the U.S. Commissioner of Fish and Fisheries for 1879 (Washington, 1882); Freshwater and Marine Image Bank, University of Washington, no. 33645; file https://commons.wikimedia.org/wiki/File:FMIB_33645_Cephalopods.jpeg",
   "licence": "Public domain (a work of the U.S. Government, 1882)",
   "width_px": 738,
@@ -1234,6 +1569,8 @@
  {
   "slug": "p_jastrow_duck_rabbit",
   "title": "Do you see a duck or a rabbit, or either? (the duck-rabbit)",
+  "artist": "Joseph Jastrow",
+  "year": "1899",
   "source": "Joseph Jastrow, 'The Mind's Eye', Popular Science Monthly 54 (January 1899), 299-312; file https://commons.wikimedia.org/wiki/File:Duck-Rabbit_illusion.jpg",
   "licence": "Public domain (published 1899; the author died in 1944)",
   "width_px": 519,
@@ -1242,6 +1579,9 @@
  {
   "slug": "p_huygens_horologium_1673",
   "title": "Christiaan Huygens, Horologium Oscillatorium (Paris: F. Muguet, 1673): title page",
+  "short": "Horologium Oscillatorium: title page",
+  "artist": "Christiaan Huygens",
+  "year": "1673",
   "source": "Biblioteca Europea di Informazione e Cultura (BEIC), Milan, digital library item 869780; via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Huygens_-_Horologium_oscillatorium,_sive_De_motu_pendulorum_ad_horologia_aptato_demonstrationes_geometricae,_1673_-_869780.jpeg",
   "licence": "Public domain (published 1673)",
   "width_px": 829,
@@ -1250,6 +1590,9 @@
  {
   "slug": "p_weather_map_1963_10_07",
   "title": "U.S. Weather Bureau, Daily Weather Map, Monday, October 7, 1963 (surface map, Gulf of Mexico and Hurricane Flora)",
+  "short": "Daily Weather Map, October 7, 1963",
+  "artist": "U.S. Weather Bureau",
+  "year": "1963",
   "source": "NOAA Central Library, Daily Weather Maps, https://library.noaa.gov/weather-climate/daily-weather-maps; via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Hurricane_Flora_weather_map_10-7-1963_(645921).jpg",
   "licence": "Public domain (a work of the U.S. Government)",
   "width_px": 1200,
@@ -1258,6 +1601,9 @@
  {
   "slug": "p_thompson_argyropelecus_sternoptyx",
   "title": "Argyropelecus olfersi and Sternoptyx diaphana: one fish in square and in oblique co-ordinates (On Growth and Form, figs. 373 and 374)",
+  "short": "On Growth and Form: Argyropelecus and Sternoptyx",
+  "artist": "D'Arcy Wentworth Thompson",
+  "year": "1917",
   "source": "D'Arcy Wentworth Thompson, On Growth and Form (Cambridge University Press, 1917), p. 748; scan of the copy in the MBLWHOI Library, Internet Archive, https://archive.org/details/ongrowthform1917thom",
   "licence": "Public domain (published 1917; the author died in 1948)",
   "width_px": 1200,
@@ -1266,6 +1612,9 @@
  {
   "slug": "p_thompson_scarus_pomacanthus",
   "title": "Scarus and Pomacanthus: a parrot-fish's square co-ordinates bent into coaxial circles (On Growth and Form, figs. 375 and 376)",
+  "short": "On Growth and Form: Scarus and Pomacanthus",
+  "artist": "D'Arcy Wentworth Thompson",
+  "year": "1917",
   "source": "D'Arcy Wentworth Thompson, On Growth and Form (Cambridge University Press, 1917), p. 749; scan of the copy in the MBLWHOI Library, Internet Archive, https://archive.org/details/ongrowthform1917thom",
   "licence": "Public domain (published 1917; the author died in 1948)",
   "width_px": 1200,
@@ -1274,6 +1623,9 @@
  {
   "slug": "p_trembley_polyps_room_1744",
   "title": "A room kept for polyps: jars of them on the window sills, a man and two boys at the table (the vignette heading the fourth memoir)",
+  "short": "A room kept for polyps",
+  "artist": "Abraham Trembley",
+  "year": "1744",
   "source": "Abraham Trembley, Mémoires pour servir à l'histoire d'un genre de polypes d'eau douce, à bras en forme de cornes (Leiden: Jean & Herman Verbeek, 1744); scan of the Smithsonian Libraries' copy, Biodiversity Heritage Library / Internet Archive, https://archive.org/details/mmoirespourservi01trem",
   "licence": "Public domain (published 1744)",
   "width_px": 1200,
@@ -1282,6 +1634,9 @@
  {
   "slug": "p_bach_canones_diversi_1747",
   "title": "Canones diversi super Thema Regium, from the Musical Offering (Musicalisches Opfer)",
+  "short": "Canones diversi, from the Musical Offering",
+  "artist": "Johann Sebastian Bach",
+  "year": "1747",
   "source": "Johann Sebastian Bach, first edition, Leipzig, 1747, in a facsimile reprint; IMSLP file #984943, https://imslp.org/wiki/Musikalisches_Opfer,_BWV_1079_(Bach,_Johann_Sebastian)",
   "licence": "Public domain",
   "width_px": 729,
@@ -1290,6 +1645,9 @@
  {
   "slug": "p_newell_puzzle_the_end_1893",
   "title": "Puzzle / The End: an upside-down word, from Topsys & Turvys (the page, and the same page turned round)",
+  "short": "Puzzle / The End, from Topsys & Turvys",
+  "artist": "Peter Newell",
+  "year": "1893",
   "source": "Peter Newell, Topsys & Turvys, New York, 1893, p. 31 (lithographed by the Gast Litho. & Eng. Co.); Library of Congress Rare Book and Special Collections, https://www.loc.gov/resource/rbc0001.2015juv05309/?sp=75, via Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Ambigram_-_puzzle_-_the_end_-_by_Peter_Newell_1893_-_book_Topsys_and_turvys.jpg",
   "licence": "Public domain",
   "width_px": 1200,
@@ -1298,6 +1656,8 @@
  {
   "slug": "p_carroll_tortoise_achilles_1895",
   "title": "What the Tortoise Said to Achilles (its first page)",
+  "artist": "Lewis Carroll",
+  "year": "1895",
   "source": "Lewis Carroll, Mind, new series, vol. 4, no. 14, April 1895, p. 278; scan of the Internet Archive, https://archive.org/details/sim_mind_1895-04_4_14",
   "licence": "Public domain",
   "width_px": 881,

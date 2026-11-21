@@ -1,9 +1,12 @@
 // The things that come in numbers, each one or two draws for the lot (the cast is in ../creatures.js).
 //
-//   fireflies     over long grass at night: they come up as the stars do (Vesper Street's: one draw, moved in the shader)
-//   bats          flitting over open grass at dusk (Anna's House: one instanced mesh, wings beaten in the shader)
+//   fireflies     a few everywhere at night, as at Anna's House: they come up as the stars do (one draw, moved in the shader)
+//   bats          flitting over open grass at dusk (Anna's House: one instanced mesh, wings beaten in the shader; not used
+//                 at the Laboratory now: Anna found the flying things overhead at night creepy)
 //   butterflies   from flower to flower by day: settle with their wings closed, open them to the sun (Anna's House)
 //   dragonflies   over a pond by day: patrol a beat over the water, hover, dart (Anna's House)
+//   swallows      hawking in loops over open ground by day; passers, a pair of pigeons crossing high over, now and then
+//   bees, moths, crickets   at the hives; round the lamps; heard and not seen
 //
 // Models: the bat and the dragonfly are from Poly Pizza, CC-BY 3.0 (see assets/CREDITS.md); the rest are built in code.
 
@@ -12,15 +15,20 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { TAU, flapping, turnTo, wrapA, clamp, ease, rng, vcMat, coloured, tris } from './kit.js';
 
 // ---- Fireflies ------------------------------------------------------------------------------------------------
-// S: { x, z: about where (for loading), n, box: [x0, x1, z0, z1], ok(x, z): where in the box, from, when }
+// A few here and a few there all over the grounds, as at Anna's House: each one hovers about a place of its own, drifting
+// a couple of feet this way and that, and lights now and then. They are told where (S.spots(), asked for once, when
+// they are first wanted); one set of points for the lot (one draw), moved and lit in the shader. Their size and glow
+// are the house's (a PointsMaterial of size 0.55 with a soft dot: its size on screen is 0.55 * half the canvas's
+// height / the distance, whatever the field of view).
+// S: { spots(): [[x, y, z], ...], x, z: about where (for loading), load, live, from: how dark before the first shows, when }
 export function fireflies(kit, S) {
-  const { ctx, day, scene, tag, onIsland, groundAt, add } = kit, r = rng(S.seed ?? 9091);
-  const uT = { value: 0 }, uN = { value: 0 }, uPx = { value: 600 }, FROM = S.from ?? 0.6; let pts = null;      // (from: how dark it must be before the first of them shows)
+  const { ctx, day, scene, tag, add } = kit, r = rng(S.seed ?? 9091);
+  const uT = { value: 0 }, uN = { value: 0 }, uPx = { value: 400 }, FROM = S.from ?? 0.4; let pts = null;
   add({
-    name: S.name ?? 'fireflies', x: S.x, z: S.z, load: S.load ?? 260, live: S.live ?? 260, when: S.when,
+    name: S.name ?? 'fireflies', x: S.x, z: S.z, load: S.load ?? 2000, live: S.live ?? 2000, when: S.when,
     init: async () => {
-      const pos = [], seed = [], [x0, x1, z0, z1] = S.box, n = S.n ?? 40;
-      for (let i = 0, tries = 0; i < n && tries < n * 30; tries++) { const x = x0 + r() * (x1 - x0), z = z0 + r() * (z1 - z0); if (!onIsland(x, z, 4) || (S.ok && !S.ok(x, z))) continue; pos.push(x, groundAt(x, z) + 0.9 + r() * 3.6, z); seed.push(r(), r()); i++; }
+      const pos = [], seed = []; for (const [x, y, z] of S.spots()) { pos.push(x, y, z); seed.push(r(), r()); }
+      if (!pos.length) throw new Error('nowhere for the fireflies');
       const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('aSeed', new THREE.Float32BufferAttribute(seed, 2));
       pts = tag(new THREE.Points(geo, new THREE.ShaderMaterial({
         uniforms: { uT, uN, uPx }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
@@ -30,17 +38,19 @@ void main() {
   vec3 p = position + vec3(sin(uT * sp + ph) * 2.5, sin(uT * sp * 1.7 + ph) * 0.6, cos(uT * sp * 0.8 + ph) * 2.5);
   vB = pow(max(0.0, sin(uT * 1.3 + ph * 3.0)), 6.0) * uN;
   vec4 mv = viewMatrix * vec4(p, 1.0);
-  gl_PointSize = clamp(uPx * 0.5 / max(1.0, -mv.z), 1.5, 40.0) * step(0.004, vB);
+  gl_PointSize = min(uPx * 0.55 / max(0.5, -mv.z), 24.0) * step(0.004, vB);
   gl_Position = projectionMatrix * mv;
 }`,
         fragmentShader: `varying float vB;
-void main() { vec2 d = gl_PointCoord * 2.0 - 1.0; float g = max(0.0, 1.0 - dot(d, d)); gl_FragColor = vec4(vec3(1.0, 0.95, 0.35) * vB * g * g * 1.6, 1.0); }`,
+void main() { float d = length(gl_PointCoord * 2.0 - 1.0); float g = d < 0.3 ? 1.0 - d * 1.3333 : 0.6 * max(0.0, 1.0 - d) / 0.7; gl_FragColor = vec4(vec3(1.0, 0.95, 0.35) * vB * g, 1.0);
+  #include <colorspace_fragment>
+}`,      // (the house's PointsMaterial is converted to the output's colours, as this is)
       }))); pts.frustumCulled = false; pts.name = 'fireflies'; pts.renderOrder = 3; scene.add(pts);
     },
     show: on => { pts.visible = on; },
-    think: () => { uPx.value = ctx.renderer.domElement.height / (2 * Math.tan((ctx.camera.fov ?? 60) * Math.PI / 360)); },
+    think: () => { uPx.value = ctx.renderer.domElement.height / 2; },
     tick: t => { uT.value = t; uN.value = THREE.MathUtils.smoothstep(day.night, FROM, Math.min(1, FROM + 0.3)); },
-    check: () => ({ n: pts.geometry.attributes.position.count, bright: uN.value }),
+    check: () => { const p = pts.geometry.attributes.position, c = ctx.camera.position; let near = 0; for (let i = 0; i < p.count; i++) if (Math.hypot(p.getX(i) - c.x, p.getZ(i) - c.z) < 50) near++; return { n: p.count, within50: near, bright: uN.value }; },
   });
 }
 
@@ -160,6 +170,17 @@ export function dragonflies(kit, S) {
   });
 }
 
+// A small bird in flight, built in code (wings, a forked tail; the wings are beaten by flapping()): a swallow by default
+const flier = (top = 0x1c2440, belly = 0xe8e0cc, red = 0x8a2a1a, sc = 1.5) => {
+  const body = tris([[[0, 0.03, 0.12], [-0.035, 0, 0.02], [0.035, 0, 0.02]], [[0, 0.03, 0.12], [0.035, 0, 0.02], [0, 0.02, -0.1]], [[0, 0.03, 0.12], [0, 0.02, -0.1], [-0.035, 0, 0.02]],
+    [[-0.035, 0, 0.02], [0, 0.02, -0.1], [0.035, 0, 0.02]]], top);
+  const under = tris([[[0, -0.025, 0.11], [0.035, 0, 0.02], [-0.035, 0, 0.02]], [[0, -0.025, 0.11], [-0.035, 0, 0.02], [0, -0.01, -0.1]], [[0, -0.025, 0.11], [0, -0.01, -0.1], [0.035, 0, 0.02]]], (x, y, z) => (z > 0.07 ? red : belly));
+  const wingsG = tris([[[-0.03, 0.01, 0.07], [-0.03, 0.01, -0.03], [-0.5, 0.01, -0.12]], [[-0.03, 0.01, 0.07], [-0.5, 0.01, -0.12], [-0.27, 0.01, 0.06]],
+    [[0.03, 0.01, 0.07], [0.5, 0.01, -0.12], [0.03, 0.01, -0.03]], [[0.03, 0.01, 0.07], [0.27, 0.01, 0.06], [0.5, 0.01, -0.12]]], top);
+  const tail = tris([[[-0.01, 0.015, -0.09], [-0.1, 0.015, -0.36], [0.0, 0.015, -0.16]], [[0.01, 0.015, -0.09], [0.0, 0.015, -0.16], [0.1, 0.015, -0.36]]], top);
+  const geo = mergeGeometries([body, under, wingsG, tail]); geo.scale(sc, sc, sc); return geo;
+};
+
 // ---- Swallows hawking low over open ground, by day -----------------------------------------------------------------
 // S: { x, z, rx, rz: the loops they fly (a figure about this point), y: height above the ground there, amp, n, when }
 export function swallows(kit, S) {
@@ -169,14 +190,7 @@ export function swallows(kit, S) {
   add({
     name: S.name ?? 'swallows', x: cx, z: cz, load: S.load ?? 420, live: S.live ?? 380, when: S.when,
     init: async () => {
-      const top = 0x1c2440, belly = 0xe8e0cc, red = 0x8a2a1a;
-      const body = tris([[[0, 0.03, 0.12], [-0.035, 0, 0.02], [0.035, 0, 0.02]], [[0, 0.03, 0.12], [0.035, 0, 0.02], [0, 0.02, -0.1]], [[0, 0.03, 0.12], [0, 0.02, -0.1], [-0.035, 0, 0.02]],
-        [[-0.035, 0, 0.02], [0, 0.02, -0.1], [0.035, 0, 0.02]]], top);
-      const under = tris([[[0, -0.025, 0.11], [0.035, 0, 0.02], [-0.035, 0, 0.02]], [[0, -0.025, 0.11], [-0.035, 0, 0.02], [0, -0.01, -0.1]], [[0, -0.025, 0.11], [0, -0.01, -0.1], [0.035, 0, 0.02]]], (x, y, z) => (z > 0.07 ? red : belly));
-      const wingsG = tris([[[-0.03, 0.01, 0.07], [-0.03, 0.01, -0.03], [-0.5, 0.01, -0.12]], [[-0.03, 0.01, 0.07], [-0.5, 0.01, -0.12], [-0.27, 0.01, 0.06]],
-        [[0.03, 0.01, 0.07], [0.5, 0.01, -0.12], [0.03, 0.01, -0.03]], [[0.03, 0.01, 0.07], [0.27, 0.01, 0.06], [0.5, 0.01, -0.12]]], top);
-      const tail = tris([[[-0.01, 0.015, -0.09], [-0.1, 0.015, -0.36], [0.0, 0.015, -0.16]], [[0.01, 0.015, -0.09], [0.0, 0.015, -0.16], [0.1, 0.015, -0.36]]], top);
-      const geo = mergeGeometries([body, under, wingsG, tail]); geo.scale(1.5, 1.5, 1.5);
+      const geo = flier();
       inst = tag(new THREE.InstancedMesh(geo, flapping(vcMat({ side: THREE.DoubleSide }), uT, 0.7, 13, 1), N)); inst.frustumCulled = false; inst.name = 'swallows'; scene.add(inst);
     },
     show: on => { inst.visible = on; },
@@ -192,6 +206,48 @@ export function swallows(kit, S) {
       inst.instanceMatrix.needsUpdate = true;
     },
     check: () => { const all = []; for (let i = 0; i < N; i++) { inst.getMatrixAt(i, m4); all.push({ x: m4.elements[12], y: m4.elements[13], z: m4.elements[14] }); } return { ...all[0], all }; },
+  });
+}
+
+// ---- A pair passing over, now and then, by day ------------------------------------------------------------------------
+// Two birds (wood pigeons, grey, with pale bellies) that come in over the rim, cross the island high up in a long,
+// gently rising and falling line, one a little behind and beside the other, and go out over the far side; then nothing
+// for a while. Not a flock: a pair, and seldom. One instanced mesh (one draw), hidden between passes.
+// S: { r: how far from the middle they come in and go out (ft), y: [lo, hi] height over the middle of the island,
+//      gap: [lo, hi] seconds between passes, speed (ft/s), when }
+export function passers(kit, S) {
+  const { scene, tag, groundAt, add } = kit, r = rng(S.seed ?? 4242), N = 2, uT = { value: 0 }, R = S.r ?? 320, Y0 = groundAt(0, 0);
+  const [ylo, yhi] = S.y ?? [80, 98], [glo, ghi] = S.gap ?? [25, 70], V = S.speed ?? 30;
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), sv = new THREE.Vector3(1, 1, 1), pv = new THREE.Vector3(), Z = new THREE.Matrix4().makeScale(0, 0, 0);
+  let inst, flying = false, t0 = 0, T = 1, next = -1, ax = 0, az = 0, bx = 0, bz = 0, y = 40, side = 4, back = 7, ph = 0; const at = [[0, 0, 0], [0, 0, 0]];
+  add({
+    name: S.name ?? 'passing pair', x: 0, z: 0, load: S.load ?? 2000, live: S.live ?? 2000, when: S.when,
+    init: async () => {
+      inst = tag(new THREE.InstancedMesh(flier(0x8f96a0, 0xc9ccd0, 0xa8b0b4, 3), flapping(vcMat({ side: THREE.DoubleSide }), uT, 0.6, 9, 1), N)); inst.frustumCulled = false; inst.name = 'passing pair';
+      for (let i = 0; i < N; i++) inst.setMatrixAt(i, Z); scene.add(inst);
+    },
+    show: on => { inst.visible = on; },
+    tick: t => {
+      uT.value = t;
+      if (next < 0) next = t + 4 + r() * 12;                                       // (the first pass soon after she comes out)
+      if (!flying && t >= next) {                                                  // a chord across the island, not through its middle
+        const a = r() * TAU, off = (r() - 0.5) * R * 0.7, c = Math.cos(a), sn = Math.sin(a);
+        ax = c * R - sn * off; az = sn * R + c * off; bx = -c * R - sn * off; bz = -sn * R + c * off;
+        y = Y0 + ylo + r() * (yhi - ylo); T = Math.hypot(bx - ax, bz - az) / V; t0 = t; flying = true; side = (r() < 0.5 ? -1 : 1) * (3 + r() * 4); back = 5 + r() * 6; ph = r() * 9;
+      }
+      if (!flying) return;
+      const k = (t - t0) / T;
+      if (k >= 1) { flying = false; next = t + glo + r() * (ghi - glo); for (let i = 0; i < N; i++) inst.setMatrixAt(i, Z); inst.instanceMatrix.needsUpdate = true; return; }
+      const dx = (bx - ax) / (V * T), dz = (bz - az) / (V * T), hd = Math.atan2(dx, dz);
+      for (let i = 0; i < N; i++) {
+        const u = k * V * T - i * back, wob = Math.sin(t * 0.7 + ph + i * 1.3);
+        at[i][0] = ax + dx * u + (-dz) * side * i + 1.2 * wob * dz; at[i][2] = az + dz * u + dx * side * i - 1.2 * wob * dx; at[i][1] = y + 3 * Math.sin(u / 60 + ph) + i * 1.5;
+        e.set(-0.05 * Math.cos(u / 60 + ph), hd, 0.12 * wob, 'YXZ'); q.setFromEuler(e); pv.set(at[i][0], at[i][1], at[i][2]);
+        inst.setMatrixAt(i, m4.compose(pv, q, sv));
+      }
+      inst.instanceMatrix.needsUpdate = true;
+    },
+    check: () => ({ x: at[0][0], y: at[0][1], z: at[0][2], flying, all: at.map(([x, y, z]) => ({ x, y, z })) }),
   });
 }
 
@@ -284,11 +340,12 @@ export function bees(kit, S) {
 }
 
 // ---- Moths round the lamps, at night --------------------------------------------------------------------------------
-// Pale flecks that circle each lit globe, drawn to it and never arriving: one set of points for every lamp on the
-// island (one draw), moved entirely in the shader.
+// Two or three pale flecks that circle each lit globe, drawn to it and never arriving: one set of points for every lamp
+// on the island (one draw), moved entirely in the shader. Small, dim and greyish, and no bigger than a moth however
+// far off (they once had a floor to their size and a quick shimmer, and read as fireflies stuck to the lamps).
 // S: { lamps: [[x, y, z], ...] the middle of each globe, per: moths to each, when }
 export function moths(kit, S) {
-  const { ctx, day, scene, tag, add } = kit, r = rng(S.seed ?? 1618), lamps = S.lamps, per = S.per ?? 5;
+  const { ctx, day, scene, tag, add } = kit, r = rng(S.seed ?? 1618), lamps = S.lamps, per = S.per ?? 2;
   if (!lamps.length) return;
   const uT = { value: 0 }, uN = { value: 0 }, uPx = { value: 600 }; let pts = null;
   add({
@@ -304,13 +361,13 @@ void main() {
   float ph = aSeed.x * 40.0, sp = 1.6 + aSeed.y * 2.2, rad = 0.9 + 1.5 * aSeed.z + 0.5 * sin(uT * 0.9 + ph * 2.0);
   float a = uT * sp * (aSeed.x > 0.5 ? 1.0 : -1.0) + ph;
   vec3 p = position + vec3(cos(a) * rad, 0.7 * sin(uT * sp * 0.73 + ph) + 0.25 * sin(uT * 9.0 + ph), sin(a) * rad);
-  vB = uN * (0.55 + 0.45 * sin(uT * 23.0 + ph));                 // wings catching the light
+  vB = uN * (0.4 + 0.15 * sin(uT * 7.0 + ph));                   // wings catching the light, now and then
   vec4 mv = viewMatrix * vec4(p, 1.0);
-  gl_PointSize = clamp(uPx * 0.2 / max(1.0, -mv.z), 1.8, 14.0);
+  gl_PointSize = min(uPx * 0.12 / max(1.0, -mv.z), 6.0);
   gl_Position = projectionMatrix * mv;
 }`,
         fragmentShader: `varying float vB;
-void main() { vec2 d = gl_PointCoord * 2.0 - 1.0; float g = max(0.0, 1.0 - dot(d, d)); gl_FragColor = vec4(vec3(1.0, 0.93, 0.78), vB * g); }`,
+void main() { vec2 d = gl_PointCoord * 2.0 - 1.0; float g = max(0.0, 1.0 - dot(d, d)); gl_FragColor = vec4(vec3(0.86, 0.84, 0.8), vB * g); }`,
       }))); pts.frustumCulled = false; pts.name = 'moths'; pts.renderOrder = 3; scene.add(pts);
     },
     show: on => { pts.visible = on; },

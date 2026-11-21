@@ -23,8 +23,10 @@ import { makeWarmer } from './warm.js';
 import { makeShade } from './shade.js';
 
 import { loadFonts } from './fonts.js';
+import { makePost } from './post.js';
 import { makeFrameMeter } from './engine/frame.js';
 import { openStage } from './engine/stage.js';
+import { pictureInfo } from './engine/picinfo.js';
 
 // Every label, leaf and painted stone on the island is painted on a 2D canvas and handed to the renderer as
 // a texture. Browsers keep such canvases on the graphics card unless told otherwise, and a card that is
@@ -44,11 +46,18 @@ const sound = makeSound();
 // and texture sizes; ?quality=low|medium|high forces one.
 const QUALITY = chooseQuality(Q);
 setTextureTier(QUALITY.tex);
-const MAX_RATIO = Math.min(devicePixelRatio, Number(Q.get('ratio') ?? QUALITY.ratio));
+// ?post=1: drawn small into a picture of its own, then enlarged and sharpened to a canvas at the screen's own pixels
+// (post.js); otherwise the canvas itself is the small picture and the browser stretches it.
+const POST = Q.get('post') === '1';
+const MAX_RATIO = Math.min(devicePixelRatio, Number(Q.get('ratio') ?? (POST ? Math.min(1, QUALITY.ratio) : QUALITY.ratio)));
 let ratio = MAX_RATIO;
-const renderer = new THREE.WebGLRenderer({ antialias: QUALITY.antialias, powerPreference: 'high-performance', ...takeContext(QUALITY.antialias) });
-renderer.setPixelRatio(ratio);
+const renderer = new THREE.WebGLRenderer({ antialias: QUALITY.antialias && !POST, powerPreference: 'high-performance', ...(POST ? {} : takeContext(QUALITY.antialias)) });
+renderer.setPixelRatio(POST ? Math.min(devicePixelRatio, Number(Q.get('out') ?? 2)) : ratio);
 renderer.setSize(innerWidth, innerHeight);
+const post = POST ? makePost(renderer, { scale: ratio, samples: QUALITY.antialias ? 4 : 0, sharp: Number(Q.get('sharp') ?? 0.6) }) : null;
+post?.setSize(innerWidth, innerHeight);
+const draw = () => (post ? post.render(scene, camera) : renderer.render(scene, camera));
+const setRatio = r => (post ? post.setScale(r) : renderer.setPixelRatio(r));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = QUALITY.softShadow ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
@@ -81,12 +90,12 @@ const builder = new Builder();
 builder.zone = 'shell';                                   // a building's own fabric is always drawn (see visibility.js)
 const STAGE = {}, mark = k => { STAGE[k] = Math.round(performance.now()); };      // start-up timings, for perf.js
 mark('start');
-const stage = openStage({ mark, onEarlyEnter: () => sound.start() });      // the place opens on a picture before it is furnished (engine/stage.js): the photos are counted from here
+const stage = openStage({ mark, onEarlyEnter: () => sound.start(), early: Q.get('early') === '1' });      // the place opens on a picture before it is furnished (engine/stage.js): the photos are counted from here
 // The furniture comes after the picture. A plain visit opens on the island seen from above, where no room can be
 // seen into: so the buildings are built bare, the island is drawn and the threshold lifts, and what stands in the
 // rooms is made behind that picture, a furnish file at a time (campus.js furnishRest), before anything else is set
 // going. Any address that asks for a particular view or test builds everything at once, as before (so does ?stream=0).
-const PLAIN = new Set(['fps', 'quality', 'time', 'stages', 'loadlog', 'welcome', 'stream', 'aa', 'lamps', 'tex', 'shadow', 'ratio']);
+const PLAIN = new Set(['fps', 'quality', 'time', 'stages', 'loadlog', 'welcome', 'stream', 'aa', 'lamps', 'tex', 'shadow', 'ratio', 'taps', 'boxes', 'soft', 'light', 'post', 'sharp', 'out', 'ahead', 'ease', 'early']);
 const STREAM = Q.has('stream') ? Q.get('stream') !== '0' : [...Q.keys()].every(k => PLAIN.has(k));
 const house = buildCampus(builder, { defer: STREAM, only: Q.has('only') ? Q.get('only').split(',') : null, marks: Q.has('sites'), facing: Q.has('facing') ? Object.fromEntries(Q.get('facing').split(',').map(p => p.split(':'))) : null }); mark('house');
 installHouseLight(house.boxes);                                                // indoor light, patched into the shaders before anything compiles (lighting.js)
@@ -119,7 +128,7 @@ if (house.furnishRest) {
     picture: () => {
       exposure.update(renderer, 'out', sky.state, 1, true);
       winGlow.update(sky.state.night, true, 1 - THREE.MathUtils.smoothstep(sky.state.light, 0.42, 0.97));
-      sky.update(0, 0, camera); renderer.render(scene, camera);
+      sky.update(0, 0, camera); draw();
     },
     each: step => { if (step === 'built') zoned.push(...builder.finalize(scene, materials)); },
   });
@@ -128,6 +137,7 @@ const life = bringToLife({ scene, outdoors, vis, quality: QUALITY, renderer, cam
 
 // What the parts that move and answer back are given (b.later in a building; the grounds).
 const ctx = { THREE, scene, camera, renderer, materials, house, items, flash: t => flash(t), zoom: on => { camera.fov = on ? 13 : WALK_FOV; camera.updateProjectionMatrix(); walker.lookScale = on ? 0.22 : 1; ctx.zoomed = !!on; }, colliders: builder.colliders, interact: life.interact, animated: life.animated, loadModel: life.loadModel, track: life.track, zoneAt: life.zoneAt, sound, day, get walker() { return walker; }, get mode() { return mode; }, get aimed() { return aimed; }, get flashlight() { return torch.intensity > 0; } };
+pictureInfo({ extras: items.extras ?? [], interact: life.interact, say: t => window.houseUI?.toast?.(t, 6000) });      // E on a hung picture: its title, artist and year (engine/picinfo.js)
 mark('life');
 groundsLife(ctx);                                                             // the breeze in the trees
 try { garden?.setup?.(Object.create(ctx, { scene: { value: outdoors } })); } catch (e) { console.error('grounds', e); }      // the grounds' own things go in the outdoors group
@@ -246,12 +256,12 @@ if ((Q.has('view') || Q.has('at')) && Q.has('open')) for (const d of house.doors
 
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
+  renderer.setSize(innerWidth, innerHeight); post?.setSize(innerWidth, innerHeight);
 });
 
 // ---- What to draw this frame (visibility.js) -------------------------------------------
 const REACH = QUALITY.reach;                                           // (QUALITY.reach is lowered for a while when frames run slow: see the loop)
-const smallNear = () => 34 * QUALITY.reach;                            // clutter further off than this is not drawn
+const smallNear = Q.get('ahead') === '0' ? () => 34 * QUALITY.reach : () => 34 * REACH;      // clutter further off than this is not drawn (the tier's own reach, not the slow-frame one: life.js SMALL_NEAR)
 for (const m of zoned) { m.geometry.computeBoundingBox(); m.userData.box = m.geometry.boundingBox; m.userData.small = vis.isSmall(m.userData.zone); }
 const cullOff = Q.get('cull') === '0';
 function cullScene(all = cullOff) {
@@ -300,7 +310,7 @@ renderer.setAnimationLoop(() => {
   const raw = clock.getDelta(), dt = Math.min(raw, 0.05), t = clock.elapsedTime;
   // A change of drawing resolution is made here, before the frame is drawn. (Made after drawing, it
   // emptied the canvas, and the page's dark background showed for a frame: a full-screen blink.)
-  if (nextRatio !== null) { ratio = nextRatio; nextRatio = null; renderer.setPixelRatio(ratio); }
+  if (nextRatio !== null) { ratio = nextRatio; nextRatio = null; setRatio(ratio); }
   let where = 'out';
   if (mode === 'walk') {
     walker.update(dt);
@@ -329,7 +339,7 @@ renderer.setAnimationLoop(() => {
   // one by one as rooms are first seen
   if (!perf.frames && !cullOff) { mark('loop'); cullScene(true); renderer.compile(scene, camera); warmer.settle(); mark('compiled'); }
   cullScene();
-  meter.draw(); renderer.render(scene, camera); meter.end();
+  meter.draw(); draw(); meter.end();
   warmer.update(dt);
   perf.frames++; perf.lastCalls = renderer.info.render.calls; perf.lastTris = renderer.info.render.triangles;
   if (perf.firstFrameMs === undefined) { perf.firstFrameMs = Math.round(performance.now()); if (window.__ready) document.body.classList.add('ready'); }      // (the threshold lifts when the photos are in AND a frame has been drawn: whichever comes second, onLoad below or this)
@@ -369,7 +379,7 @@ let loading = 0;
 THREE.DefaultLoadingManager.onStart = () => { loading++; stage.loading(); };
 THREE.DefaultLoadingManager.onProgress = (url, done, total) => { loading = total - done; };
 const perf = { quality: QUALITY.name, gpu: QUALITY.gpu, stages: STAGE, visTime: () => vis.visMs(), resetVisTime: () => vis.resetMs(), vis, frames: 0, items, renderer, scene, camera, setView, setHour: h => setHour(h), pending: () => loading + life.pending() };
-window.__house = perf; perf.light = { HL, lampPool, sun, exposure }; perf.campus = house; perf.walker = walker; perf.groundAt = groundAt; perf.life = life; perf.loading = () => loading; perf.colliders = builder.colliders; perf.surfaces = surfaces;      // for looking at one light at a time (tools/evaljs.sh)
+window.__house = perf; perf.post = post; perf.light = { HL, lampPool, sun, exposure }; perf.campus = house; perf.walker = walker; perf.groundAt = groundAt; perf.life = life; perf.loading = () => loading; perf.colliders = builder.colliders; perf.surfaces = surfaces;      // for looking at one light at a time (tools/evaljs.sh)
 // Which lamps the pool would light at each test viewpoint, for checking its choices (?statsdump's eval=)
 perf.lampChoice = (names = Object.keys(VIEWS), h) => { if (h !== undefined) setHour(h); const out = {}; for (const n of names) { setView(VIEWS[n]); camera.updateMatrixWorld(); vis.update(camera); out[n] = (vis.state.here.join('+') || 'out').replace(/r:/g, '') + ' -> ' + lampPool.choose(camera.position, QUALITY.lamps).map(lampPool.describe).join(', '); } return out; };
 // Walking by program, for tests (tools/drive.py, tools/walk_test.js): the real walker, with its collisions, stairs
@@ -404,7 +414,7 @@ ctx.hourMoved = Q.has('time'); ctx.hourNow = () => hour;      // (for the airshi
 // ?keys=KeyE:2000,KeyF:4500 presses keys at those milliseconds after start-up (test shots of things that need a key;
 // Run20:5000 runs the place's life on by 20 seconds at once: the headless renderer draws only a few frames)
 let testT = 1000;
-if (Q.has('keys')) for (const k of Q.get('keys').split(',')) { const [code, ms] = k.split(':'); setTimeout(() => /^Run/.test(code) ? (() => { for (let i = 0; i < Number(code.slice(3)) * 20; i++) { testT += 0.05; life.update(testT, 0.05); } renderer.render(scene, camera); })() : dispatchEvent(new KeyboardEvent('keydown', { code, key: code.replace(/^(Key|Digit)/, '').toLowerCase(), bubbles: true })), Number(ms)); setTimeout(() => console.log('KEY', code, 'frames', perf.frames, 'mode', mode, 'aimed', aimed?.label?.()), Number(ms) + 300); }
+if (Q.has('keys')) for (const k of Q.get('keys').split(',')) { const [code, ms] = k.split(':'); setTimeout(() => /^Run/.test(code) ? (() => { for (let i = 0; i < Number(code.slice(3)) * 20; i++) { testT += 0.05; life.update(testT, 0.05); } draw(); })() : dispatchEvent(new KeyboardEvent('keydown', { code, key: code.replace(/^(Key|Digit)/, '').toLowerCase(), bubbles: true })), Number(ms)); setTimeout(() => console.log('KEY', code, 'frames', perf.frames, 'mode', mode, 'aimed', aimed?.label?.()), Number(ms) + 300); }
 // The quality choice for the settings card (quality.js); changing it reloads the page
 window.house.quality = { options: QUALITY_OPTIONS, get: () => storedChoice() ?? 'auto', set: v => { chooseTier(v); location.reload(); }, get current() { return QUALITY.name; } };
 

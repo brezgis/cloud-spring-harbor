@@ -27,17 +27,17 @@ function patch(mat, sway) {
 {
   vec3 ip = vec3(instanceMatrix[3][0], instanceMatrix[3][1], instanceMatrix[3][2]);
   float ph = ip.x * 0.21 + ip.z * 0.17;
-  float swell = 0.55 + 0.45 * smoothstep(0.2, 1.0, sin(uWind * 0.19 + ph * 0.03));   // a breeze that comes and goes in gusts across the island (it was an occasional stir, as in the house's small garden: at the distances of a campus that read as still air)
-  float k = ${(sway * 0.36).toFixed(4)} * uv.y * uv.y * swell;
-  transformed.x += k * (sin(uWind * 0.7 + ph) + 0.3 * sin(uWind * 1.5 + ph * 2.0) + 0.16 * sin(uWind * 3.1 + ph * 4.3 + uv.x * 5.0));
-  transformed.z += k * 0.6 * cos(uWind * 0.58 + ph * 1.3) + k * 0.12 * sin(uWind * 2.7 + ph * 3.7);
+  float swell = 0.35 + 0.65 * smoothstep(0.55, 1.0, sin(uWind * 0.11 + ph * 0.03));   // an occasional gentle stir, exactly as in the house's garden (it had been made quicker and stronger here; Anna, 2026-11-20: "the wind at the lab is too fast", the house's "is much better")
+  float k = ${(sway * 0.25).toFixed(4)} * uv.y * uv.y * swell;
+  transformed.x += k * (sin(uWind * 0.55 + ph) + 0.3 * sin(uWind * 1.2 + ph * 2.0));
+  transformed.z += k * 0.6 * cos(uWind * 0.45 + ph * 1.3);
 }
 #endif`);
     // (the line sits inside a chunk that is not yet written out at this point, so the chunk is written out here
     // with the change made; replacing it in the shader's own text never matched, and backs of cards were lit from below)
     sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', THREE.ShaderChunk.normal_fragment_begin.replace('gl_FrontFacing ? 1.0 : - 1.0', '1.0'));
   };
-  mat.customProgramCacheKey = () => 'card3' + sway;
+  mat.customProgramCacheKey = () => 'card4' + sway;
   return mat;
 }
 
